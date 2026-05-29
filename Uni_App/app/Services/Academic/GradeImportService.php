@@ -1,0 +1,108 @@
+<?php
+
+namespace App\Services\Academic;
+
+use App\Models\Course;
+use App\Models\Grade;
+use App\Models\Student;
+use App\Mail\GradeUpdated;
+use App\Services\Academic\GradeCalculationService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\HeadingRowImport;
+
+class GradeImportService
+{
+    public function __construct(
+        private GradeCalculationService $gradeCalculationService
+    ) {}
+
+    /**
+     * Get headers and first 5 rows of the spreadsheet.
+     */
+    public function getPreviewData(string $path): array
+    {
+        $rows = Excel::toArray([], $path)[0] ?? [];
+        
+        return [
+            'headers' => $rows[0] ?? [],
+            'sample' => array_slice($rows, 1, 5)
+        ];
+    }
+
+    /**
+     * Process the full import using the mapping.
+     */
+    public function processImport(string $path, array $mapping): array
+    {
+        $rows = Excel::toArray([], $path)[0] ?? [];
+        $headerRow = array_shift($rows); // Remove headers
+
+        $stats = ['total' => count($rows), 'success' => 0, 'failed' => 0, 'errors' => []];
+
+        foreach ($rows as $index => $row) {
+            try {
+                DB::transaction(function () use ($row, $mapping, $headerRow, &$stats) {
+                    $data = [];
+                    foreach ($mapping as $dbField => $userValue) {
+                        // Support both index (0, 1, 2...) and Header String ("Student ID")
+                        $columnIndex = is_numeric($userValue) 
+                            ? (int)$userValue 
+                            : array_search($userValue, $headerRow);
+
+                        if ($columnIndex === false) {
+                            throw new \Exception("Mapping failed: Column [{$userValue}] not found in spreadsheet.");
+                        }
+
+                        $data[$dbField] = $row[$columnIndex] ?? null;
+                    }
+
+                    $grade = $this->importRow($data);
+                    Mail::to($grade->student->user->email)->send(new GradeUpdated($grade));
+                    $stats['success']++;
+                });
+            } catch (\Exception $e) {
+                $stats['failed']++;
+                $stats['errors'][] = "Row " . ($index + 2) . ": " . $e->getMessage();
+            }
+        }
+
+        return $stats;
+    }
+
+    /**
+     * Import a single validated row.
+     */
+   private function importRow(array $data): Grade
+{
+    $student = Student::where('student_number', $data['student_number'])->first();
+    if (!$student) throw new \Exception("Student [{$data['student_number']}] not found.");
+
+    $course = Course::where('course_code', $data['course_code'])->first();
+    if (!$course) throw new \Exception("Course [{$data['course_code']}] not found.");
+
+    $scoreData = [
+        'first' => floatval($data['first'] ?? 0),
+        'second' => floatval($data['second'] ?? 0),
+        'midterm' => floatval($data['midterm'] ?? 0),
+        'final' => floatval($data['final'] ?? 0),
+    ];
+
+    $result = $this->gradeCalculationService->calculateTotalAndGPA($scoreData);
+
+    return Grade::updateOrCreate(
+        [
+            'student_id' => $student->id,
+            'course_id' => $course->id,
+            'semester_id' => $data['semester_id'],
+        ],
+        array_merge($scoreData, [
+            'total' => $result['total'],
+            'gpa' => $result['gpa'],
+            'status' => $result['status']->value,
+            'grade_estimate' => $result['grade_estimate']->value,
+        ])
+    );
+}
+}

@@ -1,0 +1,71 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\College;
+use App\Models\Department;
+use App\Models\Program;
+use Illuminate\Http\JsonResponse;
+
+class AcademicStructureController extends Controller
+{
+    /**
+     * GET /api/colleges
+     * Returns all colleges with their departments and programs.
+     * Public — no auth required.
+     */
+    public function colleges(): JsonResponse
+    {
+        $colleges = College::with(['departments.programs'])->get();
+
+        return response()->json([
+            'success' => true,
+            'data'    => $colleges->map(fn ($college) => [
+                'id'   => $college->id,
+                'name' => $college->name,
+                'code' => $college->code,
+                'departments' => $college->departments->map(fn ($dept) => [
+                    'id'       => $dept->id,
+                    'name'     => $dept->name,
+                    'code'     => $dept->code,
+                    'programs' => $dept->programs->map(fn ($prog) => [
+                        'id'             => $prog->id,
+                        'name'           => $prog->name,
+                        'code'           => $prog->code,
+                        'duration_years' => $prog->duration_years,
+                        'degree_type'    => $prog->degree_type instanceof \BackedEnum
+                            ? $prog->degree_type->value
+                            : $prog->degree_type,
+                    ]),
+                ]),
+            ]),
+        ]);
+    }
+
+    /**
+     * GET /api/programs
+     * Returns a flat list of all programs (with college & department name).
+     * Public — no auth required.
+     */
+    public function programs(): JsonResponse
+    {
+        $programs = Program::with(['department.college'])->get();
+
+        return response()->json([
+            'success' => true,
+            'data'    => $programs->map(fn ($prog) => [
+                'id'             => $prog->id,
+                'name'           => $prog->name,
+                'code'           => $prog->code,
+                'degree_type'    => $prog->degree_type instanceof \BackedEnum
+                    ? $prog->degree_type->value
+                    : $prog->degree_type,
+                'department'     => $prog->department?->name,
+                'college'        => $prog->department?->college?->name,
+                'department_id'  => $prog->department_id,
+                'college_id'     => $prog->department?->college?->id,
+            ]),
+        ]);
+    }
+}
