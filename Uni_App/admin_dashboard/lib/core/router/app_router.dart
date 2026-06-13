@@ -11,7 +11,9 @@ import '../../features/payments/presentation/payments_page.dart';
 import '../../features/grades/presentation/grades_page.dart';
 import '../../features/logs/presentation/logs_page.dart';
 import '../../features/notifications/presentation/notifications_page.dart';
+import '../../features/surveys/screens/surveys_screen.dart';
 import '../../features/users/presentation/users_page.dart';
+import '../../features/announcements/screens/announcements_screen.dart' as admin_announcements;
 import '../../features/appeals/presentation/appeals_page.dart';
 import '../../features/appeals/presentation/appeal_details_page.dart';
 import '../../features/programs/presentation/programs_page.dart';
@@ -82,6 +84,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const UsersPage(),
           ),
           GoRoute(
+            path: '/announcements',
+            builder: (context, state) => const admin_announcements.AnnouncementsScreen(),
+          ),
+          GoRoute(
             path: '/programs',
             builder: (context, state) => const ProgramsPage(),
           ),
@@ -113,6 +119,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                 },
               ),
             ],
+          ),
+          GoRoute(
+            path: '/surveys',
+            builder: (context, state) => const SurveysScreen(),
           ),
         ],
       ),

@@ -26,14 +26,14 @@ class ProgramModel {
   factory ProgramModel.fromJson(Map<String, dynamic> json) {
     return ProgramModel(
       id: json['id'],
-      departmentId: json['department_id'],
+      departmentId: json['department_id'] ?? 0,
       name: json['name'] ?? '',
       code: json['code'] ?? '',
       durationYears: json['duration_years'] ?? 4,
       degreeType: json['degree_type'] ?? 'bachelor',
       fees: json['fees'] != null ? double.tryParse(json['fees'].toString()) ?? 0.0 : 0.0,
-      departmentName: json['department']?['name'] ?? json['department'], // Fallback if flattened
-      collegeName: json['department']?['college']?['name'] ?? json['college'],
+      departmentName: json['department'] is Map ? json['department']['name'] : json['department'],
+      collegeName: json['department'] is Map ? (json['department']['college'] != null ? json['department']['college']['name'] : null) : json['college'],
       deletedAt: json['deleted_at'],
     );
   }

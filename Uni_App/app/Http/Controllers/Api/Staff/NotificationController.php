@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Staff;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,6 +17,7 @@ class NotificationController extends Controller
     public function index(): JsonResponse
     {
         $notifications = auth()->user()->notifications()
+            ->with(['sender']) // Load sender relationship
             ->withPivot('is_read', 'created_at')
             ->latest()
             ->get()
@@ -26,6 +28,9 @@ class NotificationController extends Controller
                     'message' => $notification->message,
                     'is_read' => (bool) $notification->pivot->is_read,
                     'created_at' => $notification->created_at->toDateTimeString(),
+                    'sender_name' => $notification->sender ? $notification->sender->name : null,
+                    'sender_role' => $notification->sender ? $notification->sender->role : null,
+                    'notification_type' => $notification->notification_type,
                 ];
             });
 
@@ -55,66 +60,53 @@ class NotificationController extends Controller
     }
 
     /**
-     * Send notification to a specific role or group based on sender's role.
+     * Get a list of users for messaging (excluding students, only staff/admins).
      */
-    public function store(Request $request): JsonResponse
+    public function users(): JsonResponse
+    {
+        $users = User::where('role', '!=', 'student')
+            ->select('id', 'name', 'role')
+            ->get();
+        return response()->json(['data' => $users]);
+    }
+
+    /**
+     * Send internal message to role, specific user, or multiple users.
+     */
+    public function store(Request $request, NotificationService $notificationService): JsonResponse
     {
         $user = auth()->user();
-        $role = $user->role;
-
-        $allowedTargets = [];
-        switch ($role) {
-            case 'admin':
-                $allowedTargets = ['student_affairs', 'accountant', 'grade_control', 'student', 'all_staff', 'all'];
-                break;
-            case 'student_affairs':
-                $allowedTargets = ['admin', 'student', 'accountant', 'grade_control'];
-                break;
-            case 'accountant':
-                $allowedTargets = ['admin', 'student_affairs'];
-                break;
-            case 'grade_control':
-                $allowedTargets = ['admin', 'student_affairs'];
-                break;
-            default:
-                return response()->json(['message' => 'Unauthorized to send notifications.'], 403);
+        
+        // Allowed roles to send messages
+        if (!in_array($user->role, ['admin', 'student_affairs', 'accountant', 'grade_control'])) {
+            return response()->json(['message' => 'Unauthorized to send messages.'], 403);
         }
 
         $request->validate([
             'title' => 'required|string|max:255',
             'message' => 'required|string',
-            'target_role' => ['required', 'string', \Illuminate\Validation\Rule::in($allowedTargets)],
+            'recipient_type' => 'required|in:role,specific,multiple',
+            'target_role' => 'required_if:recipient_type,role|string|nullable',
+            'user_ids' => 'required_if:recipient_type,multiple|array|nullable',
+            'user_ids.*' => 'integer|exists:users,id',
+            'user_id' => 'required_if:recipient_type,specific|integer|exists:users,id|nullable',
         ]);
 
         $title = $request->input('title');
         $message = $request->input('message');
-        $targetRole = $request->input('target_role');
+        $recipientType = $request->input('recipient_type');
 
-        // Create the notification
-        $notification = Notification::create([
-            'title' => $title,
-            'message' => $message,
-            'target_type' => 'group',
-        ]);
-
-        // Get target users
-        if ($targetRole === 'all') {
-            $users = User::all();
-        } elseif ($targetRole === 'all_staff') {
-            $users = User::whereIn('role', ['admin', 'student_affairs', 'accountant', 'grade_control'])->get();
-        } else {
-            $users = User::where('role', $targetRole)->get();
-        }
-
-        // Attach notification to target users
-        $userIds = $users->pluck('id')->toArray();
-        if (!empty($userIds)) {
-            $notification->users()->attach($userIds);
+        if ($recipientType === 'role') {
+            $notification = $notificationService->sendMessageToRole($user, $request->input('target_role'), $title, $message);
+        } elseif ($recipientType === 'multiple') {
+            $notification = $notificationService->sendMessage($user, $request->input('user_ids'), $title, $message);
+        } else { // specific
+            $notification = $notificationService->sendMessage($user, [$request->input('user_id')], $title, $message);
         }
 
         return response()->json([
-            'message' => 'Notification sent successfully to ' . count($userIds) . ' users.',
-            'data' => $notification
+            'message' => 'Message sent successfully.',
+            'data' => $notification->load('sender')
         ]);
     }
 }

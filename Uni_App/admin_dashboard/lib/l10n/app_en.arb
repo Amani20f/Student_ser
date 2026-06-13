@@ -389,5 +389,19 @@
         "type": "String"
       }
     }
-  }
+  },
+  "surveyManagement": "Surveys",
+  "announcementsManagement": "Announcements",
+  "addSurvey": "Add Survey",
+  "surveyLink": "Link",
+  "requiredForGrades": "Required for Grades",
+  "dateAdded": "Date Added",
+  "newAnnouncement": "New Announcement",
+  "targetAudience": "Target Audience",
+  "publishDate": "Publish Date",
+  "imageLabel": "Image",
+  "confirmDeleteAnnouncement": "Are you sure you want to delete this announcement?",
+  "confirmDeleteSurvey": "Are you sure you want to delete this survey?",
+  "noSurveysAdded": "No surveys added.",
+  "noAnnouncementsCurrently": "No announcements currently."
 }

@@ -6,8 +6,8 @@ class RoleConstants {
 
   /// Routes accessible by each role.
   static const Map<String, List<String>> roleRoutes = {
-    admin: ['/dashboard', '/requests', '/payments', '/grades', '/logs', '/notifications', '/users', '/appeals', '/programs', '/courses', '/semesters', '/pricing', '/study-schedules'],
-    studentAffairs: ['/dashboard', '/requests', '/notifications', '/study-schedules'],
+    admin: ['/dashboard', '/requests', '/payments', '/grades', '/logs', '/notifications', '/users', '/appeals', '/programs', '/courses', '/semesters', '/pricing', '/study-schedules', '/announcements', '/surveys'],
+    studentAffairs: ['/dashboard', '/requests', '/notifications', '/study-schedules', '/surveys', '/announcements'],
     accountant: ['/dashboard', '/payments', '/notifications', '/study-schedules'],
     gradeControl: ['/dashboard', '/grades', '/notifications', '/appeals', '/study-schedules'],
   };

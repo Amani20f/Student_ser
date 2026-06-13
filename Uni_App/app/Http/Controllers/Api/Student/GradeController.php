@@ -20,8 +20,29 @@ class GradeController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
+            $studentId = auth()->user()->student->id;
+
+            // Check for required survey
+            $latestRequiredSurvey = \App\Models\Survey::where('is_active', true)
+                ->where('is_required_for_grades', true)
+                ->latest()
+                ->first();
+
+            if ($latestRequiredSurvey) {
+                $hasCompleted = \App\Models\SurveyCompletion::where('survey_id', $latestRequiredSurvey->id)
+                    ->where('student_id', $studentId)
+                    ->exists();
+
+                if (!$hasCompleted) {
+                    return response()->json([
+                        'requires_survey' => true,
+                        'survey' => $latestRequiredSurvey
+                    ]);
+                }
+            }
+
             $grades = $this->studentService->getGrades(
-                auth()->user()->student->id,
+                $studentId,
                 $request->query('semester_id')
             );
             

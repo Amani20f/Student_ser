@@ -6,6 +6,10 @@ use App\Http\Controllers\Api\Admin\StaffManagementController;
 use App\Http\Controllers\Api\Admin\UserManagementController;
 use App\Http\Controllers\Api\Admin\RequestTypeController;
 use App\Http\Controllers\Api\Admin\StudentApplicationManagementController;
+use App\Http\Controllers\Api\Admin\AnnouncementController as AdminAnnouncementController;
+use App\Http\Controllers\Api\Admin\SurveyController as AdminSurveyController;
+use App\Http\Controllers\Api\Student\AnnouncementController as StudentAnnouncementController;
+use App\Http\Controllers\Api\Student\SurveyController as StudentSurveyController;
 use App\Http\Controllers\Api\AcademicStructureController;
 use App\Http\Controllers\Api\ServiceRequestController;
 use App\Http\Controllers\Api\StudentApplicationController;
@@ -89,6 +93,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/applications/{id}', [StudentApplicationManagementController::class, 'show']);
         Route::post('/applications/{id}/approve', [StudentApplicationManagementController::class, 'approve']);
         Route::post('/applications/{id}/reject', [StudentApplicationManagementController::class, 'reject']);
+
     });
 
     /**
@@ -121,6 +126,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/notifications', [\App\Http\Controllers\Api\Student\NotificationController::class, 'index']);
         Route::put('/notifications/{id}/read', [\App\Http\Controllers\Api\Student\NotificationController::class, 'markAsRead']);
 
+        // Announcements
+        Route::get('/announcements', [StudentAnnouncementController::class, 'index']);
+
+        // Surveys
+        Route::post('/surveys/complete', [StudentSurveyController::class, 'complete']);
+
         // Grade Appeals
         Route::get('/appeals', [\App\Http\Controllers\Api\Student\AppealController::class, 'index']);
         Route::post('/appeals', [\App\Http\Controllers\Api\Student\AppealController::class, 'store']);
@@ -137,6 +148,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('staff')->group(function () {
 
         // Notifications Management
+        Route::get('/users', [\App\Http\Controllers\Api\Staff\NotificationController::class, 'users']);
         Route::get('/notifications', [\App\Http\Controllers\Api\Staff\NotificationController::class, 'index']);
         Route::put('/notifications/{id}/read', [\App\Http\Controllers\Api\Staff\NotificationController::class, 'markAsRead']);
         Route::post('/notifications', [\App\Http\Controllers\Api\Staff\NotificationController::class, 'store']);
@@ -188,6 +200,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::middleware('role:student_affairs|admin')->group(function () {
             Route::get('/requests', [App\Http\Controllers\Api\Staff\RequestController::class, 'index']);
             Route::get('/re-enrollment/{id}', [\App\Http\Controllers\Api\ReEnrollmentController::class, 'show']);
+
+            // Surveys
+            Route::apiResource('surveys', AdminSurveyController::class);
+            Route::patch('/surveys/{survey}/toggle', [AdminSurveyController::class, 'toggle']);
+
+            // Announcements
+            Route::apiResource('announcements', AdminAnnouncementController::class);
+            Route::patch('/announcements/{announcement}/toggle', [AdminAnnouncementController::class, 'toggle']);
         });
         Route::middleware('role:student_affairs')->group(function () {
             Route::patch('/requests/{id}/status', [App\Http\Controllers\Api\Staff\RequestController::class, 'updateStatus']);

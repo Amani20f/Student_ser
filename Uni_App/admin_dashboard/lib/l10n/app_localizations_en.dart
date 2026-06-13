@@ -944,4 +944,48 @@ class AppLocalizationsEn extends AppLocalizations {
   String errorMarkingAsRead(String error) {
     return 'Error marking as read: $error';
   }
+
+  @override
+  String get surveyManagement => 'Surveys';
+
+  @override
+  String get announcementsManagement => 'Announcements';
+
+  @override
+  String get addSurvey => 'Add Survey';
+
+  @override
+  String get surveyLink => 'Link';
+
+  @override
+  String get requiredForGrades => 'Required for Grades';
+
+  @override
+  String get dateAdded => 'Date Added';
+
+  @override
+  String get newAnnouncement => 'New Announcement';
+
+  @override
+  String get targetAudience => 'Target Audience';
+
+  @override
+  String get publishDate => 'Publish Date';
+
+  @override
+  String get imageLabel => 'Image';
+
+  @override
+  String get confirmDeleteAnnouncement =>
+      'Are you sure you want to delete this announcement?';
+
+  @override
+  String get confirmDeleteSurvey =>
+      'Are you sure you want to delete this survey?';
+
+  @override
+  String get noSurveysAdded => 'No surveys added.';
+
+  @override
+  String get noAnnouncementsCurrently => 'No announcements currently.';
 }

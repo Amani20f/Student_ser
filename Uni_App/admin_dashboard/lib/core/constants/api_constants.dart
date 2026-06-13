@@ -57,6 +57,7 @@ class ApiConstants {
 
   // ─── Staff — Notifications ────────────────────────────────────────────────
   static const String staffNotifications = '/staff/notifications';
+  static const String staffUsers = '/staff/users';
   static String staffMarkNotificationRead(int id) =>
       '/staff/notifications/$id/read';
 

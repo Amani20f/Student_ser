@@ -4,7 +4,7 @@ class ApiConstants {
   // • Android Emulator: 'http://10.0.2.2:8000/api'
   // • iOS Simulator   : 'http://localhost:8000/api'
   // • Real Device     : 'http://<YOUR_LOCAL_IP>:8000/api'
-  static const String baseUrl = 'http://localhost:8000/api';
+  static const String baseUrl = 'http://172.16.11.73:8000/api';
 
   // Auth Endpoints
   static const String login = '/login';
@@ -15,6 +15,7 @@ class ApiConstants {
 
   // Student Portal Specific
   static const String grades = '/student/grades';
+  static const String completeSurvey = '/student/surveys/complete';
   static const String payments = '/student/payments';
   static const String serviceRequests = '/student/service-requests';
   static const String myRequests = '/student/my-requests';

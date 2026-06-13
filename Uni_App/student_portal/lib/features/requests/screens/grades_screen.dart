@@ -6,6 +6,7 @@ import 'package:university_app/features/requests/widgets/form_inputs.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/constants/api_constants.dart';
 import 'package:university_app/features/auth/cubit/auth_cubit.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class GradesScreen extends StatefulWidget {
   const GradesScreen({super.key});
@@ -18,6 +19,7 @@ class _GradesScreenState extends State<GradesScreen> {
   String? _selectedSemester;
   bool _isLoading = true;
   Map<String, List<dynamic>> _semesterGrades = {};
+  Map<String, dynamic>? _surveyData;
 
   @override
   void initState() {
@@ -28,21 +30,36 @@ class _GradesScreenState extends State<GradesScreen> {
   void _loadGrades() async {
     try {
       final response = await context.read<ApiClient>().get(ApiConstants.grades);
+      
+      if (response['requires_survey'] == true) {
+        if (mounted) {
+          setState(() {
+            _surveyData = response['survey'];
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+
       final data = response['data'] as Map<String, dynamic>;
       final semesterGrades = data.map((key, value) {
         return MapEntry(key, List<dynamic>.from(value));
       });
-      setState(() {
-        _semesterGrades = semesterGrades;
-        if (semesterGrades.isNotEmpty) {
-          _selectedSemester = semesterGrades.keys.first;
-        }
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _semesterGrades = semesterGrades;
+          if (semesterGrades.isNotEmpty) {
+            _selectedSemester = semesterGrades.keys.first;
+          }
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('خطأ في تحميل الدرجات: ${e.toString().replaceAll('Exception:', '').replaceAll('ApiException:', '').trim()}'),
@@ -88,7 +105,9 @@ class _GradesScreenState extends State<GradesScreen> {
       appBar: AppBar(title: const Text('كشف الدرجات')),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
+          : _surveyData != null
+              ? _buildSurveyLock()
+              : SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,6 +263,69 @@ class _GradesScreenState extends State<GradesScreen> {
                   ),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSurveyLock() {
+    final surveyTitle = _surveyData?['title'] ?? 'استبيان';
+    final surveyUrl = _surveyData?['google_form_url'] ?? '';
+    final surveyId = _surveyData?['id'];
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.lock_outline, size: 64, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(height: 16),
+            Text(
+              'الدرجات محجوبة',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'عذراً، لا يمكنك مشاهدة الدرجات قبل إكمال الاستبيان التالي:\n\n$surveyTitle',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.open_in_new),
+              label: const Text('فتح الاستبيان'),
+              onPressed: () async {
+                final url = Uri.parse(surveyUrl);
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(url);
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.check),
+              label: const Text('لقد أكملت الاستبيان'),
+              onPressed: () async {
+                try {
+                  setState(() => _isLoading = true);
+                  await context.read<ApiClient>().post(
+                    ApiConstants.completeSurvey,
+                    data: {'survey_id': surveyId},
+                  );
+                  setState(() => _surveyData = null);
+                  _loadGrades();
+                } catch (e) {
+                  setState(() => _isLoading = false);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('حدث خطأ أثناء حفظ الإكمال')),
+                    );
+                  }
+                }
+              },
+            ),
           ],
         ),
       ),

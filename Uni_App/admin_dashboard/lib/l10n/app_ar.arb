@@ -389,5 +389,19 @@
         "type": "String"
       }
     }
-  }
+  },
+  "surveyManagement": "الاستبيانات",
+  "announcementsManagement": "الإعلانات",
+  "addSurvey": "إضافة استبيان",
+  "surveyLink": "الرابط",
+  "requiredForGrades": "مطلوب للدرجات",
+  "dateAdded": "تاريخ الإضافة",
+  "newAnnouncement": "إعلان جديد",
+  "targetAudience": "الفئة المستهدفة",
+  "publishDate": "تاريخ النشر",
+  "imageLabel": "الصورة",
+  "confirmDeleteAnnouncement": "هل أنت متأكد من حذف هذا الإعلان؟",
+  "confirmDeleteSurvey": "هل أنت متأكد من حذف هذا الاستبيان؟",
+  "noSurveysAdded": "لا توجد استبيانات مضافة.",
+  "noAnnouncementsCurrently": "لا توجد إعلانات حالياً."
 }

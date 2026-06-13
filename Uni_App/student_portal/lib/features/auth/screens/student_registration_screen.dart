@@ -196,7 +196,7 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
           children: [
             Icon(Icons.check_circle, color: Colors.green, size: 28),
             SizedBox(width: 8),
-            Text('تم إرسال الطلب'),
+            Expanded(child: Text('تم إرسال الطلب')),
           ],
         ),
         content: Column(
@@ -502,7 +502,7 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
                 size: 26,
               ),
               const SizedBox(width: 10),
-              Text(title, style: Theme.of(context).textTheme.headlineMedium),
+              Expanded(child: Text(title, style: Theme.of(context).textTheme.headlineMedium)),
             ],
           ),
           const SizedBox(height: 8),

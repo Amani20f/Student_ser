@@ -16,6 +16,8 @@ class Notification extends Model
         'target_type',
         'related_type',
         'related_id',
+        'sender_id',
+        'notification_type',
     ];
 
     /**
@@ -34,5 +36,13 @@ class Notification extends Model
     public function related(): \Illuminate\Database\Eloquent\Relations\MorphTo
     {
         return $this->morphTo();
+    }
+
+    /**
+     * Get the user who sent the notification.
+     */
+    public function sender(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'sender_id');
     }
 }

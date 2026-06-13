@@ -1891,6 +1891,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error marking as read: {error}'**
   String errorMarkingAsRead(String error);
+
+  /// No description provided for @surveyManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Surveys'**
+  String get surveyManagement;
+
+  /// No description provided for @announcementsManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Announcements'**
+  String get announcementsManagement;
+
+  /// No description provided for @addSurvey.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Survey'**
+  String get addSurvey;
+
+  /// No description provided for @surveyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Link'**
+  String get surveyLink;
+
+  /// No description provided for @requiredForGrades.
+  ///
+  /// In en, this message translates to:
+  /// **'Required for Grades'**
+  String get requiredForGrades;
+
+  /// No description provided for @dateAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Date Added'**
+  String get dateAdded;
+
+  /// No description provided for @newAnnouncement.
+  ///
+  /// In en, this message translates to:
+  /// **'New Announcement'**
+  String get newAnnouncement;
+
+  /// No description provided for @targetAudience.
+  ///
+  /// In en, this message translates to:
+  /// **'Target Audience'**
+  String get targetAudience;
+
+  /// No description provided for @publishDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish Date'**
+  String get publishDate;
+
+  /// No description provided for @imageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Image'**
+  String get imageLabel;
+
+  /// No description provided for @confirmDeleteAnnouncement.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this announcement?'**
+  String get confirmDeleteAnnouncement;
+
+  /// No description provided for @confirmDeleteSurvey.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this survey?'**
+  String get confirmDeleteSurvey;
+
+  /// No description provided for @noSurveysAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'No surveys added.'**
+  String get noSurveysAdded;
+
+  /// No description provided for @noAnnouncementsCurrently.
+  ///
+  /// In en, this message translates to:
+  /// **'No announcements currently.'**
+  String get noAnnouncementsCurrently;
 }
 
 class _AppLocalizationsDelegate

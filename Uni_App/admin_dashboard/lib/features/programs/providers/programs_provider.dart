@@ -11,6 +11,13 @@ final programsProvider = FutureProvider.autoDispose<List<ProgramModel>>((ref) as
   return data.map((e) => ProgramModel.fromJson(e)).toList();
 });
 
+final publicProgramsProvider = FutureProvider.autoDispose<List<ProgramModel>>((ref) async {
+  final apiClient = ref.watch(apiClientProvider);
+  final response = await apiClient.get('/programs');
+  final List data = response['data'] ?? [];
+  return data.map((e) => ProgramModel.fromJson(e)).toList();
+});
+
 class ProgramsNotifier extends StateNotifier<AsyncValue<void>> {
   final ApiClient apiClient;
   final Ref ref;

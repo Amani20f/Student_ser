@@ -426,6 +426,8 @@ class ShellLayout extends ConsumerWidget {
       _NavItem('/pricing', l10n.serviceManagementLabel, Icons.attach_money_rounded),
       _NavItem('/requests', l10n.requests, Icons.assignment_rounded),
       _NavItem('/payments', l10n.payments, Icons.payment_rounded),
+      _NavItem('/surveys', l10n.surveyManagement, Icons.poll_rounded),
+      _NavItem('/announcements', l10n.announcementsManagement, Icons.campaign_rounded),
     ]);
 
     addGroup('Academic Operations', 'العمليات الأكاديمية', [
@@ -465,6 +467,10 @@ class ShellLayout extends ConsumerWidget {
         return l10n.activityLogs;
       case '/notifications':
         return l10n.notifications;
+      case '/announcements':
+        return l10n.announcementsManagement;
+      case '/surveys':
+        return l10n.surveyManagement;
       case '/users':
         return l10n.userManagement;
       case '/appeals':

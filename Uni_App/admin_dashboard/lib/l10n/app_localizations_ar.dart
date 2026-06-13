@@ -938,4 +938,46 @@ class AppLocalizationsAr extends AppLocalizations {
   String errorMarkingAsRead(String error) {
     return 'خطأ في التعيين كمقروء: $error';
   }
+
+  @override
+  String get surveyManagement => 'الاستبيانات';
+
+  @override
+  String get announcementsManagement => 'الإعلانات';
+
+  @override
+  String get addSurvey => 'إضافة استبيان';
+
+  @override
+  String get surveyLink => 'الرابط';
+
+  @override
+  String get requiredForGrades => 'مطلوب للدرجات';
+
+  @override
+  String get dateAdded => 'تاريخ الإضافة';
+
+  @override
+  String get newAnnouncement => 'إعلان جديد';
+
+  @override
+  String get targetAudience => 'الفئة المستهدفة';
+
+  @override
+  String get publishDate => 'تاريخ النشر';
+
+  @override
+  String get imageLabel => 'الصورة';
+
+  @override
+  String get confirmDeleteAnnouncement => 'هل أنت متأكد من حذف هذا الإعلان؟';
+
+  @override
+  String get confirmDeleteSurvey => 'هل أنت متأكد من حذف هذا الاستبيان؟';
+
+  @override
+  String get noSurveysAdded => 'لا توجد استبيانات مضافة.';
+
+  @override
+  String get noAnnouncementsCurrently => 'لا توجد إعلانات حالياً.';
 }

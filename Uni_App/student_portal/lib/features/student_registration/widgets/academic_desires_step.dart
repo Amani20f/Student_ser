@@ -160,11 +160,13 @@ class _AcademicDesiresStepState extends State<AcademicDesiresStep> {
                 ),
               ),
               const SizedBox(width: 12),
-              Text(
-                title,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),

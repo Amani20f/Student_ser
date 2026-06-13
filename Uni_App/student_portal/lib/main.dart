@@ -13,6 +13,7 @@ import 'features/auth/cubit/auth_cubit.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/home/main_screen.dart';
 import 'features/requests/data/requests_repository.dart';
+import 'features/announcements/cubit/announcements_cubit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -70,6 +71,11 @@ class UniversityApp extends StatelessWidget {
           create: (context) => AuthCubit(
             context.read<AuthRepository>(),
             context.read<SharedPreferences>(),
+          ),
+        ),
+        BlocProvider(
+          create: (context) => AnnouncementsCubit(
+            context.read<ApiClient>(),
           ),
         ),
       ],

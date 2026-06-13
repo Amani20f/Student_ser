@@ -12,3 +12,8 @@ final notificationsListProvider = FutureProvider<List<NotificationModel>>((ref) 
   final repository = ref.watch(notificationRepositoryProvider);
   return repository.getNotifications();
 });
+
+final staffUsersListProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final repository = ref.watch(notificationRepositoryProvider);
+  return repository.getUsers();
+});

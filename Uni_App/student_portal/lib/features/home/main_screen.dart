@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/network/api_client.dart';
+import '../announcements/cubit/announcements_cubit.dart';
 import 'screens/dashboard_screen.dart';
 import 'package:university_app/l10n/app_localizations.dart';
 import 'package:university_app/features/settings/screens/settings_screen.dart';
 import 'package:university_app/features/requests/screens/requests_list_screen.dart';
-import 'package:university_app/features/requests/screens/announcements/announcements_screen.dart';
+import '../announcements/screens/announcements_screen.dart';
 import '../../core/widgets/modern_bottom_nav_bar.dart';
 
 class MainScreen extends StatefulWidget {
