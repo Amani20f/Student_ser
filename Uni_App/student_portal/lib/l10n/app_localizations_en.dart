@@ -631,4 +631,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectDate => 'Select Date';
+
+  @override
+  String get viewSchedule => 'View Schedule';
+
+  @override
+  String get noStudySchedules =>
+      'No study schedules available for your current level and program.';
+
+  @override
+  String get notes => 'Notes';
+
+  @override
+  String get pleaseSelectMajor =>
+      'Please select a major (First Academic Desire)';
+
+  @override
+  String get idDocumentLabel => 'Attach National ID / Iqama / Passport';
+
+  @override
+  String get arabicLettersOnly => 'Must contain Arabic letters only';
+
+  @override
+  String get englishLettersOnly => 'Must contain English letters only';
+
+  @override
+  String get minLengthFive => 'Must be at least 5 characters';
+
+  @override
+  String get invalidMobileNumber => 'Invalid mobile number (8 to 15 digits)';
+
+  @override
+  String get useThisNumberForPayment =>
+      'You can use this number in the fee payment form for this request.';
+
+  @override
+  String get passwordMinLength => 'Password must be at least 8 characters';
+
+  @override
+  String get passwordsDoNotMatch => 'Passwords do not match';
 }

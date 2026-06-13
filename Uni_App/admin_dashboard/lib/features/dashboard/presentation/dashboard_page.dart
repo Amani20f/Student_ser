@@ -76,7 +76,7 @@ class DashboardPage extends ConsumerWidget {
             LayoutBuilder(
               builder: (context, constraints) {
                 final crossAxisCount = constraints.maxWidth > 1100
-                    ? 4
+                    ? 3
                     : constraints.maxWidth > 700
                     ? 3
                     : 2;
@@ -105,12 +105,6 @@ class DashboardPage extends ConsumerWidget {
                       value: stats.totalStudents.toString(),
                       icon: Icons.people_rounded,
                       animationIndex: 2,
-                    ),
-                    StatCard(
-                      label: l10n.totalRevenue,
-                      value: '\$${stats.totalRevenue.toStringAsFixed(0)}',
-                      icon: Icons.trending_up_rounded,
-                      animationIndex: 3,
                     ),
                   ],
                 );

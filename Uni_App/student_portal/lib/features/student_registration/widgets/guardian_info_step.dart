@@ -106,7 +106,7 @@ class _GuardianInfoStepState extends State<GuardianInfoStep> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) return l10n.requiredField;
-                    if (!RegExp(r'^\+?[0-9]{8,15}$').hasMatch(value)) return 'رقم الجوال غير صحيح (8 إلى 15 رقماً)';
+                    if (!RegExp(r'^\+?[0-9]{8,15}$').hasMatch(value)) return l10n.invalidMobileNumber;
                     return null;
                   },
                 ),

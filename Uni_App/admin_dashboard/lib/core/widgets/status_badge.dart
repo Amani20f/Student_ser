@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/status_helper.dart';
 
 class StatusBadge extends StatelessWidget {
   final String label;
@@ -8,7 +9,8 @@ class StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final statusColor = _getStatusColor(cs);
+    final statusColor = StatusHelper.getColor(label, cs);
+    final localizedLabel = StatusHelper.localize(context, label);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
@@ -18,32 +20,14 @@ class StatusBadge extends StatelessWidget {
         border: Border.all(color: statusColor.withAlpha(80), width: 1),
       ),
       child: Text(
-        label.toUpperCase(),
+        localizedLabel,
         style: TextStyle(
           color: statusColor,
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.5,
         ),
       ),
     );
-  }
-
-  Color _getStatusColor(ColorScheme cs) {
-    switch (label.toLowerCase()) {
-      case 'pending':
-        return cs.secondary;
-      case 'approved':
-      case 'verified':
-        return cs.primary;
-      case 'paid':
-        return Colors.teal;
-      case 'under_review':
-        return Colors.orange;
-      case 'rejected':
-        return cs.error;
-      default:
-        return cs.onSurface.withAlpha(150);
-    }
   }
 }

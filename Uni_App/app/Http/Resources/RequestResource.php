@@ -24,6 +24,7 @@ class RequestResource extends JsonResource
                 'current_level'  => $this->student->current_level ?? null,
             ],
             'request_type'    => $this->requestType->name ?? null,
+            'request_type_slug' => $this->requestType->slug ?? null,
             'description'     => $this->description,
             'attachment'      => $this->attachment,
             'status'          => $this->status instanceof \App\Enums\RequestStatusEnum ? $this->status->value : (string) $this->status,

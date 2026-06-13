@@ -20,7 +20,6 @@ class FilterBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
     return Container(
@@ -74,51 +73,60 @@ class FilterBar extends ConsumerWidget {
           ),
         );
       case FilterType.dropdown:
+        final selectedValue = currentValues[filter.id];
+        final bool isSelected = selectedValue != null && selectedValue != '';
+
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
-            color: cs.surfaceContainerHighest.withAlpha(100),
+            color: isSelected ? cs.primary.withAlpha(20) : cs.surfaceContainerHighest.withAlpha(100),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: cs.outlineVariant.withAlpha(40)),
+            border: Border.all(color: isSelected ? cs.primary.withAlpha(50) : cs.outlineVariant.withAlpha(40)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (filter.icon != null) ...[
-                Icon(filter.icon, size: 16, color: cs.onSurfaceVariant),
+                Icon(filter.icon, size: 16, color: isSelected ? cs.primary : cs.onSurfaceVariant),
                 const SizedBox(width: 8),
               ],
-              Text('${filter.label}: ',
-                  style: tt.bodySmall?.copyWith(color: cs.onSurface.withAlpha(160))),
               DropdownButtonHideUnderline(
                 child: DropdownButton<dynamic>(
-                  value: currentValues[filter.id],
+                  value: isSelected ? currentValues[filter.id] : null,
+                  hint: Text(filter.label, style: tt.bodyMedium?.copyWith(color: cs.onSurface.withAlpha(180))),
                   dropdownColor: cs.surface,
-                  style: tt.bodyMedium?.copyWith(color: cs.onSurface),
+                  style: tt.bodyMedium?.copyWith(color: isSelected ? cs.primary : cs.onSurface),
                   items: [
-                    const DropdownMenuItem(value: null, child: Text('All')),
+                    DropdownMenuItem(value: '___all___', child: Text(Localizations.localeOf(context).languageCode == 'ar' ? 'الكل' : 'All')),
                     ...(filter.options ?? []).map((o) => DropdownMenuItem(
                           value: o.value,
                           child: Text(o.label),
                         )),
                   ],
-                  onChanged: (v) => onFilterChanged(filter.id, v),
+                  onChanged: (v) {
+                    onFilterChanged(filter.id, v);
+                  },
                 ),
               ),
             ],
           ),
         );
       case FilterType.dateRange:
+        final selectedValue = currentValues[filter.id];
+        final bool isSelected = selectedValue != null && selectedValue != '';
+        
         return OutlinedButton.icon(
           onPressed: () => _selectDateRange(context, filter.id),
-          icon: const Icon(Icons.date_range_rounded, size: 18),
+          icon: Icon(Icons.date_range_rounded, size: 18, color: isSelected ? cs.primary : cs.onSurfaceVariant),
           label: Text(
-            currentValues[filter.id] ?? filter.label,
-            style: tt.bodySmall,
+            isSelected ? selectedValue : (Localizations.localeOf(context).languageCode == 'ar' ? 'الفترة الزمنية' : 'Date Range'),
+            style: tt.bodySmall?.copyWith(color: isSelected ? cs.primary : cs.onSurface),
           ),
           style: OutlinedButton.styleFrom(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            side: BorderSide(color: isSelected ? cs.primary.withAlpha(100) : cs.outlineVariant.withAlpha(40)),
+            backgroundColor: isSelected ? cs.primary.withAlpha(10) : null,
           ),
         );
     }

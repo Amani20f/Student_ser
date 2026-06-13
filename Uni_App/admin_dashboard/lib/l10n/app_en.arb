@@ -1,11 +1,9 @@
 {
   "@@locale": "en",
-
   "appTitle": "Al-Arab University",
   "dashboardLabel": "Dashboard",
   "uniAdmin": "Uni Admin",
   "dashboardSubtitle": "Dashboard",
-
   "loginTitle": "Al-Arab University",
   "loginSubtitle": "University Service Ecosystem",
   "emailLabel": "Email",
@@ -13,27 +11,28 @@
   "signIn": "Sign In",
   "emailRequired": "Email is required",
   "passwordRequired": "Password is required",
-
   "overview": "Overview",
   "pendingPayments": "Pending Payments",
   "pendingRequests": "Pending Requests",
   "totalStudents": "Total Students",
   "totalRevenue": "Total Revenue",
-
   "welcomeTitle": "Welcome, {name}!",
   "@welcomeTitle": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "loggedInAs": "You are logged in as {role}.",
   "@loggedInAs": {
     "placeholders": {
-      "role": { "type": "String" }
+      "role": {
+        "type": "String"
+      }
     }
   },
   "sidebarNavHelp": "Use the sidebar to navigate to your assigned features.",
-
   "serviceRequests": "Service Requests",
   "paymentVerification": "Payment Verification",
   "gradeManagement": "Grade Management",
@@ -43,19 +42,16 @@
   "payments": "Payments",
   "grades": "Grades",
   "logout": "Logout",
-
   "failedToLoadStats": "Failed to load stats",
   "failedToLoadRequests": "Failed to load requests",
   "failedToLoadPayments": "Failed to load payments",
   "failedToLoadGrades": "Failed to load grades",
   "failedToLoadLogs": "Failed to load logs",
   "retry": "Retry",
-
   "noPendingRequests": "No pending requests",
   "noPendingPayments": "No pending payments",
   "noGradesFound": "No grades found for this semester",
   "noLogsFound": "No logs found",
-
   "studentColumn": "Student",
   "amountColumn": "Amount",
   "semesterColumn": "Semester",
@@ -76,7 +72,6 @@
   "oldValuesColumn": "Old Values",
   "newValuesColumn": "New Values",
   "dateColumn": "Date",
-
   "viewAttachment": "View Attachment",
   "hideActions": "Hide Actions",
   "takeAction": "Take Action",
@@ -94,13 +89,11 @@
   "rejectPayment": "Reject Payment",
   "reasonForRejection": "Reason for rejection",
   "enterReason": "Enter reason...",
-
   "requestApproved": "Request approved",
   "requestRejected": "Request rejected",
   "paymentVerifiedSuccess": "Payment verified successfully",
   "paymentRejected": "Payment rejected",
   "gradeUpdatedSuccess": "Grade updated successfully",
-
   "semester": "Semester",
   "selectSemester": "Select semester",
   "selectSemesterToView": "Select a semester to view grades",
@@ -108,39 +101,38 @@
   "editGradeTitle": "Edit Grade — {course}",
   "@editGradeTitle": {
     "placeholders": {
-      "course": { "type": "String" }
+      "course": {
+        "type": "String"
+      }
     }
   },
-
   "filterByAction": "Filter by action:",
   "allActions": "All actions",
   "entriesCount": "{count} entries",
   "@entriesCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "notificationsTitle": "Notifications",
   "notificationsNotAvailable": "Staff notifications are not yet available.",
   "notificationsFuture": "This page is ready for future backend integration.\nOnce the staff notification endpoint is implemented, notifications will appear here.",
-
   "error": "Error: {message}",
   "@error": {
     "placeholders": {
-      "message": { "type": "String" }
+      "message": {
+        "type": "String"
+      }
     }
   },
-
   "notApplicable": "N/A",
   "system": "System",
   "unknownStudent": "Unknown Student",
   "general": "General",
-
   "toggleTheme": "Toggle Theme",
-
   "purposeColumn": "Purpose",
-
   "timePeriod": "Time Period",
   "allTime": "All Time",
   "last24h": "Last 24 Hours",
@@ -149,14 +141,13 @@
   "lastMonth": "Last Month",
   "lastYear": "Last Year",
   "olderThanYear": "Older than a year",
-
   "studentCard": "Student Card No.",
   "courseCode": "Course Code",
   "level": "Level",
   "searchGrades": "Search Grades",
   "applyFilters": "Apply Filters",
   "clearFilters": "Clear Filters",
-  "selectFiltersToSearch": "Select filters and press Search to view results",
+  "selectFiltersToSearch": "No data is currently displayed.\nUse the filters above to search and view results.",
   "userManagement": "User Management",
   "language": "Language",
   "manageUsersSubtitle": "Manage all system users — create staff accounts, update passwords, or remove users.",
@@ -170,14 +161,18 @@
   "changePasswordFor": "Change Password: {name}",
   "@changePasswordFor": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "deleteAccount": "Delete Account",
   "confirmDeleteAccount": "Are you sure you want to delete {name}? This action cannot be undone.",
   "@confirmDeleteAccount": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "passwordUpdatedSuccess": "Password updated successfully",
@@ -201,5 +196,198 @@
   "confirmRejectAppeal": "Are you sure you want to reject this appeal?",
   "confirmApprovePayment": "Are you sure you want to verify this payment?",
   "confirmRejectPayment": "Are you sure you want to reject this payment receipt?",
-  "verificationNotes": "Verification Notes"
+  "verificationNotes": "Verification Notes",
+  "programsLabel": "Programs",
+  "studyPlansLabel": "Study Plans",
+  "serviceManagementLabel": "Service Management",
+  "programsManagement": "Programs Management",
+  "studyPlanManagement": "Study Plan Management",
+  "newProgram": "New Program",
+  "editProgram": "Edit Program",
+  "programName": "Name",
+  "programCode": "Code",
+  "programFees": "Fees",
+  "programDuration": "Duration (Years)",
+  "degreeType": "Degree Type",
+  "bachelor": "Bachelor",
+  "master": "Master",
+  "diploma": "Diploma",
+  "phd": "PhD",
+  "searchPrograms": "Search Programs",
+  "academicDetails": "Academic Details",
+  "studyPlanDetails": "Study Plan Details",
+  "prerequisites": "Prerequisites",
+  "collegesBreadcrumb": "Colleges",
+  "programsBreadcrumb": "Programs",
+  "studyPlanBreadcrumb": "Study Plan",
+  "pleaseSelectCollege": "Please select a college",
+  "pleaseSelectProgram": "Please select a program",
+  "noCoursesCurrently": "No courses currently",
+  "selectedCollegeText": "Selected College:",
+  "courseName": "Course Name",
+  "creditHours": "Credit Hours",
+  "semesterLevel": "Semester Level",
+  "selectCollegeTitle": "Select College",
+  "selectProgramTitle": "Select Program",
+  "studyPlanTitle": "Study Plan",
+  "years": "Years",
+  "programCodeLabel": "Program Code",
+  "studyDurationLabel": "Duration",
+  "statusPending": "Pending",
+  "statusRatified": "Ratified",
+  "statusPendingPayment": "Pending Payment",
+  "statusPaid": "Paid",
+  "statusUnderReview": "Under Review",
+  "statusApproved": "Approved",
+  "statusRejected": "Rejected",
+  "statusVerified": "Verified",
+  "statusSubmitted": "Submitted / Ready",
+  "statusCompleted": "Completed",
+  "statusActive": "Active",
+  "statusInactive": "Inactive",
+  "statusUnknown": "Unknown",
+  "searchStudentPlaceholder": "Search by Student Name, ID, or Reference",
+  "requestTypeLabel": "Request Type",
+  "absenceExcuse": "Absence Excuse",
+  "studyPostponement": "Study Postponement",
+  "reEnrollment": "Re-enrollment",
+  "gradeAppeal": "Grade Appeal",
+  "specializationLabel": "Specialization",
+  "computerScience": "Computer Science",
+  "electricalEngineering": "Electrical Engineering",
+  "businessAdministration": "Business Administration",
+  "academicLevelLabel": "Academic Level",
+  "levelNumber": "Level {num}",
+  "@levelNumber": {
+    "placeholders": {
+      "num": {
+        "type": "int"
+      }
+    }
+  },
+  "advancedFilterTooltip": "Advanced Filter",
+  "totalRequests": "Total Requests: {count}",
+  "@totalRequests": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "failedToLoadRequestsExt": "Failed to load requests: {error}",
+  "@failedToLoadRequestsExt": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "roleAdmin": "Admin",
+  "roleStaffAffairs": "Staff Affairs",
+  "roleAccountant": "Accountant",
+  "roleStudent": "Student",
+  "searchNameCardPlaceholder": "Search Name/Card",
+  "courseIdPlaceholder": "Course ID",
+  "passed": "Passed",
+  "failed": "Failed",
+  "studySchedules": "Study Schedules",
+  "studySchedulesManagement": "Study Schedules Management",
+  "academicManagement": "Academic Management",
+  "newSchedule": "New Schedule",
+  "editSchedule": "Edit Schedule",
+  "deleteSchedule": "Delete Schedule",
+  "confirmDeleteSchedule": "Are you sure you want to delete this schedule?",
+  "scheduleDeleted": "Schedule deleted successfully",
+  "scheduleCreated": "Schedule created successfully",
+  "scheduleUpdated": "Schedule updated successfully",
+  "selectFile": "Select File",
+  "noFileSelected": "No file selected",
+  "noSchedulesFound": "No study schedules found",
+  "previewSchedule": "Preview",
+  "downloadSchedule": "Download",
+  "academicYear": "Academic Year",
+  "fileName": "File Name",
+  "failedToLoadSchedules": "Failed to load schedules",
+  "duplicateScheduleError": "A schedule for this Program, Semester, and Level already exists.",
+  "requiredField": "This field is required",
+  "notes": "Notes",
+  "uploadNewFile": "Upload New File (leave empty to keep current)",
+  "actions": "Actions",
+  "viewDetails": "View Details",
+  "noStudySchedules": "No study schedules found",
+  "viewSchedule": "View Schedule",
+  "allPrograms": "All Programs",
+  "allSemesters": "All Semesters",
+  "allLevels": "All Levels",
+  "delete": "Delete",
+  "addStudySchedule": "Add Study Schedule",
+  "preview": "Preview",
+  "failedToLoadImage": "Failed to load image",
+  "semestersManagement": "Semesters Management",
+  "addSemester": "Add Semester",
+  "noSemestersAdded": "No semesters added yet.",
+  "semesterAndYear": "Semester and Year",
+  "status": "Status",
+  "startDate": "Start Date",
+  "endDate": "End Date",
+  "examsStart": "Exams Start",
+  "active": "Active",
+  "inactive": "Inactive",
+  "edit": "Edit",
+  "confirmDelete": "Confirm Delete",
+  "confirmDeleteSemester": "Are you sure you want to delete {name}?\nNote: You cannot delete a semester if it has registered grades or payments.",
+  "@confirmDeleteSemester": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteSuccess": "Deleted successfully",
+  "deleteFailed": "Delete failed",
+  "addNewSemester": "Add New Semester",
+  "editSemester": "Edit Semester",
+  "startYear": "Start Year",
+  "endYear": "End Year",
+  "setAsActiveSemester": "Set as active (current) semester",
+  "activateSemesterWarning": "Activating this semester will automatically deactivate all others.",
+  "examsStartDate": "Exams Start Date",
+  "requireAllDates": "Please select all dates",
+  "addSuccess": "Added successfully",
+  "editSuccess": "Edited successfully",
+  "saveChanges": "Save Changes",
+  "selectDate": "Select Date",
+  "firstTerm": "First Term",
+  "secondTerm": "Second Term",
+  "notificationSentSuccess": "Notification sent successfully!",
+  "receivedNotifications": "Received Notifications",
+  "sendNotification": "Send Notification",
+  "noNotificationsYet": "No notifications yet.",
+  "markAsRead": "Mark as read",
+  "allUsers": "All (Staff & Students)",
+  "allStaff": "All Staff",
+  "roleGradeControl": "Grade Control",
+  "broadcastNewNotification": "Broadcast New Notification",
+  "titleLabel": "Title",
+  "enterNotificationTitle": "Enter notification title",
+  "messageLabel": "Message",
+  "enterNotificationMessage": "Enter notification message content",
+  "recipientRole": "Recipient Role",
+  "unauthorizedSendNotifications": "Unauthorized to send notifications.",
+  "errorSendingNotification": "Error sending notification: {error}",
+  "@errorSendingNotification": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorMarkingAsRead": "Error marking as read: {error}",
+  "@errorMarkingAsRead": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -20,6 +20,14 @@ class RequestTypeController extends Controller
     }
 
     /**
+     * List only active request types.
+     */
+    public function activeTypes(): JsonResponse
+    {
+        return response()->json(['data' => RequestType::where('is_active', true)->get()]);
+    }
+
+    /**
      * Create a new request type.
      */
     public function store(CreateRequestTypeRequest $request): JsonResponse

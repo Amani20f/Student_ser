@@ -6,6 +6,7 @@ import 'package:university_app/features/student_registration/cubit/registration_
 import 'package:university_app/features/student_registration/models/registration_data.dart';
 import 'package:university_app/l10n/app_localizations.dart';
 import 'package:university_app/features/student_registration/widgets/step_container.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 
 class PersonalInfoStep extends StatefulWidget {
@@ -92,8 +93,8 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                   onChanged: (value) =>
                       cubit.updateData(state.data.copyWith(fullNameAr: value)),
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty) return 'مطلوب';
-                    if (!RegExp(r'^[\u0600-\u06FF\s]+$').hasMatch(value)) return 'يجب أن يحتوي على أحرف عربية فقط';
+                    if (value == null || value.trim().isEmpty) return l10n.requiredField;
+                    if (!RegExp(r'^[\u0600-\u06FF\s]+$').hasMatch(value)) return l10n.arabicLettersOnly;
                     return null;
                   },
                 ),
@@ -105,8 +106,8 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                   onChanged: (value) =>
                       cubit.updateData(state.data.copyWith(fullNameEn: value)),
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty) return 'مطلوب';
-                    if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) return 'يجب أن يحتوي على أحرف إنجليزية فقط';
+                    if (value == null || value.trim().isEmpty) return l10n.requiredField;
+                    if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) return l10n.englishLettersOnly;
                     return null;
                   },
                 ),
@@ -128,7 +129,7 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                   onChanged: (value) =>
                       cubit.updateData(state.data.copyWith(gender: value)),
                   validator: (value) {
-                    if (value == null) return 'مطلوب';
+                    if (value == null) return l10n.requiredField;
                     return null;
                   },
                 ),
@@ -145,7 +146,7 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                   onChanged: (value) =>
                       cubit.updateData(state.data.copyWith(bloodType: value)),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'مطلوب';
+                    if (value == null || value.isEmpty) return l10n.requiredField;
                     return null;
                   },
                 ),
@@ -157,7 +158,7 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                   onChanged: (value) =>
                       cubit.updateData(state.data.copyWith(nationality: value)),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'مطلوب';
+                    if (value == null || value.isEmpty) return l10n.requiredField;
                     return null;
                   },
                 ),
@@ -187,7 +188,7 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                     state.data.copyWith(maritalStatus: value),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'مطلوب';
+                    if (value == null || value.isEmpty) return l10n.requiredField;
                     return null;
                   },
                 ),
@@ -200,7 +201,7 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                       prefixIcon: Icons.calendar_month_rounded,
                       controller: _dobController,
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'مطلوب';
+                        if (value == null || value.isEmpty) return l10n.requiredField;
                         return null;
                       },
                     ),
@@ -214,7 +215,7 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                   onChanged: (value) =>
                       cubit.updateData(state.data.copyWith(governorate: value)),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'مطلوب';
+                    if (value == null || value.isEmpty) return l10n.requiredField;
                     return null;
                   },
                 ),
@@ -226,7 +227,7 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                   onChanged: (value) =>
                       cubit.updateData(state.data.copyWith(district: value)),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'مطلوب';
+                    if (value == null || value.isEmpty) return l10n.requiredField;
                     return null;
                   },
                 ),
@@ -235,13 +236,19 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: () {
+                    onPressed: () async {
                       if (state.data.certificatePath == null) {
-                        cubit.updateData(
-                          state.data.copyWith(
-                            certificatePath: 'uploaded_doc.pdf',
-                          ),
+                        final result = await FilePicker.platform.pickFiles(
+                          type: FileType.custom,
+                          allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
                         );
+                        if (result != null && result.files.single.path != null) {
+                          cubit.updateData(
+                            state.data.copyWith(
+                              certificatePath: result.files.single.path,
+                            ),
+                          );
+                        }
                       } else {
                         cubit.updateData(
                           state.data.copyWith(certificatePath: null),
@@ -272,13 +279,19 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: () {
+                    onPressed: () async {
                       if (state.data.profilePicturePath == null) {
-                        cubit.updateData(
-                          state.data.copyWith(
-                            profilePicturePath: 'uploaded_photo.jpg',
-                          ),
+                        final result = await FilePicker.platform.pickFiles(
+                          type: FileType.custom,
+                          allowedExtensions: ['jpg', 'jpeg', 'png'],
                         );
+                        if (result != null && result.files.single.path != null) {
+                          cubit.updateData(
+                            state.data.copyWith(
+                              profilePicturePath: result.files.single.path,
+                            ),
+                          );
+                        }
                       } else {
                         cubit.updateData(
                           state.data.copyWith(profilePicturePath: null),

@@ -38,7 +38,7 @@ class RequestRepository implements RequestRepositoryInterface
 
     public function getPendingRequests(): Collection
     {
-        return Request::where('status', RequestStatusEnum::PENDING)
+        return Request::whereIn('status', [RequestStatusEnum::PENDING, RequestStatusEnum::RATIFIED])
             ->with(['student.user', 'requestType'])
             ->orderBy('created_at', 'asc')
             ->get();

@@ -18,9 +18,10 @@ class UpdateUserRequest extends FormRequest
         $userId = $this->route('user')?->id ?? $this->route('user');
 
         return [
-            'name'  => 'sometimes|string|max:255',
-            'email' => ['sometimes', 'email', Rule::unique('users', 'email')->ignore($userId)],
-            'role'  => ['sometimes', Rule::in(['admin', 'student_affairs', 'accountant', 'grade_control'])],
+            'name'     => 'sometimes|string|max:255',
+            'email'    => ['sometimes', 'email', Rule::unique('users', 'email')->ignore($userId)],
+            'password' => ['sometimes', 'nullable', \Illuminate\Validation\Rules\Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
+            'role'     => ['sometimes', Rule::in(['admin', 'student_affairs', 'accountant', 'grade_control'])],
         ];
     }
 }

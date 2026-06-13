@@ -201,6 +201,18 @@
   "submitGrievance": "إرسال التظلم",
   "pleaseFillRequiredFields": "يرجى تعبئة جميع الحقول المطلوبة",
   "success": "تم بنجاح",
-  "successMessage": "طلبك قيد المراجعة وسوف ياتيك الرد عبر البريد الالكتروني.",
-  "selectDate": "اختر التاريخ"
+  "successMessage": "طلبك قيد المراجعة. ستتلقى رداً عبر البريد الإلكتروني.",
+  "selectDate": "اختر التاريخ",
+  "viewSchedule": "عرض الجدول",
+  "noStudySchedules": "لا توجد جداول دراسية متاحة لمستواك وتخصصك الحالي.",
+  "notes": "ملاحظات",
+  "pleaseSelectMajor": "يرجى اختيار التخصص (الرغبة الأكاديمية الأولى)",
+  "idDocumentLabel": "إرفاق صورة الهوية الوطنية / الإقامة / الجواز",
+  "arabicLettersOnly": "يجب أن يحتوي على أحرف عربية فقط",
+  "englishLettersOnly": "يجب أن يحتوي على أحرف إنجليزية فقط",
+  "minLengthFive": "يجب ألا يقل عن 5 خانات",
+  "invalidMobileNumber": "رقم الجوال غير صحيح (8 إلى 15 رقماً)",
+  "useThisNumberForPayment": "يمكنك استخدام هذا الرقم في نموذج سداد الرسوم الخاصة بهذا الطلب.",
+  "passwordMinLength": "يجب أن لا تقل كلمة المرور عن 8 خانات",
+  "passwordsDoNotMatch": "كلمة المرور غير متطابقة"
 }

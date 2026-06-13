@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:university_app/core/network/api_client.dart';
+import 'package:university_app/core/data/academic_repository.dart';
 import 'package:university_app/core/widgets/modern_dropdown_field.dart';
 
 import 'package:university_app/features/student_registration/cubit/registration_cubit.dart';
@@ -7,9 +10,48 @@ import 'package:university_app/features/student_registration/models/registration
 import 'package:university_app/l10n/app_localizations.dart';
 import 'package:university_app/features/student_registration/widgets/step_container.dart';
 
-class AcademicDesiresStep extends StatelessWidget {
+class AcademicDesiresStep extends StatefulWidget {
   final GlobalKey<FormState> formKey;
   const AcademicDesiresStep({required this.formKey, super.key});
+
+  @override
+  State<AcademicDesiresStep> createState() => _AcademicDesiresStepState();
+}
+
+class _AcademicDesiresStepState extends State<AcademicDesiresStep> {
+  List<CollegeModel> _colleges = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAcademicData();
+  }
+
+  Future<void> _loadAcademicData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final apiClient = ApiClient(prefs);
+      final repository = AcademicRepository(apiClient);
+      final colleges = await repository.getColleges();
+      
+      if (mounted) {
+        setState(() {
+          _colleges = colleges;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load academic data: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,21 +65,26 @@ class AcademicDesiresStep extends StatelessWidget {
         return StepContainer(
           title: l10n.stepDesires,
           icon: Icons.star_rounded,
-          child: Form(
-            key: formKey,
-            child: Column(
-              children: [
-                for (int i = 0; i < 3; i++)
-                  _buildDesireItem(
-                    context,
-                    cubit,
-                    state.data.academicDesires[i],
-                    i,
-                    l10n,
+          child: _isLoading 
+              ? const Center(child: Padding(
+                  padding: EdgeInsets.all(32.0),
+                  child: CircularProgressIndicator(),
+                ))
+              : Form(
+                  key: widget.formKey,
+                  child: Column(
+                    children: [
+                      for (int i = 0; i < 3; i++)
+                        _buildDesireItem(
+                          context,
+                          cubit,
+                          state.data.academicDesires[i],
+                          i,
+                          l10n,
+                        ),
+                    ],
                   ),
-              ],
-            ),
-          ),
+                ),
         );
       },
     );
@@ -66,6 +113,19 @@ class AcademicDesiresStep extends StatelessWidget {
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Filter available programs based on selected college
+    List<ProgramModel> availablePrograms = [];
+    if (desire.college != null) {
+      final college = _colleges.firstWhere(
+        (c) => c.id == desire.college!.id, 
+        orElse: () => _colleges.first,
+      );
+      // Flatten all programs across departments
+      for (var dept in college.departments) {
+        availablePrograms.addAll(dept.programs);
+      }
+    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -109,52 +169,47 @@ class AcademicDesiresStep extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          ModernDropdownField<String>(
+          ModernDropdownField<CollegeModel>(
             label: l10n.college,
             prefixIcon: Icons.apartment_rounded,
             value: desire.college,
-            items:
-                <String>[
-                      l10n.collegeIT,
-                      l10n.collegeEngineering,
-                      l10n.collegeBusiness,
-                    ]
-                    .map(
-                      (e) => DropdownMenuItem<String>(value: e, child: Text(e)),
-                    )
-                    .toList(),
+            items: _colleges
+                .map(
+                  (c) => DropdownMenuItem<CollegeModel>(
+                    value: c,
+                    child: Text(c.name),
+                  ),
+                )
+                .toList(),
             onChanged: (value) {
               final newDesires = List<AcademicDesire>.from(
                 cubit.state.data.academicDesires,
               );
-              newDesires[index] = desire.copyWith(college: value);
+              // Reset major when college changes
+              newDesires[index] = desire.copyWith(college: value, major: null);
               cubit.updateData(
                 cubit.state.data.copyWith(academicDesires: newDesires),
               );
             },
             validator: (value) {
-              if (value == null || value.isEmpty) return l10n.requiredField;
+              if (value == null) return l10n.requiredField;
               return null;
             },
           ),
           const SizedBox(height: 12),
           const SizedBox(height: 12),
-          ModernDropdownField<String>(
+          ModernDropdownField<ProgramModel>(
             label: l10n.majorValue,
             prefixIcon: Icons.school_rounded,
             value: desire.major,
-            items:
-                <String>[
-                      l10n.majorCS,
-                      l10n.majorIT,
-                      l10n.majorSE,
-                      l10n.majorCE,
-                      l10n.majorAccounting,
-                    ]
-                    .map(
-                      (e) => DropdownMenuItem<String>(value: e, child: Text(e)),
-                    )
-                    .toList(),
+            items: availablePrograms
+                .map(
+                  (p) => DropdownMenuItem<ProgramModel>(
+                    value: p,
+                    child: Text(p.name),
+                  ),
+                )
+                .toList(),
             onChanged: (value) {
               final newDesires = List<AcademicDesire>.from(
                 cubit.state.data.academicDesires,
@@ -165,7 +220,7 @@ class AcademicDesiresStep extends StatelessWidget {
               );
             },
             validator: (value) {
-              if (value == null || value.isEmpty) return l10n.requiredField;
+              if (value == null) return l10n.requiredField;
               return null;
             },
           ),

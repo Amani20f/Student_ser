@@ -1,11 +1,9 @@
 {
   "@@locale": "ar",
-
   "appTitle": "جامعة العرب",
   "dashboardLabel": "لوحة التحكم",
   "uniAdmin": "إدارة الجامعة",
   "dashboardSubtitle": "لوحة التحكم",
-
   "loginTitle": "جامعة العرب",
   "loginSubtitle": "نظام الخدمات الجامعية",
   "emailLabel": "البريد الإلكتروني",
@@ -13,27 +11,28 @@
   "signIn": "تسجيل الدخول",
   "emailRequired": "البريد الإلكتروني مطلوب",
   "passwordRequired": "كلمة المرور مطلوبة",
-
   "overview": "نظرة عامة",
   "pendingPayments": "دفعات قيد الانتظار",
   "pendingRequests": "طلبات قيد الانتظار",
   "totalStudents": "إجمالي الطلاب",
   "totalRevenue": "إجمالي الإيرادات",
-
   "welcomeTitle": "مرحباً، {name}!",
   "@welcomeTitle": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "loggedInAs": "أنت مسجل الدخول كـ {role}.",
   "@loggedInAs": {
     "placeholders": {
-      "role": { "type": "String" }
+      "role": {
+        "type": "String"
+      }
     }
   },
   "sidebarNavHelp": "استخدم الشريط الجانبي للتنقل إلى الأقسام المتاحة لك.",
-
   "serviceRequests": "طلبات الخدمة",
   "paymentVerification": "التحقق من المدفوعات",
   "gradeManagement": "إدارة الدرجات",
@@ -43,19 +42,16 @@
   "payments": "المدفوعات",
   "grades": "الدرجات",
   "logout": "تسجيل الخروج",
-
   "failedToLoadStats": "فشل تحميل الإحصائيات",
   "failedToLoadRequests": "فشل تحميل الطلبات",
   "failedToLoadPayments": "فشل تحميل المدفوعات",
   "failedToLoadGrades": "فشل تحميل الدرجات",
   "failedToLoadLogs": "فشل تحميل السجلات",
   "retry": "إعادة المحاولة",
-
   "noPendingRequests": "لا توجد طلبات معلقة",
   "noPendingPayments": "لا توجد دفعات معلقة",
   "noGradesFound": "لا توجد درجات لهذا الفصل",
   "noLogsFound": "لا توجد سجلات",
-
   "studentColumn": "الطالب",
   "amountColumn": "المبلغ",
   "semesterColumn": "الفصل",
@@ -77,7 +73,6 @@
   "newValuesColumn": "القيم الجديدة",
   "dateColumn": "التاريخ",
   "purposeColumn": "الغرض",
-
   "viewAttachment": "عرض المرفق",
   "hideActions": "إخفاء الإجراءات",
   "takeAction": "اتخاذ إجراء",
@@ -95,13 +90,11 @@
   "rejectPayment": "رفض الدفعة",
   "reasonForRejection": "سبب الرفض",
   "enterReason": "أدخل السبب...",
-
   "requestApproved": "تمت الموافقة على الطلب",
   "requestRejected": "تم رفض الطلب",
   "paymentVerifiedSuccess": "تم التحقق من الدفعة بنجاح",
   "paymentRejected": "تم رفض الدفعة",
   "gradeUpdatedSuccess": "تم تحديث الدرجة بنجاح",
-
   "semester": "الفصل الدراسي",
   "selectSemester": "اختر الفصل",
   "selectSemesterToView": "اختر فصلاً لعرض الدرجات",
@@ -109,36 +102,37 @@
   "editGradeTitle": "تعديل الدرجة — {course}",
   "@editGradeTitle": {
     "placeholders": {
-      "course": { "type": "String" }
+      "course": {
+        "type": "String"
+      }
     }
   },
-
   "filterByAction": "تصفية حسب الإجراء:",
   "allActions": "جميع الإجراءات",
   "entriesCount": "{count} سجل",
   "@entriesCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "notificationsTitle": "الإشعارات",
   "notificationsNotAvailable": "إشعارات الموظفين غير متاحة حالياً.",
   "notificationsFuture": "هذه الصفحة جاهزة للتكامل المستقبلي مع الخادم.",
-
   "error": "خطأ: {message}",
   "@error": {
     "placeholders": {
-      "message": { "type": "String" }
+      "message": {
+        "type": "String"
+      }
     }
   },
-
   "notApplicable": "غير متاح",
   "system": "النظام",
   "unknownStudent": "طالب غير معروف",
   "general": "عام",
   "toggleTheme": "تبديل المظهر",
-
   "timePeriod": "الفترة الزمنية",
   "allTime": "كل الأوقات",
   "last24h": "آخر 24 ساعة",
@@ -148,12 +142,12 @@
   "lastYear": "العام الماضي",
   "olderThanYear": "أقدم من عام",
   "studentCard": "رقم بطاقة الطالب",
-  "courseCode": "رمز المقرر",
+  "courseCode": "رمز المادة",
   "level": "المستوى",
   "searchGrades": "بحث عن الدرجات",
   "applyFilters": "تطبيق الفلاتر",
   "clearFilters": "مسح الفلاتر",
-  "selectFiltersToSearch": "اختر فلاتر البحث لعرض النتائج",
+  "selectFiltersToSearch": "لا توجد بيانات معروضة حالياً.\nاستخدم الفلاتر أعلاه للبحث وعرض النتائج.",
   "userManagement": "إدارة المستخدمين",
   "language": "اللغة",
   "manageUsersSubtitle": "إدارة جميع مستخدمي النظام - إنشاء حسابات الموظفين، تحديث كلمات المرور، أو حذف المستخدمين.",
@@ -167,18 +161,233 @@
   "changePasswordFor": "تغيير كلمة المرور: {name}",
   "@changePasswordFor": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "deleteAccount": "حذف الحساب",
   "confirmDeleteAccount": "هل أنت متأكد أنك تريد حذف {name}؟ لا يمكن التراجع عن هذا الإجراء.",
   "@confirmDeleteAccount": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "passwordUpdatedSuccess": "تم تحديث كلمة المرور بنجاح",
   "accountCreatedSuccess": "تم إنشاء الحساب بنجاح",
   "deleteUser": "حذف المستخدم",
-  "newPassword": "كلمة المرور الجديدة"
+  "newPassword": "كلمة المرور الجديدة",
+  "gradeAppeals": "تظلمات الدرجات",
+  "appealDetails": "تفاصيل التظلم",
+  "underReviewAppeals": "التظلمات قيد المراجعة",
+  "studentNote": "ملاحظة الطالب",
+  "committeeReport": "تقرير اللجنة",
+  "beforeGrades": "قبل (للقراءة فقط)",
+  "afterGrades": "بعد (مقترح)",
+  "approveAppeal": "قبول التظلم",
+  "rejectAppeal": "رفض التظلم",
+  "appealApproved": "تم قبول التظلم بنجاح",
+  "appealRejected": "تم رفض التظلم بنجاح",
+  "failedToLoadAppeals": "فشل في تحميل التظلمات",
+  "noAppealsUnderReview": "لا توجد تظلمات قيد المراجعة حالياً",
+  "confirmApproveAppeal": "هل أنت متأكد من الموافقة على هذا التظلم وتحديث درجات الطالب؟",
+  "confirmRejectAppeal": "هل أنت متأكد من رفض هذا التظلم؟",
+  "confirmApprovePayment": "هل أنت متأكد من توثيق هذه الدفعة؟",
+  "confirmRejectPayment": "هل أنت متأكد من رفض إيصال الدفع هذا؟",
+  "verificationNotes": "ملاحظات التوثيق",
+  "programsLabel": "البرامج",
+  "studyPlansLabel": "الخطط الدراسية",
+  "serviceManagementLabel": "إدارة الخدمات",
+  "programsManagement": "إدارة البرامج",
+  "studyPlanManagement": "إدارة الخطط الدراسية",
+  "newProgram": "برنامج جديد",
+  "editProgram": "تعديل البرنامج",
+  "programName": "الاسم",
+  "programCode": "الرمز",
+  "programFees": "الرسوم",
+  "programDuration": "المدة (سنوات)",
+  "degreeType": "الدرجة العلمية",
+  "bachelor": "بكالوريوس",
+  "master": "ماجستير",
+  "diploma": "دبلوم",
+  "phd": "دكتوراه",
+  "searchPrograms": "البحث عن تخصص",
+  "academicDetails": "التفاصيل الأكاديمية",
+  "studyPlanDetails": "تفاصيل الخطة الدراسية",
+  "prerequisites": "المتطلبات السابقة",
+  "collegesBreadcrumb": "الكليات",
+  "programsBreadcrumb": "التخصصات",
+  "studyPlanBreadcrumb": "الخطة الدراسية",
+  "pleaseSelectCollege": "الرجاء اختيار كلية",
+  "pleaseSelectProgram": "الرجاء اختيار تخصص",
+  "noCoursesCurrently": "لا توجد مواد حالياً",
+  "selectedCollegeText": "الكلية المختارة:",
+  "courseName": "اسم المادة",
+  "creditHours": "عدد الساعات",
+  "semesterLevel": "المستوى الدراسي",
+  "selectCollegeTitle": "اختيار الكلية",
+  "selectProgramTitle": "اختيار التخصص",
+  "studyPlanTitle": "الخطة الدراسية",
+  "years": "سنوات",
+  "programCodeLabel": "رمز التخصص",
+  "studyDurationLabel": "مدة الدراسة",
+  "statusPending": "قيد الانتظار",
+  "statusRatified": "مصادق عليه",
+  "statusPendingPayment": "بانتظار السداد",
+  "statusPaid": "تم السداد",
+  "statusUnderReview": "قيد المراجعة",
+  "statusApproved": "مقبول",
+  "statusRejected": "مرفوض",
+  "statusVerified": "تم التأكيد",
+  "statusSubmitted": "تم التقديم",
+  "statusCompleted": "مكتمل / مقبول",
+  "statusActive": "نشط",
+  "statusInactive": "غير نشط",
+  "statusUnknown": "غير معروف",
+  "searchStudentPlaceholder": "البحث باسم الطالب أو الرقم الجامعي أو الرقم المرجعي",
+  "requestTypeLabel": "نوع الطلب",
+  "absenceExcuse": "عذر غياب",
+  "studyPostponement": "تأجيل دراسة",
+  "reEnrollment": "إعادة قيد",
+  "gradeAppeal": "تظلم درجات",
+  "specializationLabel": "التخصص",
+  "computerScience": "علوم الحاسب",
+  "electricalEngineering": "هندسة كهربائية",
+  "businessAdministration": "إدارة أعمال",
+  "academicLevelLabel": "المستوى الدراسي",
+  "levelNumber": "المستوى {num}",
+  "@levelNumber": {
+    "placeholders": {
+      "num": {
+        "type": "int"
+      }
+    }
+  },
+  "advancedFilterTooltip": "تصفية متقدمة",
+  "totalRequests": "إجمالي الطلبات: {count}",
+  "@totalRequests": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "failedToLoadRequestsExt": "فشل تحميل الطلبات: {error}",
+  "@failedToLoadRequestsExt": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "roleAdmin": "مشرف",
+  "roleStaffAffairs": "شؤون الموظفين",
+  "roleAccountant": "محاسب",
+  "roleStudent": "طالب",
+  "searchNameCardPlaceholder": "البحث بالاسم/البطاقة",
+  "courseIdPlaceholder": "رمز المقرر",
+  "passed": "ناجح",
+  "failed": "راسب",
+  "studySchedules": "الجداول الدراسية",
+  "studySchedulesManagement": "إدارة الجداول الدراسية",
+  "academicManagement": "الإدارة الأكاديمية",
+  "newSchedule": "جدول جديد",
+  "editSchedule": "تعديل الجدول",
+  "deleteSchedule": "حذف الجدول",
+  "confirmDeleteSchedule": "هل أنت متأكد من حذف هذا الجدول؟",
+  "scheduleDeleted": "تم حذف الجدول بنجاح",
+  "scheduleCreated": "تم إنشاء الجدول بنجاح",
+  "scheduleUpdated": "تم تحديث الجدول بنجاح",
+  "selectFile": "اختر ملف",
+  "noFileSelected": "لم يتم اختيار ملف",
+  "noSchedulesFound": "لم يتم العثور على جداول دراسية",
+  "previewSchedule": "معاينة",
+  "downloadSchedule": "تحميل",
+  "academicYear": "العام الجامعي",
+  "fileName": "اسم الملف",
+  "failedToLoadSchedules": "فشل في تحميل الجداول",
+  "duplicateScheduleError": "يوجد جدول مسجل مسبقاً لهذا التخصص، الفصل والمستوى.",
+  "requiredField": "هذا الحقل مطلوب",
+  "notes": "ملاحظات",
+  "uploadNewFile": "رفع ملف جديد (اتركه فارغاً للاحتفاظ بالحالي)",
+  "actions": "إجراءات",
+  "viewDetails": "عرض التفاصيل",
+  "noStudySchedules": "لا توجد جداول دراسية",
+  "viewSchedule": "عرض الجدول",
+  "allPrograms": "جميع التخصصات",
+  "allSemesters": "جميع الفصول",
+  "allLevels": "جميع المستويات",
+  "delete": "حذف",
+  "addStudySchedule": "إضافة جدول دراسي",
+  "preview": "معاينة",
+  "failedToLoadImage": "فشل في تحميل الصورة",
+  "semestersManagement": "إدارة الفصول الدراسية",
+  "addSemester": "إضافة فصل",
+  "noSemestersAdded": "لا توجد فصول دراسية مضافة حتى الآن.",
+  "semesterAndYear": "الفصل والسنة",
+  "status": "الحالة",
+  "startDate": "تاريخ البداية",
+  "endDate": "تاريخ النهاية",
+  "examsStart": "بداية الاختبارات",
+  "active": "نشط",
+  "inactive": "غير نشط",
+  "edit": "تعديل",
+  "confirmDelete": "تأكيد الحذف",
+  "confirmDeleteSemester": "هل أنت متأكد من رغبتك في حذف {name}؟\nملاحظة: لا يمكن حذف الفصل إذا كان مرتبطاً بدرجات أو مدفوعات مسجلة.",
+  "@confirmDeleteSemester": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteSuccess": "تم الحذف بنجاح",
+  "deleteFailed": "فشل الحذف",
+  "addNewSemester": "إضافة فصل دراسي جديد",
+  "editSemester": "تعديل الفصل الدراسي",
+  "startYear": "سنة البداية",
+  "endYear": "سنة النهاية",
+  "setAsActiveSemester": "تعيين كفصل نشط (حالي)",
+  "activateSemesterWarning": "تفعيل هذا الفصل سيعطل باقي الفصول تلقائياً.",
+  "examsStartDate": "تاريخ بداية الاختبارات",
+  "requireAllDates": "الرجاء تحديد جميع التواريخ",
+  "addSuccess": "تمت الإضافة بنجاح",
+  "editSuccess": "تم التعديل بنجاح",
+  "saveChanges": "حفظ التعديلات",
+  "selectDate": "اختر التاريخ",
+  "firstTerm": "الفصل الأول",
+  "secondTerm": "الفصل الثاني",
+  "notificationSentSuccess": "تم إرسال الإشعار بنجاح!",
+  "receivedNotifications": "الإشعارات الواردة",
+  "sendNotification": "إرسال إشعار",
+  "noNotificationsYet": "لا توجد إشعارات بعد.",
+  "markAsRead": "تعيين كمقروء",
+  "allUsers": "الجميع (موظفين وطلاب)",
+  "allStaff": "جميع الموظفين",
+  "roleGradeControl": "رصد الدرجات",
+  "broadcastNewNotification": "إرسال إشعار جديد",
+  "titleLabel": "العنوان",
+  "enterNotificationTitle": "أدخل عنوان الإشعار",
+  "messageLabel": "نص الرسالة",
+  "enterNotificationMessage": "أدخل محتوى رسالة الإشعار",
+  "recipientRole": "الدور المستهدف",
+  "unauthorizedSendNotifications": "غير مصرح لك بإرسال إشعارات.",
+  "errorSendingNotification": "خطأ في إرسال الإشعار: {error}",
+  "@errorSendingNotification": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorMarkingAsRead": "خطأ في التعيين كمقروء: {error}",
+  "@errorMarkingAsRead": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

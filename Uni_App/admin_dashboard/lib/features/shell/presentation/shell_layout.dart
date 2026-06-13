@@ -110,6 +110,26 @@ class ShellLayout extends ConsumerWidget {
                     itemCount: navItems.length,
                     itemBuilder: (context, index) {
                       final item = navItems[index];
+
+                      if (item.isHeader) {
+                        return Padding(
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            top: 16,
+                            bottom: 8,
+                          ),
+                          child: Text(
+                            item.label,
+                            style: tt.labelSmall?.copyWith(
+                              color: cs.onSurface.withAlpha(120),
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ).animate().fadeIn(duration: 300.ms, delay: (80 * index).ms);
+                      }
+
                       final isActive = currentPath == item.path;
                       return Padding(
                             padding: const EdgeInsets.only(bottom: 4),
@@ -142,11 +162,13 @@ class ShellLayout extends ConsumerWidget {
                                         : FontWeight.w400,
                                   ),
                                 ),
-                                onTap: () {
-                                  if (currentPath != item.path) {
-                                    context.go(item.path);
-                                  }
-                                },
+                                onTap: item.path == null
+                                    ? null
+                                    : () {
+                                        if (currentPath != item.path) {
+                                          context.go(item.path!);
+                                        }
+                                      },
                               ),
                             ),
                           )
@@ -376,20 +398,48 @@ class ShellLayout extends ConsumerWidget {
 
   List<_NavItem> _getNavItems(BuildContext context, String role) {
     final l10n = AppLocalizations.of(context)!;
-    final allItems = [
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    final items = <_NavItem>[];
+
+    void addGroup(String enTitle, String arTitle, List<_NavItem> groupItems) {
+      final accessibleItems = groupItems
+          .where((item) => item.path == null ? role == RoleConstants.admin : RoleConstants.canAccess(role, item.path!))
+          .toList();
+      if (accessibleItems.isNotEmpty) {
+        items.add(_NavItem.header(isAr ? arTitle : enTitle));
+        items.addAll(accessibleItems);
+      }
+    }
+
+    addGroup('Dashboard', 'لوحة القيادة', [
       _NavItem('/dashboard', l10n.dashboardLabel, Icons.dashboard_rounded),
+    ]);
+
+    addGroup('Academic Management', 'الإدارة الأكاديمية', [
+      _NavItem('/programs', l10n.programsLabel, Icons.account_balance_rounded),
+      _NavItem('/courses', l10n.studyPlansLabel, Icons.library_books_rounded),
+      _NavItem('/semesters', isAr ? 'الفصول الدراسية' : 'Semesters', Icons.date_range_rounded),
+      _NavItem('/study-schedules', l10n.studySchedules ?? 'Study Schedules', Icons.schedule_rounded),
+    ]);
+
+    addGroup('Student Services', 'خدمات الطلاب', [
+      _NavItem('/pricing', l10n.serviceManagementLabel, Icons.attach_money_rounded),
       _NavItem('/requests', l10n.requests, Icons.assignment_rounded),
       _NavItem('/payments', l10n.payments, Icons.payment_rounded),
-      _NavItem('/grades', l10n.grades, Icons.grade_rounded),
-      _NavItem('/logs', l10n.activityLogs, Icons.history_rounded),
-      _NavItem('/notifications', l10n.notifications, Icons.notifications_rounded),
-      _NavItem('/users', l10n.userManagement, Icons.manage_accounts_rounded),
-      _NavItem('/appeals', 'Grade Appeals', Icons.grading_rounded),
-    ];
+    ]);
 
-    return allItems
-        .where((item) => RoleConstants.canAccess(role, item.path))
-        .toList();
+    addGroup('Academic Operations', 'العمليات الأكاديمية', [
+      _NavItem('/grades', l10n.grades, Icons.grade_rounded),
+      _NavItem('/appeals', l10n.gradeAppeals, Icons.grading_rounded),
+    ]);
+
+    addGroup('Administration', 'الإدارة', [
+      _NavItem('/users', l10n.userManagement, Icons.manage_accounts_rounded),
+      _NavItem('/notifications', l10n.notifications, Icons.notifications_rounded),
+      _NavItem('/logs', l10n.activityLogs, Icons.history_rounded),
+    ]);
+
+    return items;
   }
 
   String _getPageTitle(BuildContext context, String path) {
@@ -397,6 +447,14 @@ class ShellLayout extends ConsumerWidget {
     switch (path) {
       case '/dashboard':
         return l10n.dashboardLabel;
+      case '/programs':
+        return l10n.programsManagement;
+      case '/courses':
+        return l10n.studyPlanManagement;
+      case '/study-schedules':
+        return l10n.studySchedules ?? 'Study Schedules';
+      case '/pricing':
+        return l10n.serviceManagementLabel;
       case '/requests':
         return l10n.serviceRequests;
       case '/payments':
@@ -410,10 +468,10 @@ class ShellLayout extends ConsumerWidget {
       case '/users':
         return l10n.userManagement;
       case '/appeals':
-        return 'Grade Appeals';
+        return l10n.gradeAppeals;
       default:
-        if (path.startsWith('/appeals/')) return 'Appeal Details';
-        return 'Al-Arab University';
+        if (path.startsWith('/appeals/')) return l10n.appealDetails;
+        return l10n.appTitle;
     }
   }
 
@@ -457,9 +515,14 @@ class ShellLayout extends ConsumerWidget {
 }
 
 class _NavItem {
-  final String path;
+  final String? path;
   final String label;
-  final IconData icon;
+  final IconData? icon;
+  final bool isHeader;
 
-  const _NavItem(this.path, this.label, this.icon);
+  const _NavItem(this.path, this.label, this.icon) : isHeader = false;
+  const _NavItem.header(this.label)
+      : path = null,
+        icon = null,
+        isHeader = true;
 }

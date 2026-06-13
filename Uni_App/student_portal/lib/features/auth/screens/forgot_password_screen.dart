@@ -137,8 +137,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     final val = value.trim();
                     // If it is entirely numbers, it must be an ID of 10 digits
                     if (RegExp(r'^[0-9]+$').hasMatch(val)) {
-                      if (val.length != 10)
+                      if (val.length != 10) {
                         return 'رقم الهوية يجب أن يتكون من 10 أرقام';
+                      }
                     } else {
                       // Otherwise it must be a valid email
                       if (!RegExp(

@@ -15,7 +15,7 @@ final appealStatusFilterProvider = StateProvider<String?>((ref) => null);
 final underReviewAppealsProvider = FutureProvider<List<AppealModel>>((ref) async {
   final repository = ref.watch(appealRepositoryProvider);
   final status = ref.watch(appealStatusFilterProvider);
-  return repository.getAppeals(status: status);
+  return repository.getAppeals(status: status == '___all___' ? null : status);
 });
 
 /// Fetches specific appeal details by ID.

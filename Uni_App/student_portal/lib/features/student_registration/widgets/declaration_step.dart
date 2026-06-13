@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:university_app/features/student_registration/cubit/registration_cubit.dart';
 
 import 'package:university_app/l10n/app_localizations.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:university_app/features/student_registration/widgets/step_container.dart';
 
 class DeclarationStep extends StatefulWidget {
@@ -34,14 +35,19 @@ class _DeclarationStepState extends State<DeclarationStep> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    // Simulate uploading receipt
+                  onPressed: () async {
                     if (state.data.receiptPath == null) {
-                      cubit.updateData(
-                        state.data.copyWith(
-                          receiptPath: 'uploaded_receipt.pdf',
-                        ),
+                      final result = await FilePicker.platform.pickFiles(
+                        type: FileType.custom,
+                        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
                       );
+                      if (result != null && result.files.single.path != null) {
+                        cubit.updateData(
+                          state.data.copyWith(
+                            receiptPath: result.files.single.path,
+                          ),
+                        );
+                      }
                     } else {
                       // Remove receipt if clicked again
                       cubit.updateData(
@@ -52,9 +58,9 @@ class _DeclarationStepState extends State<DeclarationStep> {
                   icon: Icon(
                     state.data.receiptPath != null
                         ? Icons.check_circle_rounded
-                        : Icons.receipt_long_rounded,
+                        : Icons.badge_rounded,
                   ),
-                  label: Text(l10n.uploadReceipt),
+                  label: Text(l10n.idDocumentLabel),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     backgroundColor:

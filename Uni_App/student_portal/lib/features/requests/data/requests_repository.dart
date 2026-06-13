@@ -175,4 +175,10 @@ class RequestsRepository {
     final response = await _apiClient.get(ApiConstants.myRequests);
     return response['data'] ?? [];
   }
+
+  // ── جلب أنواع الطلبات المتاحة ─────────────────────────────────────────────
+  Future<List<dynamic>> getActiveRequestTypes() async {
+    final response = await _apiClient.get(ApiConstants.requestTypes);
+    return response['data'] ?? [];
+  }
 }

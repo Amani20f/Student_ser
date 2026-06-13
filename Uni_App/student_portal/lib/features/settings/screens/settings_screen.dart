@@ -669,10 +669,10 @@ class _PasswordViewState extends State<_PasswordView> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'مطلوب';
+                              return AppLocalizations.of(context)!.requiredField;
                             }
                             if (value.length < 8) {
-                              return 'يجب أن لا تقل كلمة المرور عن 8 خانات';
+                              return AppLocalizations.of(context)!.passwordMinLength;
                             }
                             return null;
                           },
@@ -707,10 +707,10 @@ class _PasswordViewState extends State<_PasswordView> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'مطلوب';
+                              return AppLocalizations.of(context)!.requiredField;
                             }
                             if (value != _newPasswordController.text) {
-                              return 'كلمة المرور غير متطابقة';
+                              return AppLocalizations.of(context)!.passwordsDoNotMatch;
                             }
                             return null;
                           },

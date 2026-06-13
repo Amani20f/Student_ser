@@ -202,5 +202,17 @@
   "pleaseFillRequiredFields": "Please fill all required fields",
   "success": "Success",
   "successMessage": "Your request is under review. You will receive a reply via email.",
-  "selectDate": "Select Date"
+  "selectDate": "Select Date",
+  "viewSchedule": "View Schedule",
+  "noStudySchedules": "No study schedules available for your current level and program.",
+  "notes": "Notes",
+  "pleaseSelectMajor": "Please select a major (First Academic Desire)",
+  "idDocumentLabel": "Attach National ID / Iqama / Passport",
+  "arabicLettersOnly": "Must contain Arabic letters only",
+  "englishLettersOnly": "Must contain English letters only",
+  "minLengthFive": "Must be at least 5 characters",
+  "invalidMobileNumber": "Invalid mobile number (8 to 15 digits)",
+  "useThisNumberForPayment": "You can use this number in the fee payment form for this request.",
+  "passwordMinLength": "Password must be at least 8 characters",
+  "passwordsDoNotMatch": "Passwords do not match"
 }

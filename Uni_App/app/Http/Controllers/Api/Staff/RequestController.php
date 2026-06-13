@@ -29,9 +29,22 @@ class RequestController extends Controller
             ->filter(new RequestFilter($request));
 
         if (!$user->hasRole('admin')) {
-            $userRoles = $user->getRoleNames();
-            $query->whereHas('requestType', function ($q) use ($userRoles) {
-                $q->whereIn('target_role', $userRoles);
+            $userRoles = $user->getRoleNames()->toArray();
+            
+            $query->where(function ($q) use ($userRoles) {
+                // 1. Requests where target_role matches user's roles
+                $q->whereHas('requestType', function ($q2) use ($userRoles) {
+                    $q2->whereIn('target_role', $userRoles);
+                });
+                
+                // 2. Suspension requests for accountants (only pending ones)
+                if (in_array('accountant', $userRoles)) {
+                    $q->orWhere(function ($q3) {
+                        $q3->whereHas('requestType', function ($q4) {
+                            $q4->where('slug', 'suspension_of_enrollment');
+                        })->where('status', \App\Enums\RequestStatusEnum::PENDING);
+                    });
+                }
             });
         }
 
@@ -60,6 +73,30 @@ class RequestController extends Controller
         ]);
 
         try {
+            $reqModel = \App\Models\Request::with('requestType')->findOrFail($id);
+            $user = auth()->user();
+            
+            // Suspension interception
+            if ($reqModel->requestType && $reqModel->requestType->slug === 'suspension_of_enrollment') {
+                $suspensionService = app(\App\Services\Request\SuspensionRequestService::class);
+                
+                if ($user->hasRole(['accountant', 'admin']) && $request->status === 'approved') {
+                    // Accountant ratification
+                    $suspensionService->ratifySuspension($reqModel, $user, true, $request->input('response_message'));
+                    return response()->json(['message' => 'تم التصديق على طلب الإيقاف مالياً.']);
+                }
+                
+                if ($user->hasRole(['student_affairs', 'admin'])) {
+                    if ($request->status === 'approved') {
+                        if ($reqModel->status !== RequestStatusEnum::RATIFIED && $reqModel->status->value !== 'ratified') {
+                            throw new \Exception('لا يمكن الموافقة النهائية قبل تصديق المحاسب.');
+                        }
+                        $suspensionService->approveSuspension($reqModel, $user, $request->input('response_message'));
+                        return response()->json(['message' => 'تمت الموافقة النهائية على طلب الإيقاف.']);
+                    }
+                }
+            }
+
             $status = RequestStatusEnum::from($request->status);
             $this->serviceRequestService->updateStatus(
                 $id, 
@@ -68,30 +105,8 @@ class RequestController extends Controller
                 $request->input('response_message')
             );
             
-            $serviceRequest = \App\Models\Request::with('student.user')->find($id);
-            if ($serviceRequest && $serviceRequest->student && $serviceRequest->student->user) {
-                $user = $serviceRequest->student->user;
-                $message = '';
-                
-                if ($request->status === 'approved') {
-                    $message = "تمت الموافقة على طلبك ✅";
-                } elseif ($request->status === 'rejected') {
-                    $message = "تم رفض طلبك ❌";
-                }
+            // Notification is now handled exclusively by ServiceRequestService
 
-                if ($message !== '') {
-                    $notification = \App\Models\Notification::create([
-                        'title' => 'تحديث حالة الطلب',
-                        'message' => $message,
-                        'target_type' => 'student',
-                        'related_type' => \App\Models\Request::class,
-                        'related_id' => $serviceRequest->id,
-                    ]);
-
-                    $notification->users()->attach($user->id);
-                }
-            }
-            
             return response()->json(['message' => 'Request status updated successfully']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);

@@ -17,7 +17,7 @@ class StoreAppealRequest extends FormRequest
             'semester_id' => 'required|exists:semesters,id',
             'academic_year' => 'required|string|max:20',
             'term' => 'required|string|max:20',
-            'student_note' => 'nullable|string',
+            'student_note' => 'required|string|max:2000',
             'items' => 'required|array|min:1',
             'items.*.course_id' => [
                 'required',

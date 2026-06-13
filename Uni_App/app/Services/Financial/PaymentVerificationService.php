@@ -52,6 +52,14 @@ class PaymentVerificationService
                         'accountant_id' => auth()->id(),
                         'paid_at' => now(),
                     ]);
+
+                    // Notify Grade Control
+                    $this->notificationService->notifyRole(
+                        'grade_control',
+                        'تظلم جديد بانتظار المراجعة',
+                        "تم تأكيد الدفع لتظلم الطالب {$payment->student->user->name}. يرجى المراجعة.",
+                        $payment->appeal
+                    );
                 }
 
                 // 2. Service Requests -> Move to PENDING (Student Affairs)
@@ -64,8 +72,8 @@ class PaymentVerificationService
                 // Notification
                 $this->notificationService->notifyStudent(
                     $payment->student,
-                    'Payment Verified',
-                    "Your payment for \"{$payment->purpose}\" has been successfully verified.",
+                    'تم تأكيد الدفع',
+                    "تم تأكيد عملية الدفع الخاصة بك: {$payment->purpose}.",
                     $payment
                 );
 
@@ -104,8 +112,8 @@ class PaymentVerificationService
             // Notification
             $this->notificationService->notifyStudent(
                 $payment->student,
-                'Payment Rejected',
-                $reason,
+                'تم رفض الدفعة',
+                "تم رفض الدفعة الخاصة بك. السبب: {$reason}",
                 $payment
             );
         }

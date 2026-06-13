@@ -49,7 +49,7 @@ class _LogsPageState extends ConsumerState<LogsPage> {
     try {
       final repo = ref.read(logRepositoryProvider);
       final result = await repo.getLogs(
-        action: _filterAction,
+        action: _filterAction == '___all___' ? null : _filterAction,
         from: _fromDate,
         to: _toDate,
       );
@@ -145,13 +145,17 @@ class _LogsPageState extends ConsumerState<LogsPage> {
                   underline: const SizedBox(),
                   dropdownColor: cs.surface,
                   style: tt.bodyMedium?.copyWith(color: cs.onSurface),
-                  hint: Text(l10n.allActions,
+                  hint: Text(l10n.actionColumn,
                     style: tt.bodySmall?.copyWith(color: cs.onSurface.withAlpha(140))),
                   items: [
-                    DropdownMenuItem<String?>(value: null, child: Text(l10n.allActions)),
+                    DropdownMenuItem<String?>(value: '___all___', child: Text(l10n.allActions)),
                     ..._knownActions.map((a) => DropdownMenuItem(value: a, child: Text(a))),
                   ],
-                  onChanged: (v) => setState(() => _filterAction = v),
+                  onChanged: (v) {
+                    setState(() {
+                      _filterAction = v;
+                    });
+                  },
                 ),
               ),
               // Apply button

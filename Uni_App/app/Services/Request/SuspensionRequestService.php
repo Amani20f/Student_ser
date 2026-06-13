@@ -132,18 +132,45 @@ class SuspensionRequestService
             'notes' => $notes,
         ]);
 
-        // Automatic status update (Rule I - Automation)
-        // If debts are cleared, update student status to SUSPENDED
-        if ($oldDebtsCleared) {
-            $student = $request->student;
-            $student->status = \App\Enums\StudentStatusEnum::SUSPENDED;
-            $student->save();
+        // Just update status to RATIFIED, do not approve yet.
+        $request->status = RequestStatusEnum::RATIFIED;
+        $request->save();
 
-            // Also accept the request
-            $request->accept('تم تصديق الإيقاف ولا توجد ديون سابقة.');
-        }
+        // Notify student it has been ratified (optional, but good for transparency)
+        app(\App\Services\NotificationService::class)->notifyStudent(
+            $request->student,
+            'تحديث حالة الطلب',
+            "تمت المصادقة المالية على طلب الإيقاف، وهو الآن قيد المراجعة النهائية من شؤون الطلاب.",
+            $request
+        );
 
         return $ratification;
+    }
+
+    /**
+     * Approve a suspension request (Final step by Student Affairs).
+     */
+    public function approveSuspension(Request $request, User $officer, ?string $notes = null): Request
+    {
+        // Must be ratified first
+        $ratification = $request->suspensionRatifications()->latest()->first();
+        if (!$ratification) {
+            throw new Exception('لا يمكن الموافقة النهائية قبل تصديق المحاسب.');
+        }
+
+        if (!$ratification->old_debts_cleared) {
+            throw new Exception('لا يمكن الموافقة: توجد مديونيات سابقة لم يتم تسويتها.');
+        }
+
+        $student = $request->student;
+        $student->status = \App\Enums\StudentStatusEnum::SUSPENDED;
+        $student->save();
+
+        $request->accept($notes ?? 'تمت الموافقة على طلب الإيقاف نهائياً.');
+        $request->processed_by = $officer->id;
+        $request->save();
+
+        return $request;
     }
 
     /**

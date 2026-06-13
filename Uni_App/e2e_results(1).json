@@ -1,0 +1,1162 @@
+{
+    "student_grades": {
+        "status": 200,
+        "content": {
+            "data": {
+                " first": [
+                    {
+                        "id": 2,
+                        "student_id": 2,
+                        "student_name": "جمزه شريف إسلام السعيد",
+                        "course_id": 6,
+                        "semester_id": 1,
+                        "course_name": "الرسم الهندسي",
+                        "course_code": "EE101",
+                        "academic_year": "2024\/2025",
+                        "semester_term": "first",
+                        "first": "13.00",
+                        "second": "19.00",
+                        "midterm": "15.00",
+                        "final": "37.00",
+                        "total": "84.00",
+                        "gpa": "3.36",
+                        "status": "passed",
+                        "grade_estimate": null,
+                        "updated_at": "2026-05-29T22:08:02.000000Z"
+                    }
+                ],
+                " second": [
+                    {
+                        "id": 20,
+                        "student_id": 2,
+                        "student_name": "جمزه شريف إسلام السعيد",
+                        "course_id": 7,
+                        "semester_id": 2,
+                        "course_name": "الدوائر الكهربائية 1",
+                        "course_code": "EE102",
+                        "academic_year": "2024\/2025",
+                        "semester_term": "second",
+                        "first": "12.00",
+                        "second": "18.00",
+                        "midterm": "16.00",
+                        "final": "28.00",
+                        "total": "74.00",
+                        "gpa": "2.96",
+                        "status": "passed",
+                        "grade_estimate": null,
+                        "updated_at": "2026-05-29T22:08:08.000000Z"
+                    }
+                ]
+            }
+        }
+    },
+    "student_payments": {
+        "status": 200,
+        "content": {
+            "data": [
+                {
+                    "id": 2,
+                    "student": {
+                        "id": 2,
+                        "name": "جمزه شريف إسلام السعيد"
+                    },
+                    "semester": {
+                        "id": 1,
+                        "academic_year": "2024\/2025",
+                        "term": "first"
+                    },
+                    "amount": "5000.00",
+                    "purpose": "الرسوم الدراسية - الفصل الدراسي الأول 2024\/2025",
+                    "receipt_image": "http:\/\/localhost\/storage\/receipts\/sample_receipt.jpg",
+                    "status": "verified",
+                    "rejection_reason": null,
+                    "appeal_id": null,
+                    "request_id": null,
+                    "created_at": "2026-05-29T22:08:02.000000Z",
+                    "updated_at": "2026-05-29T22:08:02.000000Z"
+                },
+                {
+                    "id": 12,
+                    "student": {
+                        "id": 2,
+                        "name": "جمزه شريف إسلام السعيد"
+                    },
+                    "semester": {
+                        "id": 3,
+                        "academic_year": "2025\/2026",
+                        "term": "first"
+                    },
+                    "amount": "4500.00",
+                    "purpose": "رسوم دراسية جزئية - الفصل الدراسي الأول 2025\/2026",
+                    "receipt_image": "http:\/\/localhost\/storage\/receipts\/receipt_student1_fall2025.jpg",
+                    "status": "pending",
+                    "rejection_reason": null,
+                    "appeal_id": null,
+                    "request_id": null,
+                    "created_at": "2026-05-27T22:08:07.000000Z",
+                    "updated_at": "2026-05-29T22:08:07.000000Z"
+                }
+            ]
+        }
+    },
+    "student_requests": {
+        "status": 200,
+        "content": {
+            "success": true,
+            "data": [
+                {
+                    "id": 2,
+                    "request_type": {
+                        "id": 2,
+                        "name": "تأجيل دراسة",
+                        "slug": "suspension_of_enrollment"
+                    },
+                    "status": "pending",
+                    "admin_notes": null,
+                    "is_notified": false,
+                    "submitted_at": "2026-05-24 22:08:07"
+                }
+            ]
+        }
+    },
+    "student_appeals": {
+        "status": 200,
+        "content": {
+            "data": []
+        }
+    },
+    "student_study_schedules": {
+        "status": 200,
+        "content": {
+            "data": []
+        }
+    },
+    "admin_stats": {
+        "status": 200,
+        "content": {
+            "pending_payments": 5,
+            "pending_requests": 4,
+            "total_students": 10,
+            "total_revenue": "59850.00"
+        }
+    },
+    "staff_requests": {
+        "status": 200,
+        "content": {
+            "data": [
+                {
+                    "id": 7,
+                    "student": {
+                        "id": 8,
+                        "name": "مرشد الراجحي",
+                        "student_number": "S202600007",
+                        "program_name": "بكالوريوس علوم الحاسوب",
+                        "current_level": 2
+                    },
+                    "request_type": "عذر غياب",
+                    "description": "طلب كشف درجات رسمي لغرض التقديم على منحة دراسية.",
+                    "attachment": null,
+                    "status": "pending",
+                    "processed_by": null,
+                    "response_message": null,
+                    "admin_notes": null,
+                    "form_data": null,
+                    "absence_excuse": null,
+                    "created_at": "2026-05-29 22:08:08",
+                    "updated_at": "2026-05-29 22:08:08"
+                },
+                {
+                    "id": 3,
+                    "student": {
+                        "id": 3,
+                        "name": "وسن زيد مدني",
+                        "student_number": "S202600002",
+                        "program_name": "بكالوريوس علوم الحاسوب",
+                        "current_level": 2
+                    },
+                    "request_type": "إعادة قيد",
+                    "description": "طلب إعادة قيد بعد انقطاع فصل دراسي واحد. جميع الوثائق مرفقة.",
+                    "attachment": null,
+                    "status": "pending",
+                    "processed_by": null,
+                    "response_message": null,
+                    "admin_notes": null,
+                    "form_data": null,
+                    "absence_excuse": null,
+                    "created_at": "2026-05-28 22:08:07",
+                    "updated_at": "2026-05-29 22:08:07"
+                },
+                {
+                    "id": 1,
+                    "student": {
+                        "id": 1,
+                        "name": "أميرة عبد المولى الشهيل",
+                        "student_number": "S202600000",
+                        "program_name": "بكالوريوس الهندسة الكهربائية",
+                        "current_level": 2
+                    },
+                    "request_type": "عذر غياب",
+                    "description": "لقد غبت لمدة 3 أيام بسبب حالة طبية طارئة. مرفق التقرير الطبي.",
+                    "attachment": null,
+                    "status": "pending",
+                    "processed_by": null,
+                    "response_message": null,
+                    "admin_notes": null,
+                    "form_data": null,
+                    "absence_excuse": null,
+                    "created_at": "2026-05-27 22:08:07",
+                    "updated_at": "2026-05-29 22:08:07"
+                },
+                {
+                    "id": 2,
+                    "student": {
+                        "id": 2,
+                        "name": "جمزه شريف إسلام السعيد",
+                        "student_number": "S202600001",
+                        "program_name": "بكالوريوس الهندسة الكهربائية",
+                        "current_level": 2
+                    },
+                    "request_type": "تأجيل دراسة",
+                    "description": "أرغب في تأجيل دراستي للفصل الحالي بسبب ظروف عائلية.",
+                    "attachment": null,
+                    "status": "pending",
+                    "processed_by": null,
+                    "response_message": null,
+                    "admin_notes": null,
+                    "form_data": null,
+                    "absence_excuse": null,
+                    "created_at": "2026-05-24 22:08:07",
+                    "updated_at": "2026-05-29 22:08:07"
+                },
+                {
+                    "id": 5,
+                    "student": {
+                        "id": 5,
+                        "name": "سحر السماري",
+                        "student_number": "S202600004",
+                        "program_name": "بكالوريوس إدارة الأعمال",
+                        "current_level": 2
+                    },
+                    "request_type": "عذر غياب",
+                    "description": "غياب لمدة يومين بسبب جراحة مجدولة. الوثائق الطبية متوفرة.",
+                    "attachment": null,
+                    "status": "approved",
+                    "processed_by": "سارة الشؤون",
+                    "response_message": "تم قبول عذر الغياب الخاص بك.",
+                    "admin_notes": "تم قبول العذر. تم التحقق من الوثائق الطبية.",
+                    "form_data": null,
+                    "absence_excuse": null,
+                    "created_at": "2026-05-14 22:08:07",
+                    "updated_at": "2026-05-29 22:08:07"
+                },
+                {
+                    "id": 6,
+                    "student": {
+                        "id": 1,
+                        "name": "أميرة عبد المولى الشهيل",
+                        "student_number": "S202600000",
+                        "program_name": "بكالوريوس الهندسة الكهربائية",
+                        "current_level": 2
+                    },
+                    "request_type": "تأجيل دراسة",
+                    "description": "طلب تأجيل دراسة لأسباب شخصية.",
+                    "attachment": null,
+                    "status": "rejected",
+                    "processed_by": "سارة الشؤون",
+                    "response_message": "تم رفض طلب التأجيل الخاص بك. يرجى تقديم المزيد من الوثائق.",
+                    "admin_notes": "المبررات المقدمة غير كافية. يرجى إعادة التقديم مع وثائق داعمة.",
+                    "form_data": null,
+                    "absence_excuse": null,
+                    "created_at": "2026-05-09 22:08:07",
+                    "updated_at": "2026-05-29 22:08:07"
+                }
+            ]
+        }
+    },
+    "staff_grades": {
+        "status": 200,
+        "content": {
+            "data": [
+                {
+                    "id": 1,
+                    "student_id": 1,
+                    "student_name": "أميرة عبد المولى الشهيل",
+                    "course_id": 6,
+                    "semester_id": 1,
+                    "course_name": "الرسم الهندسي",
+                    "course_code": "EE101",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "first",
+                    "first": "14.00",
+                    "second": "20.00",
+                    "midterm": "19.00",
+                    "final": "30.00",
+                    "total": "83.00",
+                    "gpa": "3.32",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:01.000000Z"
+                },
+                {
+                    "id": 2,
+                    "student_id": 2,
+                    "student_name": "جمزه شريف إسلام السعيد",
+                    "course_id": 6,
+                    "semester_id": 1,
+                    "course_name": "الرسم الهندسي",
+                    "course_code": "EE101",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "first",
+                    "first": "13.00",
+                    "second": "19.00",
+                    "midterm": "15.00",
+                    "final": "37.00",
+                    "total": "84.00",
+                    "gpa": "3.36",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:02.000000Z"
+                },
+                {
+                    "id": 3,
+                    "student_id": 3,
+                    "student_name": "وسن زيد مدني",
+                    "course_id": 1,
+                    "semester_id": 1,
+                    "course_name": "مقدمة في الحوسبة",
+                    "course_code": "CS101",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "first",
+                    "first": "13.00",
+                    "second": "19.00",
+                    "midterm": "15.00",
+                    "final": "37.00",
+                    "total": "84.00",
+                    "gpa": "3.36",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:03.000000Z"
+                },
+                {
+                    "id": 4,
+                    "student_id": 3,
+                    "student_name": "وسن زيد مدني",
+                    "course_id": 2,
+                    "semester_id": 1,
+                    "course_name": "برمجة الحاسوب 1",
+                    "course_code": "CS102",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "first",
+                    "first": "15.00",
+                    "second": "13.00",
+                    "midterm": "19.00",
+                    "final": "34.00",
+                    "total": "81.00",
+                    "gpa": "3.24",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:03.000000Z"
+                },
+                {
+                    "id": 5,
+                    "student_id": 3,
+                    "student_name": "وسن زيد مدني",
+                    "course_id": 3,
+                    "semester_id": 1,
+                    "course_name": "حساب التفاضل والتكامل 1",
+                    "course_code": "MATH101",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "first",
+                    "first": "17.00",
+                    "second": "18.00",
+                    "midterm": "18.00",
+                    "final": "34.00",
+                    "total": "87.00",
+                    "gpa": "3.48",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:03.000000Z"
+                },
+                {
+                    "id": 6,
+                    "student_id": 4,
+                    "student_name": "نانسي سقا",
+                    "course_id": 1,
+                    "semester_id": 1,
+                    "course_name": "مقدمة في الحوسبة",
+                    "course_code": "CS101",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "first",
+                    "first": "16.00",
+                    "second": "12.00",
+                    "midterm": "18.00",
+                    "final": "35.00",
+                    "total": "81.00",
+                    "gpa": "3.24",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:04.000000Z"
+                },
+                {
+                    "id": 7,
+                    "student_id": 4,
+                    "student_name": "نانسي سقا",
+                    "course_id": 2,
+                    "semester_id": 1,
+                    "course_name": "برمجة الحاسوب 1",
+                    "course_code": "CS102",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "first",
+                    "first": "18.00",
+                    "second": "10.00",
+                    "midterm": "16.00",
+                    "final": "27.00",
+                    "total": "71.00",
+                    "gpa": "2.84",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:04.000000Z"
+                },
+                {
+                    "id": 8,
+                    "student_id": 4,
+                    "student_name": "نانسي سقا",
+                    "course_id": 3,
+                    "semester_id": 1,
+                    "course_name": "حساب التفاضل والتكامل 1",
+                    "course_code": "MATH101",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "first",
+                    "first": "18.00",
+                    "second": "18.00",
+                    "midterm": "17.00",
+                    "final": "38.00",
+                    "total": "91.00",
+                    "gpa": "3.64",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:04.000000Z"
+                },
+                {
+                    "id": 9,
+                    "student_id": 5,
+                    "student_name": "سحر السماري",
+                    "course_id": 8,
+                    "semester_id": 1,
+                    "course_name": "مبادئ الإدارة",
+                    "course_code": "MGT101",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "first",
+                    "first": "17.00",
+                    "second": "10.00",
+                    "midterm": "15.00",
+                    "final": "39.00",
+                    "total": "81.00",
+                    "gpa": "3.24",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:04.000000Z"
+                },
+                {
+                    "id": 10,
+                    "student_id": 6,
+                    "student_name": "ميار الفدا",
+                    "course_id": 8,
+                    "semester_id": 1,
+                    "course_name": "مبادئ الإدارة",
+                    "course_code": "MGT101",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "first",
+                    "first": "10.00",
+                    "second": "19.00",
+                    "midterm": "15.00",
+                    "final": "29.00",
+                    "total": "73.00",
+                    "gpa": "2.92",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:05.000000Z"
+                },
+                {
+                    "id": 11,
+                    "student_id": 7,
+                    "student_name": "سعاد الشهري",
+                    "course_id": 6,
+                    "semester_id": 1,
+                    "course_name": "الرسم الهندسي",
+                    "course_code": "EE101",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "first",
+                    "first": "15.00",
+                    "second": "18.00",
+                    "midterm": "18.00",
+                    "final": "31.00",
+                    "total": "82.00",
+                    "gpa": "3.28",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:05.000000Z"
+                },
+                {
+                    "id": 12,
+                    "student_id": 8,
+                    "student_name": "مرشد الراجحي",
+                    "course_id": 1,
+                    "semester_id": 1,
+                    "course_name": "مقدمة في الحوسبة",
+                    "course_code": "CS101",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "first",
+                    "first": "20.00",
+                    "second": "17.00",
+                    "midterm": "20.00",
+                    "final": "37.00",
+                    "total": "94.00",
+                    "gpa": "3.76",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:06.000000Z"
+                },
+                {
+                    "id": 13,
+                    "student_id": 8,
+                    "student_name": "مرشد الراجحي",
+                    "course_id": 2,
+                    "semester_id": 1,
+                    "course_name": "برمجة الحاسوب 1",
+                    "course_code": "CS102",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "first",
+                    "first": "11.00",
+                    "second": "11.00",
+                    "midterm": "19.00",
+                    "final": "33.00",
+                    "total": "74.00",
+                    "gpa": "2.96",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:06.000000Z"
+                },
+                {
+                    "id": 14,
+                    "student_id": 8,
+                    "student_name": "مرشد الراجحي",
+                    "course_id": 3,
+                    "semester_id": 1,
+                    "course_name": "حساب التفاضل والتكامل 1",
+                    "course_code": "MATH101",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "first",
+                    "first": "14.00",
+                    "second": "15.00",
+                    "midterm": "15.00",
+                    "final": "29.00",
+                    "total": "73.00",
+                    "gpa": "2.92",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:06.000000Z"
+                },
+                {
+                    "id": 15,
+                    "student_id": 9,
+                    "student_name": "الدكتورة أريج العنزي",
+                    "course_id": 1,
+                    "semester_id": 1,
+                    "course_name": "مقدمة في الحوسبة",
+                    "course_code": "CS101",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "first",
+                    "first": "12.00",
+                    "second": "20.00",
+                    "midterm": "16.00",
+                    "final": "27.00",
+                    "total": "75.00",
+                    "gpa": "3.00",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:07.000000Z"
+                },
+                {
+                    "id": 16,
+                    "student_id": 9,
+                    "student_name": "الدكتورة أريج العنزي",
+                    "course_id": 2,
+                    "semester_id": 1,
+                    "course_name": "برمجة الحاسوب 1",
+                    "course_code": "CS102",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "first",
+                    "first": "11.00",
+                    "second": "13.00",
+                    "midterm": "16.00",
+                    "final": "33.00",
+                    "total": "73.00",
+                    "gpa": "2.92",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:07.000000Z"
+                },
+                {
+                    "id": 17,
+                    "student_id": 9,
+                    "student_name": "الدكتورة أريج العنزي",
+                    "course_id": 3,
+                    "semester_id": 1,
+                    "course_name": "حساب التفاضل والتكامل 1",
+                    "course_code": "MATH101",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "first",
+                    "first": "19.00",
+                    "second": "20.00",
+                    "midterm": "15.00",
+                    "final": "37.00",
+                    "total": "91.00",
+                    "gpa": "3.64",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:07.000000Z"
+                },
+                {
+                    "id": 18,
+                    "student_id": 10,
+                    "student_name": "قاسم عبد الرزاق المشيقح",
+                    "course_id": 6,
+                    "semester_id": 1,
+                    "course_name": "الرسم الهندسي",
+                    "course_code": "EE101",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "first",
+                    "first": "15.00",
+                    "second": "11.00",
+                    "midterm": "16.00",
+                    "final": "38.00",
+                    "total": "80.00",
+                    "gpa": "3.20",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:07.000000Z"
+                },
+                {
+                    "id": 19,
+                    "student_id": 1,
+                    "student_name": "أميرة عبد المولى الشهيل",
+                    "course_id": 7,
+                    "semester_id": 2,
+                    "course_name": "الدوائر الكهربائية 1",
+                    "course_code": "EE102",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "second",
+                    "first": "19.00",
+                    "second": "10.00",
+                    "midterm": "17.00",
+                    "final": "32.00",
+                    "total": "78.00",
+                    "gpa": "3.12",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:08.000000Z"
+                },
+                {
+                    "id": 20,
+                    "student_id": 2,
+                    "student_name": "جمزه شريف إسلام السعيد",
+                    "course_id": 7,
+                    "semester_id": 2,
+                    "course_name": "الدوائر الكهربائية 1",
+                    "course_code": "EE102",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "second",
+                    "first": "12.00",
+                    "second": "18.00",
+                    "midterm": "16.00",
+                    "final": "28.00",
+                    "total": "74.00",
+                    "gpa": "2.96",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:08.000000Z"
+                },
+                {
+                    "id": 21,
+                    "student_id": 3,
+                    "student_name": "وسن زيد مدني",
+                    "course_id": 4,
+                    "semester_id": 2,
+                    "course_name": "برمجة الحاسوب 2",
+                    "course_code": "CS103",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "second",
+                    "first": "15.00",
+                    "second": "18.00",
+                    "midterm": "19.00",
+                    "final": "37.00",
+                    "total": "89.00",
+                    "gpa": "3.56",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:08.000000Z"
+                },
+                {
+                    "id": 22,
+                    "student_id": 3,
+                    "student_name": "وسن زيد مدني",
+                    "course_id": 5,
+                    "semester_id": 2,
+                    "course_name": "التراكيب المتقطعة",
+                    "course_code": "CS104",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "second",
+                    "first": "11.00",
+                    "second": "16.00",
+                    "midterm": "18.00",
+                    "final": "40.00",
+                    "total": "85.00",
+                    "gpa": "3.40",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:08.000000Z"
+                },
+                {
+                    "id": 23,
+                    "student_id": 4,
+                    "student_name": "نانسي سقا",
+                    "course_id": 4,
+                    "semester_id": 2,
+                    "course_name": "برمجة الحاسوب 2",
+                    "course_code": "CS103",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "second",
+                    "first": "14.00",
+                    "second": "20.00",
+                    "midterm": "19.00",
+                    "final": "30.00",
+                    "total": "83.00",
+                    "gpa": "3.32",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:08.000000Z"
+                },
+                {
+                    "id": 24,
+                    "student_id": 4,
+                    "student_name": "نانسي سقا",
+                    "course_id": 5,
+                    "semester_id": 2,
+                    "course_name": "التراكيب المتقطعة",
+                    "course_code": "CS104",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "second",
+                    "first": "19.00",
+                    "second": "13.00",
+                    "midterm": "16.00",
+                    "final": "27.00",
+                    "total": "75.00",
+                    "gpa": "3.00",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:08.000000Z"
+                },
+                {
+                    "id": 25,
+                    "student_id": 5,
+                    "student_name": "سحر السماري",
+                    "course_id": 9,
+                    "semester_id": 2,
+                    "course_name": "مبادئ التسويق",
+                    "course_code": "MKT101",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "second",
+                    "first": "19.00",
+                    "second": "11.00",
+                    "midterm": "17.00",
+                    "final": "25.00",
+                    "total": "72.00",
+                    "gpa": "2.88",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:08.000000Z"
+                },
+                {
+                    "id": 26,
+                    "student_id": 6,
+                    "student_name": "ميار الفدا",
+                    "course_id": 9,
+                    "semester_id": 2,
+                    "course_name": "مبادئ التسويق",
+                    "course_code": "MKT101",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "second",
+                    "first": "16.00",
+                    "second": "10.00",
+                    "midterm": "18.00",
+                    "final": "25.00",
+                    "total": "69.00",
+                    "gpa": "2.76",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:08.000000Z"
+                },
+                {
+                    "id": 27,
+                    "student_id": 7,
+                    "student_name": "سعاد الشهري",
+                    "course_id": 7,
+                    "semester_id": 2,
+                    "course_name": "الدوائر الكهربائية 1",
+                    "course_code": "EE102",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "second",
+                    "first": "12.00",
+                    "second": "20.00",
+                    "midterm": "16.00",
+                    "final": "25.00",
+                    "total": "73.00",
+                    "gpa": "2.92",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:08.000000Z"
+                },
+                {
+                    "id": 28,
+                    "student_id": 8,
+                    "student_name": "مرشد الراجحي",
+                    "course_id": 4,
+                    "semester_id": 2,
+                    "course_name": "برمجة الحاسوب 2",
+                    "course_code": "CS103",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "second",
+                    "first": "18.00",
+                    "second": "16.00",
+                    "midterm": "19.00",
+                    "final": "36.00",
+                    "total": "89.00",
+                    "gpa": "3.56",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:08.000000Z"
+                },
+                {
+                    "id": 29,
+                    "student_id": 8,
+                    "student_name": "مرشد الراجحي",
+                    "course_id": 5,
+                    "semester_id": 2,
+                    "course_name": "التراكيب المتقطعة",
+                    "course_code": "CS104",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "second",
+                    "first": "18.00",
+                    "second": "12.00",
+                    "midterm": "15.00",
+                    "final": "38.00",
+                    "total": "83.00",
+                    "gpa": "3.32",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:08.000000Z"
+                },
+                {
+                    "id": 30,
+                    "student_id": 9,
+                    "student_name": "الدكتورة أريج العنزي",
+                    "course_id": 4,
+                    "semester_id": 2,
+                    "course_name": "برمجة الحاسوب 2",
+                    "course_code": "CS103",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "second",
+                    "first": "19.00",
+                    "second": "14.00",
+                    "midterm": "20.00",
+                    "final": "25.00",
+                    "total": "78.00",
+                    "gpa": "3.12",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:08.000000Z"
+                },
+                {
+                    "id": 31,
+                    "student_id": 9,
+                    "student_name": "الدكتورة أريج العنزي",
+                    "course_id": 5,
+                    "semester_id": 2,
+                    "course_name": "التراكيب المتقطعة",
+                    "course_code": "CS104",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "second",
+                    "first": "14.00",
+                    "second": "16.00",
+                    "midterm": "17.00",
+                    "final": "31.00",
+                    "total": "78.00",
+                    "gpa": "3.12",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:08.000000Z"
+                },
+                {
+                    "id": 32,
+                    "student_id": 10,
+                    "student_name": "قاسم عبد الرزاق المشيقح",
+                    "course_id": 7,
+                    "semester_id": 2,
+                    "course_name": "الدوائر الكهربائية 1",
+                    "course_code": "EE102",
+                    "academic_year": "2024\/2025",
+                    "semester_term": "second",
+                    "first": "17.00",
+                    "second": "19.00",
+                    "midterm": "18.00",
+                    "final": "28.00",
+                    "total": "82.00",
+                    "gpa": "3.28",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:08.000000Z"
+                },
+                {
+                    "id": 33,
+                    "student_id": 8,
+                    "student_name": "مرشد الراجحي",
+                    "course_id": 1,
+                    "semester_id": 3,
+                    "course_name": "مقدمة في الحوسبة",
+                    "course_code": "CS101",
+                    "academic_year": "2025\/2026",
+                    "semester_term": "first",
+                    "first": "12.00",
+                    "second": "13.00",
+                    "midterm": "15.00",
+                    "final": "20.00",
+                    "total": "60.00",
+                    "gpa": "2.00",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:08.000000Z"
+                },
+                {
+                    "id": 34,
+                    "student_id": 8,
+                    "student_name": "مرشد الراجحي",
+                    "course_id": 2,
+                    "semester_id": 3,
+                    "course_name": "برمجة الحاسوب 1",
+                    "course_code": "CS102",
+                    "academic_year": "2025\/2026",
+                    "semester_term": "first",
+                    "first": "12.00",
+                    "second": "13.00",
+                    "midterm": "15.00",
+                    "final": "20.00",
+                    "total": "60.00",
+                    "gpa": "2.00",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:08.000000Z"
+                },
+                {
+                    "id": 35,
+                    "student_id": 8,
+                    "student_name": "مرشد الراجحي",
+                    "course_id": 3,
+                    "semester_id": 3,
+                    "course_name": "حساب التفاضل والتكامل 1",
+                    "course_code": "MATH101",
+                    "academic_year": "2025\/2026",
+                    "semester_term": "first",
+                    "first": "12.00",
+                    "second": "13.00",
+                    "midterm": "15.00",
+                    "final": "20.00",
+                    "total": "60.00",
+                    "gpa": "2.00",
+                    "status": "passed",
+                    "grade_estimate": null,
+                    "updated_at": "2026-05-29T22:08:08.000000Z"
+                }
+            ]
+        }
+    },
+    "staff_appeals": {
+        "status": 200,
+        "content": {
+            "data": [
+                {
+                    "id": 1,
+                    "student": {
+                        "id": 8,
+                        "name": "مرشد الراجحي",
+                        "student_number": "S202600007",
+                        "program": null
+                    },
+                    "semester": {
+                        "id": 3,
+                        "academic_year": "2025\/2026",
+                        "term": "first"
+                    },
+                    "academic_year": "2025\/2026",
+                    "term": "first",
+                    "status": "paid",
+                    "student_note": "أعتقد أن درجتي في منتصف الفصل تم رصدها بشكل غير عادل في كلا المساقين.",
+                    "committee_report": null,
+                    "created_at": "2026-05-29T22:08:08.000000Z",
+                    "updated_at": "2026-05-29T22:08:08.000000Z",
+                    "accountant": {
+                        "id": null,
+                        "name": null
+                    },
+                    "reviewed_by": {
+                        "id": null,
+                        "name": null
+                    },
+                    "paid_at": null,
+                    "reviewed_at": null,
+                    "items": [
+                        {
+                            "id": 1,
+                            "course_id": 1,
+                            "course_name": "مقدمة في الحوسبة",
+                            "absence_percentage": null,
+                            "before": {
+                                "coursework": "40.00",
+                                "final": "20.00",
+                                "total": "60.00"
+                            },
+                            "after": {
+                                "coursework": null,
+                                "final": null,
+                                "total": null
+                            },
+                            "created_at": "2026-05-29T22:08:08.000000Z",
+                            "updated_at": "2026-05-29T22:08:08.000000Z"
+                        },
+                        {
+                            "id": 2,
+                            "course_id": 2,
+                            "course_name": "برمجة الحاسوب 1",
+                            "absence_percentage": null,
+                            "before": {
+                                "coursework": "40.00",
+                                "final": "20.00",
+                                "total": "60.00"
+                            },
+                            "after": {
+                                "coursework": null,
+                                "final": null,
+                                "total": null
+                            },
+                            "created_at": "2026-05-29T22:08:08.000000Z",
+                            "updated_at": "2026-05-29T22:08:08.000000Z"
+                        }
+                    ],
+                    "payments": [
+                        {
+                            "id": 17,
+                            "student": {
+                                "id": 8,
+                                "name": "مرشد الراجحي"
+                            },
+                            "semester": {
+                                "id": 3,
+                                "academic_year": "2025\/2026",
+                                "term": "first"
+                            },
+                            "amount": "100.00",
+                            "purpose": "رسوم تظلم درجة - تظلم رقم #1",
+                            "receipt_image": "http:\/\/localhost\/storage\/receipts\/sample_receipt.jpg",
+                            "status": "pending",
+                            "rejection_reason": null,
+                            "appeal_id": 1,
+                            "request_id": null,
+                            "created_at": "2026-05-29T22:08:08.000000Z",
+                            "updated_at": "2026-05-29T22:08:08.000000Z"
+                        }
+                    ]
+                },
+                {
+                    "id": 2,
+                    "student": {
+                        "id": 8,
+                        "name": "مرشد الراجحي",
+                        "student_number": "S202600007",
+                        "program": null
+                    },
+                    "semester": {
+                        "id": 3,
+                        "academic_year": "2025\/2026",
+                        "term": "first"
+                    },
+                    "academic_year": "2025\/2026",
+                    "term": "first",
+                    "status": "under_review",
+                    "student_note": "عذر طبي لأداء الامتحان النهائي.",
+                    "committee_report": null,
+                    "created_at": "2026-05-29T22:08:08.000000Z",
+                    "updated_at": "2026-05-29T22:08:08.000000Z",
+                    "accountant": {
+                        "id": null,
+                        "name": null
+                    },
+                    "reviewed_by": {
+                        "id": null,
+                        "name": null
+                    },
+                    "paid_at": null,
+                    "reviewed_at": null,
+                    "items": [
+                        {
+                            "id": 3,
+                            "course_id": 3,
+                            "course_name": "حساب التفاضل والتكامل 1",
+                            "absence_percentage": null,
+                            "before": {
+                                "coursework": "35.00",
+                                "final": "15.00",
+                                "total": "50.00"
+                            },
+                            "after": {
+                                "coursework": null,
+                                "final": null,
+                                "total": null
+                            },
+                            "created_at": "2026-05-29T22:08:08.000000Z",
+                            "updated_at": "2026-05-29T22:08:08.000000Z"
+                        }
+                    ],
+                    "payments": [
+                        {
+                            "id": 18,
+                            "student": {
+                                "id": 8,
+                                "name": "مرشد الراجحي"
+                            },
+                            "semester": {
+                                "id": 3,
+                                "academic_year": "2025\/2026",
+                                "term": "first"
+                            },
+                            "amount": "50.00",
+                            "purpose": "رسوم تظلم درجة - تظلم رقم #2",
+                            "receipt_image": "http:\/\/localhost\/storage\/receipts\/sample_receipt.jpg",
+                            "status": "verified",
+                            "rejection_reason": null,
+                            "appeal_id": 2,
+                            "request_id": null,
+                            "created_at": "2026-05-29T22:08:08.000000Z",
+                            "updated_at": "2026-05-29T22:08:08.000000Z"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "staff_study_schedules": {
+        "status": 200,
+        "content": {
+            "data": []
+        }
+    }
+}

@@ -20,6 +20,7 @@ class ApiConstants {
   static const String myRequests = '/student/my-requests';
   static const String reEnrollment = '/student/re-enrollment';
   static const String notifications = '/student/notifications';
+  static const String requestTypes = '/request-types';
 
   static String markNotificationRead(int id) =>
       '/student/notifications/$id/read';

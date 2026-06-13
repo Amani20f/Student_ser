@@ -68,4 +68,23 @@ class AcademicStructureController extends Controller
             ]),
         ]);
     }
+
+    /**
+     * GET /api/semesters
+     * Returns all semesters.
+     */
+    public function semesters(): JsonResponse
+    {
+        $semesters = \App\Models\Semester::orderBy('start_date', 'desc')->get();
+
+        return response()->json([
+            'success' => true,
+            'data'    => $semesters->map(fn ($sem) => [
+                'id'         => $sem->id,
+                'name'       => (($sem->term->value ?? $sem->term) === 'first' ? 'الفصل الدراسي الأول ' : 'الفصل الدراسي الثاني ') . $sem->academic_year,
+                'year'       => $sem->academic_year,
+                'is_current' => $sem->is_active,
+            ]),
+        ]);
+    }
 }

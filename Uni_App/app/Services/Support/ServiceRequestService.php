@@ -113,9 +113,9 @@ class ServiceRequestService
         if ($updated) {
             $request = $this->requestRepository->findById($id);
             
-            // Send Notification
-            $title = "Request " . ucfirst($status->value);
-            $message = $responseMessage ?? "Your request status has been updated to " . ucfirst($status->value);
+            $statusArabic = $status->value === 'approved' ? 'الموافقة على' : 'رفض';
+            $title = 'تحديث حالة الطلب';
+            $message = $responseMessage ?? "تم {$statusArabic} طلبك " . ($status->value === 'approved' ? '✅' : '❌');
             
             $this->notificationService->notifyStudent(
                 $request->student,

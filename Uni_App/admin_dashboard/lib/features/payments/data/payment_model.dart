@@ -44,9 +44,9 @@ class PaymentModel {
 
       studentName: student?['name']?.toString(),
 
-      semesterId: json['semester_id'] != null
-          ? int.tryParse(json['semester_id'].toString())
-          : null,
+      semesterId: semester?['id'] != null
+          ? int.tryParse(semester['id'].toString())
+          : (json['semester_id'] != null ? int.tryParse(json['semester_id'].toString()) : null),
 
       semesterAcademicYear: semester?['academic_year']?.toString(),
 

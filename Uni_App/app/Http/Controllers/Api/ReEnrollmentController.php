@@ -128,6 +128,36 @@ class ReEnrollmentController extends Controller
     }
 
     /**
+     * Reject re-enrollment request.
+     * 
+     * PUT /api/staff/re-enrollment/{id}/reject
+     */
+    public function reject(\Illuminate\Http\Request $req, int $id): JsonResponse
+    {
+        try {
+            $request = Request::findOrFail($id);
+            $user = auth()->user();
+            
+            $req->validate([
+                'response_message' => 'required|string'
+            ]);
+
+            $request->reject($req->input('response_message'), true);
+            $request->processed_by = $user->id;
+            $request->save();
+
+            return response()->json([
+                'message' => 'تم رفض طلب إعادة القيد بنجاح.',
+                'data' => new RequestResource($request->fresh())
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 422);
+        }
+    }
+
+    /**
      * Get re-enrollment details for a specific request.
      * 
      * GET /api/staff/re-enrollment/{id}

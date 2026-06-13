@@ -38,9 +38,20 @@ class StudyScheduleController extends Controller
         $validated = $request->validate([
             'program_id'  => 'required|exists:programs,id',
             'semester_id' => 'required|exists:semesters,id',
-            'level'       => 'required|integer|min:1|max:10',
+            'level'       => [
+                'required',
+                'integer',
+                'min:1',
+                'max:10',
+                \Illuminate\Validation\Rule::unique('study_schedules')->where(function ($query) use ($request) {
+                    return $query->where('program_id', $request->program_id)
+                                 ->where('semester_id', $request->semester_id);
+                })
+            ],
             'image'       => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240',
             'notes'       => 'nullable|string|max:1000',
+        ], [
+            'level.unique' => 'A study schedule for this program, semester, and level already exists.',
         ]);
 
         $path = $request->file('image')->store('study_schedules', 'public');

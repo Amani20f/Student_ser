@@ -118,17 +118,26 @@ class ReEnrollmentService
         return $request->load('reEnrollmentDetail');
     }
 
-    /**
-     * Approve re-enrollment request - triggers automatic status restoration.
-     * 
-     * @param Request $request
-     * @param User $approver
-     * @return Request
-     */
     public function approveReEnrollment(Request $request, User $approver): Request
     {
-        // Accept the request
-        $request->accept('تمت الموافقة على طلب إعادة القيد.', false);
+        $detail = $request->reEnrollmentDetail;
+        
+        if (!$detail) {
+            throw new Exception('تفاصيل إعادة القيد غير موجودة.');
+        }
+
+        // Validate financial fields
+        if (is_null($detail->university_fees) || is_null($detail->other_fees)) {
+            throw new Exception('لا يمكن الموافقة: لم يقم المحاسب بالمصادقة وتحديد الرسوم.');
+        }
+
+        // Validate academic fields
+        if (is_null($detail->major) || is_null($detail->academic_level) || is_null($detail->batch) || is_null($detail->academic_year)) {
+            throw new Exception('لا يمكن الموافقة: لم تقم شؤون الطلاب باستكمال البيانات الأكاديمية (التخصص، المستوى، الخ).');
+        }
+
+        // Accept the request and trigger notification
+        $request->accept('تمت الموافقة على طلب إعادة القيد.', true);
         $request->processed_by = $approver->id;
         $request->save();
 

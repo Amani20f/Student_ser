@@ -1,7 +1,8 @@
+import 'package:equatable/equatable.dart';
 import '../../../core/network/api_client.dart';
 
 /// Represents a College with its departments and programs.
-class CollegeModel {
+class CollegeModel extends Equatable {
   final int id;
   final String name;
   final String code;
@@ -22,9 +23,12 @@ class CollegeModel {
             .map((d) => DepartmentModel.fromJson(d))
             .toList(),
       );
+
+  @override
+  List<Object?> get props => [id, name, code, departments];
 }
 
-class DepartmentModel {
+class DepartmentModel extends Equatable {
   final int id;
   final String name;
   final String code;
@@ -45,9 +49,12 @@ class DepartmentModel {
             .map((p) => ProgramModel.fromJson(p))
             .toList(),
       );
+
+  @override
+  List<Object?> get props => [id, name, code, programs];
 }
 
-class ProgramModel {
+class ProgramModel extends Equatable {
   final int id;
   final String name;
   final String code;
@@ -69,6 +76,9 @@ class ProgramModel {
         college: json['college'],
         department: json['department'],
       );
+
+  @override
+  List<Object?> get props => [id, name, code, college, department];
 }
 
 /// Repository for fetching academic structure data (colleges, programs).

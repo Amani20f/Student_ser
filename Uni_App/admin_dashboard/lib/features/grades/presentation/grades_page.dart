@@ -57,9 +57,9 @@ class _GradesPageState extends ConsumerState<GradesPage> {
               icon: Icons.calendar_today_rounded,
               options: semesterOptions.map((s) => FilterValue(label: s.label, value: s.id)).toList(),
             ),
-            const FilterDefinition(
+            FilterDefinition(
               id: 'course_id', 
-              label: 'Course ID',
+              label: l10n.courseIdPlaceholder,
               type: FilterType.text,
               icon: Icons.code_rounded,
             ),
@@ -68,14 +68,14 @@ class _GradesPageState extends ConsumerState<GradesPage> {
               label: l10n.statusColumn,
               type: FilterType.dropdown,
               icon: Icons.info_outline,
-              options: const [
-                FilterValue(label: 'Passed', value: 'passed'),
-                FilterValue(label: 'Failed', value: 'failed'),
+              options: [
+                FilterValue(label: l10n.passed, value: 'passed'),
+                FilterValue(label: l10n.failed, value: 'failed'),
               ],
             ),
-            const FilterDefinition(
+            FilterDefinition(
               id: 'search',
-              label: 'Student Name/Card',
+              label: l10n.searchNameCardPlaceholder,
               type: FilterType.text,
               icon: Icons.person_search_outlined,
             ),
@@ -125,7 +125,8 @@ class _GradesPageState extends ConsumerState<GradesPage> {
             ),
             const SizedBox(height: 16),
             Text(
-              'الرجاء اختيار الفلترة لعرض البيانات',
+              l10n.selectFiltersToSearch,
+              textAlign: TextAlign.center,
               style: tt.titleMedium?.copyWith(
                 color: cs.onSurface.withAlpha(140),
                 fontWeight: FontWeight.w600,
@@ -282,11 +283,10 @@ class _GradesPageState extends ConsumerState<GradesPage> {
                 );
                 ref.invalidate(allGradesProvider);
               } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Update failed: $e')),
-                  );
-                }
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Update failed: $e')),
+                );
               }
             },
             child: Text(l10n.save),
@@ -296,41 +296,6 @@ class _GradesPageState extends ConsumerState<GradesPage> {
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    required ColorScheme cs,
-  }) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: cs.primary, size: 20),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-  }
-
-  Widget _buildDropdown<T>({
-    required T value,
-    required String label,
-    required IconData icon,
-    required List<DropdownMenuItem<T>> items,
-    required ValueChanged<T?> onChanged,
-    required ColorScheme cs,
-  }) {
-    return DropdownButtonFormField<T>(
-      initialValue: value,
-      items: items,
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: cs.primary, size: 20),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-  }
 
   Widget _buildDialogField(TextEditingController ctrl, String label) {
     return Padding(

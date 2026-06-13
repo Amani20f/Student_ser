@@ -20,7 +20,10 @@ final allGradesProvider = FutureProvider<List<GradeModel>>((ref) async {
     return <GradeModel>[];
   }
 
-  return repository.getAllGrades(filters: filters);
+  final cleanFilters = Map<String, dynamic>.from(filters);
+  cleanFilters.removeWhere((key, value) => value == '___all___' || value == -1);
+
+  return repository.getAllGrades(filters: cleanFilters);
 });
 
 /// Hardcoded semester options.

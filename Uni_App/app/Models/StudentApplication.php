@@ -13,6 +13,7 @@ class StudentApplication extends Model
     protected $fillable = [
         'application_number',
         'application_status',
+        'rejection_reason',
         'full_name',
         'national_id_number',
         'date_of_birth',

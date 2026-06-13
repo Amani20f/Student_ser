@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:admin_dashboard/l10n/app_localizations.dart';
+import '../../../core/utils/status_helper.dart';
 import '../providers/appeals_provider.dart';
 import '../data/appeal_model.dart';
 
@@ -29,7 +30,7 @@ class AppealsPage extends ConsumerWidget {
           const SizedBox(height: 24),
           
           // Filter Bar
-          _buildFilterBar(ref, cs, tt, l10n),
+          _buildFilterBar(context, ref, cs, tt, l10n),
           const SizedBox(height: 24),
 
           Expanded(
@@ -89,49 +90,40 @@ class AppealsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildFilterBar(WidgetRef ref, ColorScheme cs, TextTheme tt, AppLocalizations l10n) {
+  Widget _buildFilterBar(BuildContext context, WidgetRef ref, ColorScheme cs, TextTheme tt, AppLocalizations l10n) {
     final currentFilter = ref.watch(appealStatusFilterProvider);
+    final isSelected = currentFilter != null && currentFilter != '';
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: cs.outlineVariant.withAlpha(40)),
-        boxShadow: [
-          BoxShadow(
-            color: cs.shadow.withAlpha(6),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: isSelected ? cs.primary.withAlpha(20) : cs.surfaceContainerHighest.withAlpha(100),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: isSelected ? cs.primary.withAlpha(50) : cs.outlineVariant.withAlpha(40)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.filter_list_rounded, color: cs.primary, size: 20),
-          const SizedBox(width: 12),
-          Text(
-            '${l10n.statusColumn}: ',
-            style: tt.bodySmall?.copyWith(color: cs.onSurface.withAlpha(160)),
-          ),
+          Icon(Icons.filter_list_rounded, color: isSelected ? cs.primary : cs.onSurfaceVariant, size: 20),
+          const SizedBox(width: 8),
           DropdownButtonHideUnderline(
             child: DropdownButton<String?>(
-              value: currentFilter,
+              value: isSelected ? currentFilter : null,
+              hint: Text(l10n.statusColumn, style: tt.bodyMedium?.copyWith(color: cs.onSurface.withAlpha(180))),
               dropdownColor: cs.surface,
-              style: tt.bodyMedium?.copyWith(color: cs.onSurface),
-              items: const [
-                DropdownMenuItem(value: null, child: Text('All')),
-                DropdownMenuItem(value: 'pending_payment', child: Text('Pending Payment')),
-                DropdownMenuItem(value: 'paid', child: Text('Paid')),
-                DropdownMenuItem(value: 'under_review', child: Text('Under Review')),
-                DropdownMenuItem(value: 'approved', child: Text('Approved')),
-                DropdownMenuItem(value: 'rejected', child: Text('Rejected')),
+              style: tt.bodyMedium?.copyWith(color: isSelected ? cs.primary : cs.onSurface),
+              items: [
+                DropdownMenuItem(value: '___all___', child: Text(Localizations.localeOf(context).languageCode == 'ar' ? 'الكل' : 'All')),
+                DropdownMenuItem(value: 'pending_payment', child: Text(StatusHelper.localize(context, 'pending_payment'))),
+                DropdownMenuItem(value: 'paid', child: Text(StatusHelper.localize(context, 'paid'))),
+                DropdownMenuItem(value: 'under_review', child: Text(StatusHelper.localize(context, 'under_review'))),
+                DropdownMenuItem(value: 'approved', child: Text(StatusHelper.localize(context, 'approved'))),
+                DropdownMenuItem(value: 'rejected', child: Text(StatusHelper.localize(context, 'rejected'))),
               ],
               onChanged: (v) => ref.read(appealStatusFilterProvider.notifier).state = v,
             ),
           ),
-          if (currentFilter != null) ...[
+          if (isSelected) ...[
             const SizedBox(width: 8),
             IconButton(
               icon: const Icon(Icons.clear_rounded, size: 18),

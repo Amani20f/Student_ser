@@ -8,6 +8,11 @@ class AppealModel {
   final String status;
   final String? studentNote;
   final String? committeeReport;
+  final String? reviewerName;
+  final String? reviewedAt;
+  final String? accountantName;
+  final String? paidAt;
+  final String? paymentStatus;
   final DateTime createdAt;
   final List<AppealItemModel> items;
 
@@ -21,6 +26,11 @@ class AppealModel {
     required this.status,
     this.studentNote,
     this.committeeReport,
+    this.reviewerName,
+    this.reviewedAt,
+    this.accountantName,
+    this.paidAt,
+    this.paymentStatus,
     required this.createdAt,
     required this.items,
   });
@@ -28,6 +38,14 @@ class AppealModel {
   factory AppealModel.fromJson(Map<String, dynamic> json) {
     final studentData = json['student'] ?? {};
     final itemsData = json['items'] as List? ?? [];
+
+    final reviewedByData = json['reviewed_by'] ?? {};
+    final accountantData = json['accountant'] ?? {};
+    final paymentsData = json['payments'] as List? ?? [];
+    String? pStatus;
+    if (paymentsData.isNotEmpty) {
+      pStatus = paymentsData.first['status']?.toString();
+    }
 
     return AppealModel(
       id: json['id'] as int,
@@ -39,6 +57,11 @@ class AppealModel {
       status: json['status']?.toString() ?? 'pending',
       studentNote: json['student_note']?.toString(),
       committeeReport: json['committee_report']?.toString(),
+      reviewerName: reviewedByData['name']?.toString(),
+      reviewedAt: json['reviewed_at']?.toString(),
+      accountantName: accountantData['name']?.toString(),
+      paidAt: json['paid_at']?.toString(),
+      paymentStatus: pStatus,
       createdAt: DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now(),
       items: itemsData
           .map((i) => AppealItemModel.fromJson(i as Map<String, dynamic>))

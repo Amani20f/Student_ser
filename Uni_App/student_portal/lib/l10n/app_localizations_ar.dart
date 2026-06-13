@@ -626,8 +626,47 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get successMessage =>
-      'طلبك قيد المراجعة وسوف ياتيك الرد عبر البريد الالكتروني.';
+      'طلبك قيد المراجعة. ستتلقى رداً عبر البريد الإلكتروني.';
 
   @override
   String get selectDate => 'اختر التاريخ';
+
+  @override
+  String get viewSchedule => 'عرض الجدول';
+
+  @override
+  String get noStudySchedules =>
+      'لا توجد جداول دراسية متاحة لمستواك وتخصصك الحالي.';
+
+  @override
+  String get notes => 'ملاحظات';
+
+  @override
+  String get pleaseSelectMajor =>
+      'يرجى اختيار التخصص (الرغبة الأكاديمية الأولى)';
+
+  @override
+  String get idDocumentLabel => 'إرفاق صورة الهوية الوطنية / الإقامة / الجواز';
+
+  @override
+  String get arabicLettersOnly => 'يجب أن يحتوي على أحرف عربية فقط';
+
+  @override
+  String get englishLettersOnly => 'يجب أن يحتوي على أحرف إنجليزية فقط';
+
+  @override
+  String get minLengthFive => 'يجب ألا يقل عن 5 خانات';
+
+  @override
+  String get invalidMobileNumber => 'رقم الجوال غير صحيح (8 إلى 15 رقماً)';
+
+  @override
+  String get useThisNumberForPayment =>
+      'يمكنك استخدام هذا الرقم في نموذج سداد الرسوم الخاصة بهذا الطلب.';
+
+  @override
+  String get passwordMinLength => 'يجب أن لا تقل كلمة المرور عن 8 خانات';
+
+  @override
+  String get passwordsDoNotMatch => 'كلمة المرور غير متطابقة';
 }

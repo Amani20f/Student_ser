@@ -5,7 +5,7 @@ import 'package:university_app/l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../cubit/auth_cubit.dart';
 import '../../../../core/widgets/modern_text_field.dart';
-import '../../../../core/widgets/animated_verify_dialog.dart';
+import '../../../../core/widgets/application_status_dialog.dart';
 
 import 'forgot_password_screen.dart';
 import '../../student_registration/screens/registration_screen.dart';
@@ -85,15 +85,23 @@ class _LoginScreenState extends State<LoginScreen> {
                                   // Logo or Title
                                   Padding(
                                     padding: EdgeInsets.symmetric(
-                                      vertical: constraints.maxHeight > 750 ? 20 : 10,
+                                      vertical: constraints.maxHeight > 750
+                                          ? 20
+                                          : 10,
                                     ),
                                     child: Image.asset(
                                       'assets/images/logo.png',
-                                      height: constraints.maxHeight > 750 ? 200 : 140,
+                                      height: constraints.maxHeight > 750
+                                          ? 200
+                                          : 140,
                                       fit: BoxFit.contain,
                                     ),
                                   ),
-                                  SizedBox(height: constraints.maxHeight > 750 ? 40 : 16),
+                                  SizedBox(
+                                    height: constraints.maxHeight > 750
+                                        ? 40
+                                        : 16,
+                                  ),
 
                                   // Email Field
                                   ModernTextField(
@@ -127,10 +135,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                     isPassword: true,
                                     keyboardType: TextInputType.visiblePassword,
                                     validator: (val) {
-                                      if (val == null || val.isEmpty)
+                                      if (val == null || val.isEmpty) {
                                         return 'مطلوب';
-                                      if (val.length < 6)
+                                      }
+                                      if (val.length < 6) {
                                         return 'يجب ألا تقل عن 6 رموز';
+                                      }
                                       return null;
                                     },
                                   ),
@@ -265,37 +275,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                             barrierColor: Colors.black
                                                 .withValues(alpha: 0.5),
                                             pageBuilder: (context, anim1, anim2) {
-                                              return AnimatedVerifyDialog(
+                                              return ApplicationStatusDialog(
                                                 onCancel: () =>
                                                     Navigator.pop(context),
-                                                onVerify: () {
-                                                  Navigator.pop(context);
-                                                  ScaffoldMessenger.of(
-                                                    context,
-                                                  ).showSnackBar(
-                                                    SnackBar(
-                                                      content: Text(
-                                                        AppLocalizations.of(
-                                                          context,
-                                                        )!.statusActive,
-                                                        style: const TextStyle(
-                                                          color: Colors.white,
-                                                        ),
-                                                      ),
-                                                      backgroundColor: Theme.of(
-                                                        context,
-                                                      ).colorScheme.primary,
-                                                      behavior: SnackBarBehavior
-                                                          .floating,
-                                                      shape: RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              10,
-                                                            ),
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
                                               );
                                             },
                                           );

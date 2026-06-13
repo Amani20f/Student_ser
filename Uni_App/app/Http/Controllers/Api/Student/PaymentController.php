@@ -23,8 +23,8 @@ class PaymentController extends Controller
     {
         $request->validate([
             'amount'        => 'required|numeric|min:0',
-            'purpose'       => 'required|string|max:255',
-            'receipt_image' => 'required|file|max:5120',
+            'purpose'       => 'required|string|max:255|regex:/^[^<>\/]+$/',
+            'receipt_image' => 'required|file|mimes:jpeg,png,jpg,pdf|max:5120',
             'semester_id'   => 'nullable|exists:semesters,id',
             'ref_number'    => 'nullable|string|max:100',
         ]);
@@ -52,6 +52,14 @@ class PaymentController extends Controller
                 auth()->user()->student->id,
                 $data,
                 $request->file('receipt_image')
+            );
+
+            // Notify accountant
+            app(\App\Services\NotificationService::class)->notifyRole(
+                'accountant',
+                'دفعة مالية جديدة',
+                'تم تقديم إيصال دفع جديد من قبل طالب.',
+                $payment
             );
 
             return response()->json([

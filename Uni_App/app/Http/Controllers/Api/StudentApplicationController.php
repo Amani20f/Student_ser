@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\StudentApplication;
+use App\Models\Student;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -118,6 +119,61 @@ class StudentApplicationController extends Controller
                 'college'            => $application->desiredProgram?->department?->college?->name,
                 'submitted_at'       => $application->submitted_at?->toDateString(),
             ],
+        ]);
+    }
+
+    /**
+     * GET /api/apply/status/{nationalId}
+     * Check application status using National ID or Passport.
+     */
+    public function checkStatusByNationalId(string $nationalId): JsonResponse
+    {
+        // Sort by id DESC to get the most recent in case of legacy duplicates
+        $application = StudentApplication::where('national_id_number', $nationalId)
+            ->with('desiredProgram.department.college')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        if (!$application) {
+            return response()->json([
+                'success' => false,
+                'message' => 'لم يتم العثور على طلب لهذه الهوية/الجواز',
+            ], 404);
+        }
+        
+        // If there are multiple, log a warning
+        if (StudentApplication::where('national_id_number', $nationalId)->count() > 1) {
+            Log::warning("Multiple applications found for national ID: {$nationalId}");
+        }
+
+        $statusLabels = [
+            'pending'   => 'قيد المراجعة',
+            'submitted' => 'تم استلامه',
+            'completed' => 'مكتمل — تم القبول',
+            'rejected'  => 'مرفوض',
+        ];
+        
+        $responseData = [
+            'application_status' => $application->application_status,
+            'status_label'       => $statusLabels[$application->application_status] ?? $application->application_status,
+            'applicant_name'     => $application->full_name,
+            'program_name'       => $application->desiredProgram?->name,
+        ];
+        
+        if ($application->application_status === 'pending' || $application->application_status === 'submitted') {
+            $responseData['submitted_at'] = $application->submitted_at?->toDateString();
+        } elseif ($application->application_status === 'rejected') {
+            $responseData['rejection_reason'] = $application->rejection_reason;
+        } elseif ($application->application_status === 'completed') {
+            $student = Student::where('national_id', $nationalId)->first();
+            if ($student) {
+                $responseData['student_number'] = $student->student_number;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data'    => $responseData,
         ]);
     }
 }

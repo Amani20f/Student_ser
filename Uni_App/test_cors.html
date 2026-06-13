@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CORS Test</title>
+</head>
+<body>
+    <h1>Testing Image Fetch</h1>
+    <script>
+        console.log("Starting fetch...");
+        fetch('http://127.0.0.1:8000/storage/requests/glAJuFQb4cipqituvrjlgwjpzjoZRMInJO3eZzDs.jpg')
+            .then(response => {
+                console.log("Fetch succeeded!", response);
+            })
+            .catch(error => {
+                console.error("Fetch failed! Error details:");
+                console.error(error.message);
+                console.error(error);
+            });
+    </script>
+</body>
+</html>

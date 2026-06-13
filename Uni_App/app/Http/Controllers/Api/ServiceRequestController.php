@@ -37,6 +37,13 @@ class ServiceRequestController extends Controller
 
         $requestType = RequestType::find($requestTypeId);
 
+        if ($requestType && !$requestType->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This service is currently unavailable.'
+            ], 403);
+        }
+
         if ($requestType) {
             $formRequest = null;
             if ($requestType->slug === 'absence_excuse') {
@@ -100,14 +107,24 @@ class ServiceRequestController extends Controller
                 ?? ($formData['reason'] ?? ($formData['absence_reason'] ?? ($requestType->name ?? 'طلب خدمة')));
 
             // ── Create the base Request record ────────────────────────
-            $serviceRequest = Request::create([
-                'student_id'      => $student->id,
-                'request_type_id' => $request->input('request_type_id'),
-                'description'     => $description,
-                'status'          => RequestStatusEnum::PENDING,
-                'form_data'       => $formData ?: null,
-                'attachment'      => !empty($attachments) ? $attachments : null,
-            ]);
+            if ($requestType && $requestType->slug === 'suspension_of_enrollment') {
+                $suspensionService = app(\App\Services\Request\SuspensionRequestService::class);
+                $serviceRequest = $suspensionService->createSuspensionRequest([
+                    'request_type_id' => $request->input('request_type_id'),
+                    'form_data' => $formData ?: null,
+                    'description' => $description,
+                    'attachment' => !empty($attachments) ? $attachments : null,
+                ], $student);
+            } else {
+                $serviceRequest = Request::create([
+                    'student_id'      => $student->id,
+                    'request_type_id' => $request->input('request_type_id'),
+                    'description'     => $description,
+                    'status'          => RequestStatusEnum::PENDING,
+                    'form_data'       => $formData ?: null,
+                    'attachment'      => !empty($attachments) ? $attachments : null,
+                ]);
+            }
 
             // ── Handle Absence Excuse detail tables ───────────────────
             if ($requestType && $requestType->slug === 'absence_excuse') {
@@ -197,6 +214,25 @@ class ServiceRequestController extends Controller
             }
 
             $serviceRequest->refresh();
+
+            // Notify student of status change
+            $statusRaw = $serviceRequest->status instanceof RequestStatusEnum 
+                ? $serviceRequest->status->value 
+                : (string) $serviceRequest->status;
+
+            $statusArabic = match($statusRaw) {
+                'approved' => 'مقبول',
+                'rejected' => 'مرفوض',
+                'pending' => 'قيد الانتظار',
+                default => $statusRaw,
+            };
+
+            app(\App\Services\NotificationService::class)->notifyStudent(
+                $serviceRequest->student,
+                'تحديث حالة الطلب',
+                "تم تحديث حالة طلبك ({$serviceRequest->requestType->name}) إلى: {$statusArabic}",
+                $serviceRequest
+            );
 
             return response()->json([
                 'success' => true,

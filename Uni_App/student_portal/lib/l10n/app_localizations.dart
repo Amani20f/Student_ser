@@ -1315,6 +1315,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select Date'**
   String get selectDate;
+
+  /// No description provided for @viewSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'View Schedule'**
+  String get viewSchedule;
+
+  /// No description provided for @noStudySchedules.
+  ///
+  /// In en, this message translates to:
+  /// **'No study schedules available for your current level and program.'**
+  String get noStudySchedules;
+
+  /// No description provided for @notes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get notes;
+
+  /// No description provided for @pleaseSelectMajor.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a major (First Academic Desire)'**
+  String get pleaseSelectMajor;
+
+  /// No description provided for @idDocumentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach National ID / Iqama / Passport'**
+  String get idDocumentLabel;
+
+  /// No description provided for @arabicLettersOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Must contain Arabic letters only'**
+  String get arabicLettersOnly;
+
+  /// No description provided for @englishLettersOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Must contain English letters only'**
+  String get englishLettersOnly;
+
+  /// No description provided for @minLengthFive.
+  ///
+  /// In en, this message translates to:
+  /// **'Must be at least 5 characters'**
+  String get minLengthFive;
+
+  /// No description provided for @invalidMobileNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid mobile number (8 to 15 digits)'**
+  String get invalidMobileNumber;
+
+  /// No description provided for @useThisNumberForPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'You can use this number in the fee payment form for this request.'**
+  String get useThisNumberForPayment;
+
+  /// No description provided for @passwordMinLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters'**
+  String get passwordMinLength;
+
+  /// No description provided for @passwordsDoNotMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get passwordsDoNotMatch;
 }
 
 class _AppLocalizationsDelegate

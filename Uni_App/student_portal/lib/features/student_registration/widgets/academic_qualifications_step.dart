@@ -106,7 +106,7 @@ class _AcademicQualificationsStepState
                   onChanged: (value) =>
                       cubit.updateData(state.data.copyWith(seatNumber: value)),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'مطلوب';
+                    if (value == null || value.isEmpty) return l10n.requiredField;
                     return null;
                   },
                 ),
@@ -125,8 +125,8 @@ class _AcademicQualificationsStepState
                     }
                   },
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'مطلوب';
-                    if (double.tryParse(value) == null) return 'رقم غير صحيح';
+                    if (value == null || value.isEmpty) return l10n.requiredField;
+                    if (double.tryParse(value) == null) return l10n.invalidNumber;
                     return null;
                   },
                 ),
@@ -140,7 +140,7 @@ class _AcademicQualificationsStepState
                     state.data.copyWith(graduationYear: value),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'مطلوب';
+                    if (value == null || value.isEmpty) return l10n.requiredField;
                     return null;
                   },
                 ),
@@ -153,7 +153,7 @@ class _AcademicQualificationsStepState
                     state.data.copyWith(graduationLocation: value),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'مطلوب';
+                    if (value == null || value.isEmpty) return l10n.requiredField;
                     return null;
                   },
                 ),
@@ -166,7 +166,7 @@ class _AcademicQualificationsStepState
                     state.data.copyWith(awardingBody: value),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'مطلوب';
+                    if (value == null || value.isEmpty) return l10n.requiredField;
                     return null;
                   },
                 ),

@@ -114,7 +114,7 @@ class _ContactStepState extends State<ContactStep> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) return l10n.requiredField;
-                    if (value.length < 5) return 'يجب ألا يقل عن 5 خانات';
+                    if (value.length < 5) return l10n.minLengthFive;
                     return null;
                   },
                 ),
@@ -168,7 +168,7 @@ class _ContactStepState extends State<ContactStep> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) return l10n.requiredField;
-                    if (!RegExp(r'^\+?[0-9]{8,15}$').hasMatch(value)) return 'رقم الجوال غير صحيح (8 إلى 15 رقماً)';
+                    if (!RegExp(r'^\+?[0-9]{8,15}$').hasMatch(value)) return l10n.invalidMobileNumber;
                     return null;
                   },
                 ),

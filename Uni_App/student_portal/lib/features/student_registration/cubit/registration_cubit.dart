@@ -1,3 +1,4 @@
+import 'package:university_app/l10n/app_localizations.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:bloc/bloc.dart';
@@ -41,6 +42,14 @@ class RegistrationCubit extends Cubit<RegistrationState> {
       final apiClient = ApiClient(prefs);
       final data = state.data;
 
+      if (data.academicDesires.isEmpty || data.academicDesires.first.major == null) {
+        emit(state.copyWith(
+          status: RegistrationStatus.failure,
+          errorMessage: 'يرجى اختيار التخصص (الرغبة الأكاديمية الأولى)',
+        ));
+        return;
+      }
+
       // Map RegistrationData to API fields
       final fields = <String, String>{
         'full_name'          : '${data.fullNameAr} (${data.fullNameEn})'.trim(),
@@ -53,9 +62,7 @@ class RegistrationCubit extends Cubit<RegistrationState> {
         'phone_number'       : data.mobileNumber ?? '',
         'email_address'      : data.email ?? '',
         'address'            : data.homeAddress ?? '',
-        'desired_program_id' : data.academicDesires.isNotEmpty && data.academicDesires.first.major != null
-            ? data.academicDesires.first.major!
-            : '1',
+        'desired_program_id' : data.academicDesires.first.major!.id.toString(),
         'desired_academic_level' : '1',
         // Extra data stored in form_responses (JSON)
         'form_responses'     : _buildFormResponsesJson(data),
@@ -66,36 +73,18 @@ class RegistrationCubit extends Cubit<RegistrationState> {
         final file = File(data.profilePicturePath!);
         if (await file.exists()) {
           files.add(await http.MultipartFile.fromPath('personal_photo', file.path));
-        } else {
-          files.add(http.MultipartFile.fromBytes(
-            'personal_photo',
-            [0],
-            filename: 'uploaded_photo.jpg',
-          ));
         }
       }
       if (data.certificatePath != null) {
         final file = File(data.certificatePath!);
         if (await file.exists()) {
           files.add(await http.MultipartFile.fromPath('qualification_document', file.path));
-        } else {
-          files.add(http.MultipartFile.fromBytes(
-            'qualification_document',
-            [0],
-            filename: 'uploaded_doc.pdf',
-          ));
         }
       }
       if (data.receiptPath != null) {
         final file = File(data.receiptPath!);
         if (await file.exists()) {
           files.add(await http.MultipartFile.fromPath('identity_document', file.path));
-        } else {
-          files.add(http.MultipartFile.fromBytes(
-            'identity_document',
-            [0],
-            filename: 'uploaded_receipt.pdf',
-          ));
         }
       }
 
@@ -129,8 +118,8 @@ class RegistrationCubit extends Cubit<RegistrationState> {
       'graduation_year'      : data.graduationYear,
       'graduation_location'  : data.graduationLocation,
       'academic_desires'     : data.academicDesires.map((d) => {
-        'college'     : d.college,
-        'major'       : d.major,
+        'college'     : d.college?.name,
+        'major'       : d.major?.name,
         'degree_level': d.degreeLevel?.name,
       }).toList(),
       'whatsapp_number'      : data.whatsappNumber,

@@ -9,6 +9,8 @@ import '../data/payment_model.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/models/filter_definition.dart';
 import '../../../core/widgets/filter_bar.dart';
+import '../../../core/utils/status_helper.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PaymentsPage extends ConsumerWidget {
   const PaymentsPage({super.key});
@@ -30,7 +32,7 @@ class PaymentsPage extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Filter Bar (always visible)
-          _buildFilterBar(ref, cs, tt, l10n),
+          _buildFilterBar(context, ref, cs, tt, l10n),
           const SizedBox(height: 24),
 
           // Content
@@ -76,7 +78,8 @@ class PaymentsPage extends ConsumerWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'الرجاء اختيار الفلترة لعرض البيانات',
+                          l10n.selectFiltersToSearch,
+                          textAlign: TextAlign.center,
                           style: tt.titleMedium?.copyWith(
                             color: cs.onSurface.withAlpha(140),
                           ),
@@ -162,7 +165,7 @@ class PaymentsPage extends ConsumerWidget {
   }
 
   Widget _buildFilterBar(
-      WidgetRef ref, ColorScheme cs, TextTheme tt, AppLocalizations l10n) {
+      BuildContext context, WidgetRef ref, ColorScheme cs, TextTheme tt, AppLocalizations l10n) {
     return FilterBar(
       filters: [
         FilterDefinition(
@@ -170,10 +173,10 @@ class PaymentsPage extends ConsumerWidget {
           label: l10n.statusColumn,
           type: FilterType.dropdown,
           icon: Icons.info_outline,
-          options: const [
-            FilterValue(label: 'Pending', value: 'pending'),
-            FilterValue(label: 'Verified', value: 'verified'),
-            FilterValue(label: 'Rejected', value: 'rejected'),
+          options: [
+            FilterValue(label: StatusHelper.localize(context, 'pending'), value: 'pending'),
+            FilterValue(label: StatusHelper.localize(context, 'verified'), value: 'verified'),
+            FilterValue(label: StatusHelper.localize(context, 'rejected'), value: 'rejected'),
           ],
         ),
         const FilterDefinition(
@@ -249,8 +252,17 @@ class PaymentsPage extends ConsumerWidget {
           payment.receiptImage != null
               ? InkWell(
                   borderRadius: BorderRadius.circular(6),
-                  onTap: () =>
-                      _showReceiptDialog(context, payment.receiptImage!),
+                  onTap: () async {
+                    final url = payment.receiptImage!;
+                    if (url.toLowerCase().endsWith('.pdf')) {
+                      final uri = Uri.parse(url);
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      }
+                    } else {
+                      _showReceiptDialog(context, url);
+                    }
+                  },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

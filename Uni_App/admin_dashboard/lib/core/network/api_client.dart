@@ -64,6 +64,28 @@ class ApiClient {
     return _handleResponse(response);
   }
 
+  Future<dynamic> multipartRequest(
+    String method,
+    String path, {
+    Map<String, String>? fields,
+    List<http.MultipartFile>? files,
+  }) async {
+    final uri = _uri(path);
+    final request = http.MultipartRequest(method, uri);
+
+    request.headers.addAll({
+      'Accept': 'application/json',
+      if (_token != null) 'Authorization': 'Bearer $_token',
+    });
+
+    if (fields != null) request.fields.addAll(fields);
+    if (files != null) request.files.addAll(files);
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+    return _handleResponse(response);
+  }
+
   dynamic _handleResponse(http.Response response) {
     if (response.statusCode == 401) {
       throw const UnauthorizedException();

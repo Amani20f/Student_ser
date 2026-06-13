@@ -170,12 +170,21 @@ class StudentApplicationManagementController extends Controller
      */
     public function reject(Request $request, int $id): JsonResponse
     {
+        $request->validate([
+            'rejection_reason' => 'required|string|max:1000',
+        ], [
+            'rejection_reason.required' => 'يرجى كتابة سبب الرفض.',
+        ]);
+
         $app = StudentApplication::findOrFail($id);
-        $app->update(['application_status' => 'submitted']); // submitted = reviewed but not completed
+        $app->update([
+            'application_status' => 'rejected',
+            'rejection_reason'   => $request->input('rejection_reason'),
+        ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'تم رفض طلب التسجيل',
+            'message' => 'تم رفض طلب التسجيل بنجاح',
         ]);
     }
 }

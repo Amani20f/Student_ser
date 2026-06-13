@@ -14,6 +14,11 @@ import '../../features/notifications/presentation/notifications_page.dart';
 import '../../features/users/presentation/users_page.dart';
 import '../../features/appeals/presentation/appeals_page.dart';
 import '../../features/appeals/presentation/appeal_details_page.dart';
+import '../../features/programs/presentation/programs_page.dart';
+import '../../features/courses/presentation/courses_page.dart';
+import '../../features/semesters/presentation/semesters_page.dart';
+import '../../features/pricing/presentation/pricing_page.dart';
+import '../../features/study_schedules/presentation/study_schedules_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -75,6 +80,26 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/users',
             builder: (context, state) => const UsersPage(),
+          ),
+          GoRoute(
+            path: '/programs',
+            builder: (context, state) => const ProgramsPage(),
+          ),
+          GoRoute(
+            path: '/courses',
+            builder: (context, state) => const CoursesPage(),
+          ),
+          GoRoute(
+            path: '/pricing',
+            builder: (context, state) => const PricingPage(),
+          ),
+          GoRoute(
+            path: '/semesters',
+            builder: (context, state) => const SemestersPage(),
+          ),
+          GoRoute(
+            path: '/study-schedules',
+            builder: (context, state) => const StudySchedulesPage(),
           ),
           GoRoute(
             path: '/appeals',

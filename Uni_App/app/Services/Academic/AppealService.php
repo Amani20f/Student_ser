@@ -213,7 +213,30 @@ class AppealService
                 ]);
             }
 
-            return $appeal->fresh();
+            $appeal = $appeal->fresh();
+
+            // Notify student
+            $statusRaw = $appeal->status instanceof AppealStatusEnum 
+                ? $appeal->status->value 
+                : (string) $appeal->status;
+
+            $statusArabic = match($statusRaw) {
+                'approved' => 'مقبول',
+                'rejected' => 'مرفوض',
+                'pending' => 'قيد الانتظار',
+                'under_review' => 'تحت المراجعة',
+                'paid' => 'مدفوع',
+                default => $statusRaw,
+            };
+
+            app(\App\Services\NotificationService::class)->notifyStudent(
+                $appeal->student,
+                'تحديث حالة التظلم',
+                "تم تحديث حالة تظلمك رقم ({$appeal->id}) إلى: {$statusArabic}",
+                $appeal
+            );
+
+            return $appeal;
         });
     }
 

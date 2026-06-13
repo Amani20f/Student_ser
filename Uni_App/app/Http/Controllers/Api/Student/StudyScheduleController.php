@@ -26,7 +26,14 @@ class StudyScheduleController extends Controller
 
         if ($request->filled('semester_id')) {
             $query->where('semester_id', $request->semester_id);
+        } else {
+            // Default: return schedule for the current active semester
+            $activeSemester = \App\Models\Semester::where('is_active', true)->first();
+            if ($activeSemester) {
+                $query->where('semester_id', $activeSemester->id);
+            }
         }
+        
         if ($request->filled('level')) {
             $query->where('level', $request->level);
         } else {

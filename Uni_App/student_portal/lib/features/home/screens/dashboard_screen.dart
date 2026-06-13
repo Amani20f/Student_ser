@@ -6,6 +6,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../auth/cubit/auth_cubit.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -17,11 +18,14 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   List<dynamic> _notifications = [];
   bool _isLoadingNotifications = true;
+  Map<String, dynamic>? _latestSchedule;
+  bool _isLoadingSchedule = true;
 
   @override
   void initState() {
     super.initState();
     _loadNotifications();
+    _loadLatestSchedule();
   }
 
   void _loadNotifications() async {
@@ -50,6 +54,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
       });
     } catch (e) {
       // Ignore
+    }
+  }
+
+  void _loadLatestSchedule() async {
+    try {
+      // 1. Fetch semesters to find the active one
+      final semestersResponse = await context.read<ApiClient>().get('/semesters');
+      final semesters = (semestersResponse['data'] as List<dynamic>?) ?? [];
+      final activeSemester = semesters.firstWhere(
+        (s) => s['is_current'] == true,
+        orElse: () => null,
+      );
+
+      if (activeSemester != null) {
+        // 2. Fetch schedule
+        final scheduleResponse = await context.read<ApiClient>().get(
+          '/student/study-schedules?semester_id=${activeSemester['id']}',
+        );
+        final schedules = (scheduleResponse['data'] as List<dynamic>?) ?? [];
+        if (schedules.isNotEmpty) {
+          // Sort by id descending just in case to get the latest
+          schedules.sort((a, b) => (b['id'] as int).compareTo(a['id'] as int));
+          setState(() {
+            _latestSchedule = schedules.first;
+          });
+        }
+      }
+    } catch (e) {
+      // Handle error implicitly
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingSchedule = false;
+        });
+      }
     }
   }
 
@@ -401,8 +440,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildScheduleCard(BuildContext context) {
+    if (_isLoadingSchedule) {
+      return Container(
+        height: 180,
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor.withValues(alpha: 0.8),
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_latestSchedule == null) {
+      return Container(
+        height: 180,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor.withValues(alpha: 0.8),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+          ),
+        ),
+        child: Center(
+          child: Text(
+            AppLocalizations.of(context)!.noStudySchedules ?? 'No study schedules available for your current level and program.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+          ),
+        ),
+      );
+    }
+
+    final schedule = _latestSchedule!;
+    final notes = schedule['notes'] as String?;
+    final imageUrl = schedule['schedule_image_url'] as String?;
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
-      height: 180,
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(24),
@@ -432,41 +507,73 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
             ),
-            Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.calendar_month_rounded,
-                      size: 32,
-                      color: AppTheme.primaryColor,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
                     children: [
-                      Text(
-                        'Next Class: Algorithms',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.schedule_rounded,
+                          size: 28,
+                          color: AppTheme.primaryColor,
+                        ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '10:00 AM - Hall 301',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${schedule['term']} ${schedule['academic_year']}',
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${l10n.level} ${schedule['level']}',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
+                  if (notes != null && notes.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      '${l10n.notes ?? 'Notes'}: $notes',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontStyle: FontStyle.italic,
+                          ),
+                    ),
+                  ],
+                  if (imageUrl != null) ...[
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          final uri = Uri.parse(imageUrl);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          }
+                        },
+                        icon: const Icon(Icons.open_in_new),
+                        label: Text(l10n.viewSchedule ?? 'View Schedule'),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

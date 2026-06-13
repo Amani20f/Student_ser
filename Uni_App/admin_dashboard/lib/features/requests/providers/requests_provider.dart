@@ -19,5 +19,8 @@ final allRequestsProvider = FutureProvider<List<RequestModel>>((ref) async {
     return <RequestModel>[];
   }
   
-  return repository.getRequests(filters: filters);
+  final cleanFilters = Map<String, dynamic>.from(filters);
+  cleanFilters.removeWhere((key, value) => value == '___all___' || value == -1);
+  
+  return repository.getRequests(filters: cleanFilters);
 });

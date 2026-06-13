@@ -6,6 +6,7 @@ class RequestModel {
   final String? programName;
   final String? level;
   final String? requestType;
+  final String? requestTypeSlug;
   final String? description;
   final Map<String, dynamic>? attachment;
   final String? status;
@@ -25,6 +26,7 @@ class RequestModel {
     this.programName,
     this.level,
     this.requestType,
+    this.requestTypeSlug,
     this.description,
     this.attachment,
     this.status,
@@ -67,9 +69,10 @@ class RequestModel {
           : null,
       studentName: student?['name']?.toString(),
       studentNumber: student?['student_number']?.toString(),
-      programName: student?['program_name']?.toString(),
-      level: student?['current_level']?.toString(),
+      programName: student?['program_name']?.toString() ?? student?['program']?['name']?.toString(),
+      level: student?['current_level']?.toString() ?? student?['level']?.toString(),
       requestType: json['request_type']?.toString(),
+      requestTypeSlug: json['request_type_slug']?.toString(),
       description: json['description']?.toString(),
       attachment: parsedAttachment,
       status: json['status']?.toString().toLowerCase(),

@@ -291,7 +291,7 @@ class _GrievanceFormScreenState extends State<GrievanceFormScreen> {
                         label: 'سبب التظلم',
                         controller: _reasonController,
                         maxLines: 4,
-                        validator: (val) => val == null || val.isEmpty ? l10n.pleaseFillRequiredFields : null,
+                        validator: (val) => val == null || val.trim().isEmpty ? l10n.pleaseFillRequiredFields : null,
                       ),
                     ],
                   ),

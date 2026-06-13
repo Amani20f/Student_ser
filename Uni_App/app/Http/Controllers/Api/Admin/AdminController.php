@@ -24,8 +24,10 @@ class AdminController extends Controller
     {
         return response()->json([
             'pending_payments' => Payment::where('status', PaymentStatusEnum::PENDING)->count(),
-            'pending_requests' => Request::where('status', RequestStatusEnum::PENDING)->count(),
             'total_students' => Student::count(),
+            'active_students' => Student::where('status', \App\Enums\StudentStatusEnum::ACTIVE)->count(),
+            'pending_requests' => Request::whereIn('status', [RequestStatusEnum::PENDING, RequestStatusEnum::RATIFIED])->count(),
+            'total_requests' => Request::count(),
             'total_revenue' => Payment::where('status', PaymentStatusEnum::VERIFIED)->sum('amount'),
         ]);
     }

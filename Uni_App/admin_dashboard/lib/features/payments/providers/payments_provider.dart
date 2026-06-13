@@ -19,5 +19,8 @@ final allPaymentsProvider = FutureProvider<List<PaymentModel>>((ref) async {
     return <PaymentModel>[];
   }
   
-  return repository.getAllPayments(filters: filters);
+  final cleanFilters = Map<String, dynamic>.from(filters);
+  cleanFilters.removeWhere((key, value) => value == '___all___' || value == -1);
+  
+  return repository.getAllPayments(filters: cleanFilters);
 });

@@ -123,5 +123,21 @@ class Request extends Model
     {
         return $this->hasOne(AbsenceExcuse::class);
     }
+
+    /**
+     * Get suspension ratifications associated with the request.
+     */
+    public function suspensionRatifications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(SuspensionRatification::class, 'request_id');
+    }
+
+    /**
+     * Get re-enrollment detail associated with the request.
+     */
+    public function reEnrollmentDetail(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ReEnrollmentDetail::class, 'request_id');
+    }
 }
 

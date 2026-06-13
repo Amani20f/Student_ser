@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import 'package:university_app/core/data/academic_repository.dart';
+
 enum Gender { male, female }
 
 enum Sector { government, private }
@@ -7,15 +9,15 @@ enum Sector { government, private }
 enum DegreeLevel { bachelor, diploma }
 
 class AcademicDesire extends Equatable {
-  final String? college;
-  final String? major;
+  final CollegeModel? college;
+  final ProgramModel? major;
   final DegreeLevel? degreeLevel;
 
   const AcademicDesire({this.college, this.major, this.degreeLevel});
 
   AcademicDesire copyWith({
-    String? college,
-    String? major,
+    CollegeModel? college,
+    ProgramModel? major,
     DegreeLevel? degreeLevel,
   }) {
     return AcademicDesire(

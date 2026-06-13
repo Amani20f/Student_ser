@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:admin_dashboard/l10n/app_localizations.dart';
+import '../../../core/utils/status_helper.dart';
 import '../providers/appeals_provider.dart';
 import '../data/appeal_model.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -52,8 +52,6 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
   }
 
   Future<void> _submitReview(String decision) async {
-    final l10n = AppLocalizations.of(context)!;
-    
     if (decision == 'approved') {
       // Validate all fields are filled
       for (var id in _courseworkControllers.keys) {
@@ -128,26 +126,326 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
         data: (appeal) {
           _initializeControllers(appeal.items);
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: 40),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(appeal, cs, tt),
-                const SizedBox(height: 24),
-                _buildStudentNote(appeal, cs, tt),
-                const SizedBox(height: 24),
-                ...appeal.items.map((item) => _buildItemCard(item, cs, tt, isAdmin)),
-                const SizedBox(height: 32),
-                _buildCommitteeReportSection(cs, tt, !isAdmin),
-                const SizedBox(height: 40),
-                if (!isAdmin) _buildActionButtons(cs),
-              ],
-            ),
-          ).animate().fadeIn(duration: 500.ms);
+          if (isAdmin) {
+            return _buildAdminAuditView(appeal, cs, tt);
+          } else {
+            return _buildGradeControlView(appeal, cs, tt);
+          }
         },
       ),
     );
+  }
+
+  // ==========================================
+  // ADMIN AUDIT VIEW (READ ONLY, ARABIC)
+  // ==========================================
+
+  Widget _buildAdminAuditView(AppealModel appeal, ColorScheme cs, TextTheme tt) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(bottom: 40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildAdminHeader(appeal, cs, tt),
+          const SizedBox(height: 24),
+          _buildStudentNoteAdmin(appeal, cs, tt),
+          const SizedBox(height: 24),
+          ...appeal.items.map((item) => _buildAdminComparisonCard(item, cs, tt)),
+          const SizedBox(height: 32),
+          _buildCommitteeReportAdmin(appeal, cs, tt),
+        ],
+      ),
+    ).animate().fadeIn(duration: 500.ms);
+  }
+
+  Widget _buildAdminHeader(AppealModel appeal, ColorScheme cs, TextTheme tt) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: cs.outlineVariant.withAlpha(50)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  appeal.studentName,
+                  style: tt.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'الرقم الجامعي: ${appeal.studentNumber} • ${appeal.program ?? "عام"}',
+                  style: tt.titleMedium?.copyWith(color: cs.onSurface.withAlpha(150)),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    _buildInfoBadge(Icons.calendar_month, '${appeal.academicYear} ${appeal.term}', cs),
+                    if (appeal.paymentStatus != null)
+                      _buildInfoBadge(Icons.payment, 'حالة الدفع: ${StatusHelper.localize(context, appeal.paymentStatus!)}', cs),
+                    _buildInfoBadge(Icons.grading, 'حالة التظلم: ${StatusHelper.localize(context, appeal.status)}', cs),
+                  ],
+                ),
+                if (appeal.reviewerName != null) ...[
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      _buildInfoBadge(Icons.person, 'المُراجع: ${appeal.reviewerName}', cs),
+                      if (appeal.reviewedAt != null)
+                        _buildInfoBadge(Icons.access_time, 'تاريخ المراجعة: ${appeal.reviewedAt!.split(" ")[0]}', cs),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAdminComparisonCard(AppealItemModel item, ColorScheme cs, TextTheme tt) {
+    bool notReviewed = item.after.coursework == null && item.after.finalScore == null && item.after.total == null;
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: cs.outlineVariant.withAlpha(50)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Text(
+              item.courseName,
+              style: tt.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: cs.primary),
+            ),
+          ),
+          Divider(height: 1, color: cs.outlineVariant.withAlpha(50)),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('الدرجة الحالية (قبل التظلم)', style: tt.labelLarge?.copyWith(color: cs.onSurface.withAlpha(150), fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 16),
+                      _buildReadOnlyFieldAdmin('أعمال السنة', item.before.coursework, cs),
+                      const SizedBox(height: 12),
+                      _buildReadOnlyFieldAdmin('الاختبار النهائي', item.before.finalScore, cs),
+                      const SizedBox(height: 12),
+                      _buildReadOnlyFieldAdmin('المجموع', item.before.total, cs, isTotal: true),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 24),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('الدرجة المعدلة (بعد التظلم)', style: tt.labelLarge?.copyWith(color: cs.primary, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 16),
+                      _buildReadOnlyFieldAdmin('أعمال السنة', item.after.coursework, cs),
+                      const SizedBox(height: 12),
+                      _buildReadOnlyFieldAdmin('الاختبار النهائي', item.after.finalScore, cs),
+                      const SizedBox(height: 12),
+                      _buildReadOnlyFieldAdmin('المجموع', item.after.total, cs, isTotal: true),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 24),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('الفرق', style: tt.labelLarge?.copyWith(color: Colors.orange, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 16),
+                      if (notReviewed)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withAlpha(20),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text('لم تتم المراجعة بعد', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+                        )
+                      else ...[
+                        _buildDifferenceField(item.before.coursework, item.after.coursework, cs),
+                        const SizedBox(height: 12),
+                        _buildDifferenceField(item.before.finalScore, item.after.finalScore, cs),
+                        const SizedBox(height: 12),
+                        _buildDifferenceField(item.before.total, item.after.total, cs, isTotal: true),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDifferenceField(double? before, double? after, ColorScheme cs, {bool isTotal = false}) {
+    if (before == null || after == null) {
+      return _buildReadOnlyFieldAdmin('', null, cs);
+    }
+    double diff = after - before;
+    String sign = diff > 0 ? '+' : '';
+    Color color = diff > 0 ? Colors.green : (diff < 0 ? Colors.red : cs.onSurface);
+    
+    return Container(
+      width: double.infinity,
+      height: 48,
+      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: color.withAlpha(20),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withAlpha(50)),
+      ),
+      child: Text(
+        '$sign$diff',
+        style: TextStyle(
+          fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
+          color: color,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReadOnlyFieldAdmin(String label, double? value, ColorScheme cs, {bool isTotal = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (label.isNotEmpty) ...[
+          Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+          const SizedBox(height: 6),
+        ],
+        Container(
+          width: double.infinity,
+          height: 48,
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerHighest.withAlpha(60),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            value?.toString() ?? '—',
+            style: TextStyle(
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
+              color: isTotal ? cs.primary : cs.onSurface,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStudentNoteAdmin(AppealModel appeal, ColorScheme cs, TextTheme tt) {
+    if (appeal.studentNote == null || appeal.studentNote!.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: cs.secondaryContainer.withAlpha(40),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: cs.secondary.withAlpha(50)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.notes_rounded, size: 20, color: cs.secondary),
+              const SizedBox(width: 10),
+              Text('ملاحظات الطالب', style: tt.titleSmall?.copyWith(color: cs.secondary, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            appeal.studentNote!,
+            style: tt.bodyMedium?.copyWith(color: cs.onSurface.withAlpha(200)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCommitteeReportAdmin(AppealModel appeal, ColorScheme cs, TextTheme tt) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: cs.tertiaryContainer.withAlpha(40),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: cs.tertiary.withAlpha(50)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.gavel_rounded, size: 20, color: cs.tertiary),
+              const SizedBox(width: 10),
+              Text('تقرير لجنة المراجعة', style: tt.titleSmall?.copyWith(color: cs.tertiary, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            appeal.committeeReport == null || appeal.committeeReport!.isEmpty
+                ? 'لا يوجد تقرير متاح حتى الآن.'
+                : appeal.committeeReport!,
+            style: tt.bodyMedium?.copyWith(
+              color: appeal.committeeReport == null || appeal.committeeReport!.isEmpty
+                  ? cs.onSurface.withAlpha(100)
+                  : cs.onSurface.withAlpha(200),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================
+  // GRADE CONTROL VIEW (EDITABLE, ENGLISH)
+  // ==========================================
+
+  Widget _buildGradeControlView(AppealModel appeal, ColorScheme cs, TextTheme tt) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(bottom: 40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(appeal, cs, tt),
+          const SizedBox(height: 24),
+          _buildStudentNote(appeal, cs, tt),
+          const SizedBox(height: 24),
+          ...appeal.items.map((item) => _buildItemCard(item, cs, tt)),
+          const SizedBox(height: 32),
+          _buildCommitteeReportSection(cs, tt),
+          const SizedBox(height: 40),
+          _buildActionButtons(cs),
+        ],
+      ),
+    ).animate().fadeIn(duration: 500.ms);
   }
 
   Widget _buildHeader(AppealModel appeal, ColorScheme cs, TextTheme tt) {
@@ -178,7 +476,7 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
                   children: [
                     _buildInfoBadge(Icons.calendar_month, '${appeal.academicYear} ${appeal.term}', cs),
                     const SizedBox(width: 12),
-                    _buildInfoBadge(Icons.grading, 'Status: ${appeal.status}', cs),
+                    _buildInfoBadge(Icons.grading, 'Status: ${StatusHelper.localize(context, appeal.status)}', cs),
                   ],
                 ),
               ],
@@ -238,7 +536,7 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
     );
   }
 
-  Widget _buildItemCard(AppealItemModel item, ColorScheme cs, TextTheme tt, bool isAdmin) {
+  Widget _buildItemCard(AppealItemModel item, ColorScheme cs, TextTheme tt) {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
@@ -284,11 +582,11 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
                     children: [
                       Text('AFTER (Proposed Changes)', style: tt.labelLarge?.copyWith(color: cs.primary, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 16),
-                      _buildEditableField('Coursework', _courseworkControllers[item.id]!, cs, enabled: !isAdmin),
+                      _buildEditableField('Coursework', _courseworkControllers[item.id]!, cs),
                       const SizedBox(height: 12),
-                      _buildEditableField('Final Exam', _finalScoreControllers[item.id]!, cs, enabled: !isAdmin),
+                      _buildEditableField('Final Exam', _finalScoreControllers[item.id]!, cs),
                       const SizedBox(height: 12),
-                      _buildEditableField('Total Score', _totalControllers[item.id]!, cs, isTotal: true, enabled: !isAdmin),
+                      _buildEditableField('Total Score', _totalControllers[item.id]!, cs, isTotal: true),
                     ],
                   ),
                 ),
@@ -325,7 +623,7 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
     );
   }
 
-  Widget _buildEditableField(String label, TextEditingController controller, ColorScheme cs, {bool isTotal = false, bool enabled = true}) {
+  Widget _buildEditableField(String label, TextEditingController controller, ColorScheme cs, {bool isTotal = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -333,7 +631,6 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
         const SizedBox(height: 6),
         TextFormField(
           controller: controller,
-          enabled: enabled,
           keyboardType: TextInputType.number,
           style: TextStyle(
             fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
@@ -343,7 +640,7 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             filled: true,
-            fillColor: enabled ? cs.surface : cs.surfaceContainerHighest.withAlpha(60),
+            fillColor: cs.surface,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
@@ -351,7 +648,7 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
     );
   }
 
-  Widget _buildCommitteeReportSection(ColorScheme cs, TextTheme tt, bool enabled) {
+  Widget _buildCommitteeReportSection(ColorScheme cs, TextTheme tt) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -359,12 +656,11 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
         const SizedBox(height: 12),
         TextFormField(
           controller: _committeeReportController,
-          enabled: enabled,
           maxLines: 4,
           decoration: InputDecoration(
-            hintText: enabled ? 'Enter final review committee report or internal notes...' : 'No notes available.',
+            hintText: 'Enter final review committee report or internal notes...',
             filled: true,
-            fillColor: enabled ? cs.surface : cs.surfaceContainerHighest.withAlpha(60),
+            fillColor: cs.surface,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
           ),
         ),

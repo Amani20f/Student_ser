@@ -359,7 +359,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectFiltersToSearch =>
-      'Select filters and press Search to view results';
+      'No data is currently displayed.\nUse the filters above to search and view results.';
 
   @override
   String get userManagement => 'User Management';
@@ -474,4 +474,474 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verificationNotes => 'Verification Notes';
+
+  @override
+  String get programsLabel => 'Programs';
+
+  @override
+  String get studyPlansLabel => 'Study Plans';
+
+  @override
+  String get serviceManagementLabel => 'Service Management';
+
+  @override
+  String get programsManagement => 'Programs Management';
+
+  @override
+  String get studyPlanManagement => 'Study Plan Management';
+
+  @override
+  String get newProgram => 'New Program';
+
+  @override
+  String get editProgram => 'Edit Program';
+
+  @override
+  String get programName => 'Name';
+
+  @override
+  String get programCode => 'Code';
+
+  @override
+  String get programFees => 'Fees';
+
+  @override
+  String get programDuration => 'Duration (Years)';
+
+  @override
+  String get degreeType => 'Degree Type';
+
+  @override
+  String get bachelor => 'Bachelor';
+
+  @override
+  String get master => 'Master';
+
+  @override
+  String get diploma => 'Diploma';
+
+  @override
+  String get phd => 'PhD';
+
+  @override
+  String get searchPrograms => 'Search Programs';
+
+  @override
+  String get academicDetails => 'Academic Details';
+
+  @override
+  String get studyPlanDetails => 'Study Plan Details';
+
+  @override
+  String get prerequisites => 'Prerequisites';
+
+  @override
+  String get collegesBreadcrumb => 'Colleges';
+
+  @override
+  String get programsBreadcrumb => 'Programs';
+
+  @override
+  String get studyPlanBreadcrumb => 'Study Plan';
+
+  @override
+  String get pleaseSelectCollege => 'Please select a college';
+
+  @override
+  String get pleaseSelectProgram => 'Please select a program';
+
+  @override
+  String get noCoursesCurrently => 'No courses currently';
+
+  @override
+  String get selectedCollegeText => 'Selected College:';
+
+  @override
+  String get courseName => 'Course Name';
+
+  @override
+  String get creditHours => 'Credit Hours';
+
+  @override
+  String get semesterLevel => 'Semester Level';
+
+  @override
+  String get selectCollegeTitle => 'Select College';
+
+  @override
+  String get selectProgramTitle => 'Select Program';
+
+  @override
+  String get studyPlanTitle => 'Study Plan';
+
+  @override
+  String get years => 'Years';
+
+  @override
+  String get programCodeLabel => 'Program Code';
+
+  @override
+  String get studyDurationLabel => 'Duration';
+
+  @override
+  String get statusPending => 'Pending';
+
+  @override
+  String get statusRatified => 'Ratified';
+
+  @override
+  String get statusPendingPayment => 'Pending Payment';
+
+  @override
+  String get statusPaid => 'Paid';
+
+  @override
+  String get statusUnderReview => 'Under Review';
+
+  @override
+  String get statusApproved => 'Approved';
+
+  @override
+  String get statusRejected => 'Rejected';
+
+  @override
+  String get statusVerified => 'Verified';
+
+  @override
+  String get statusSubmitted => 'Submitted / Ready';
+
+  @override
+  String get statusCompleted => 'Completed';
+
+  @override
+  String get statusActive => 'Active';
+
+  @override
+  String get statusInactive => 'Inactive';
+
+  @override
+  String get statusUnknown => 'Unknown';
+
+  @override
+  String get searchStudentPlaceholder =>
+      'Search by Student Name, ID, or Reference';
+
+  @override
+  String get requestTypeLabel => 'Request Type';
+
+  @override
+  String get absenceExcuse => 'Absence Excuse';
+
+  @override
+  String get studyPostponement => 'Study Postponement';
+
+  @override
+  String get reEnrollment => 'Re-enrollment';
+
+  @override
+  String get gradeAppeal => 'Grade Appeal';
+
+  @override
+  String get specializationLabel => 'Specialization';
+
+  @override
+  String get computerScience => 'Computer Science';
+
+  @override
+  String get electricalEngineering => 'Electrical Engineering';
+
+  @override
+  String get businessAdministration => 'Business Administration';
+
+  @override
+  String get academicLevelLabel => 'Academic Level';
+
+  @override
+  String levelNumber(int num) {
+    return 'Level $num';
+  }
+
+  @override
+  String get advancedFilterTooltip => 'Advanced Filter';
+
+  @override
+  String totalRequests(int count) {
+    return 'Total Requests: $count';
+  }
+
+  @override
+  String failedToLoadRequestsExt(String error) {
+    return 'Failed to load requests: $error';
+  }
+
+  @override
+  String get roleAdmin => 'Admin';
+
+  @override
+  String get roleStaffAffairs => 'Staff Affairs';
+
+  @override
+  String get roleAccountant => 'Accountant';
+
+  @override
+  String get roleStudent => 'Student';
+
+  @override
+  String get searchNameCardPlaceholder => 'Search Name/Card';
+
+  @override
+  String get courseIdPlaceholder => 'Course ID';
+
+  @override
+  String get passed => 'Passed';
+
+  @override
+  String get failed => 'Failed';
+
+  @override
+  String get studySchedules => 'Study Schedules';
+
+  @override
+  String get studySchedulesManagement => 'Study Schedules Management';
+
+  @override
+  String get academicManagement => 'Academic Management';
+
+  @override
+  String get newSchedule => 'New Schedule';
+
+  @override
+  String get editSchedule => 'Edit Schedule';
+
+  @override
+  String get deleteSchedule => 'Delete Schedule';
+
+  @override
+  String get confirmDeleteSchedule =>
+      'Are you sure you want to delete this schedule?';
+
+  @override
+  String get scheduleDeleted => 'Schedule deleted successfully';
+
+  @override
+  String get scheduleCreated => 'Schedule created successfully';
+
+  @override
+  String get scheduleUpdated => 'Schedule updated successfully';
+
+  @override
+  String get selectFile => 'Select File';
+
+  @override
+  String get noFileSelected => 'No file selected';
+
+  @override
+  String get noSchedulesFound => 'No study schedules found';
+
+  @override
+  String get previewSchedule => 'Preview';
+
+  @override
+  String get downloadSchedule => 'Download';
+
+  @override
+  String get academicYear => 'Academic Year';
+
+  @override
+  String get fileName => 'File Name';
+
+  @override
+  String get failedToLoadSchedules => 'Failed to load schedules';
+
+  @override
+  String get duplicateScheduleError =>
+      'A schedule for this Program, Semester, and Level already exists.';
+
+  @override
+  String get requiredField => 'This field is required';
+
+  @override
+  String get notes => 'Notes';
+
+  @override
+  String get uploadNewFile => 'Upload New File (leave empty to keep current)';
+
+  @override
+  String get actions => 'Actions';
+
+  @override
+  String get viewDetails => 'View Details';
+
+  @override
+  String get noStudySchedules => 'No study schedules found';
+
+  @override
+  String get viewSchedule => 'View Schedule';
+
+  @override
+  String get allPrograms => 'All Programs';
+
+  @override
+  String get allSemesters => 'All Semesters';
+
+  @override
+  String get allLevels => 'All Levels';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get addStudySchedule => 'Add Study Schedule';
+
+  @override
+  String get preview => 'Preview';
+
+  @override
+  String get failedToLoadImage => 'Failed to load image';
+
+  @override
+  String get semestersManagement => 'Semesters Management';
+
+  @override
+  String get addSemester => 'Add Semester';
+
+  @override
+  String get noSemestersAdded => 'No semesters added yet.';
+
+  @override
+  String get semesterAndYear => 'Semester and Year';
+
+  @override
+  String get status => 'Status';
+
+  @override
+  String get startDate => 'Start Date';
+
+  @override
+  String get endDate => 'End Date';
+
+  @override
+  String get examsStart => 'Exams Start';
+
+  @override
+  String get active => 'Active';
+
+  @override
+  String get inactive => 'Inactive';
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get confirmDelete => 'Confirm Delete';
+
+  @override
+  String confirmDeleteSemester(String name) {
+    return 'Are you sure you want to delete $name?\nNote: You cannot delete a semester if it has registered grades or payments.';
+  }
+
+  @override
+  String get deleteSuccess => 'Deleted successfully';
+
+  @override
+  String get deleteFailed => 'Delete failed';
+
+  @override
+  String get addNewSemester => 'Add New Semester';
+
+  @override
+  String get editSemester => 'Edit Semester';
+
+  @override
+  String get startYear => 'Start Year';
+
+  @override
+  String get endYear => 'End Year';
+
+  @override
+  String get setAsActiveSemester => 'Set as active (current) semester';
+
+  @override
+  String get activateSemesterWarning =>
+      'Activating this semester will automatically deactivate all others.';
+
+  @override
+  String get examsStartDate => 'Exams Start Date';
+
+  @override
+  String get requireAllDates => 'Please select all dates';
+
+  @override
+  String get addSuccess => 'Added successfully';
+
+  @override
+  String get editSuccess => 'Edited successfully';
+
+  @override
+  String get saveChanges => 'Save Changes';
+
+  @override
+  String get selectDate => 'Select Date';
+
+  @override
+  String get firstTerm => 'First Term';
+
+  @override
+  String get secondTerm => 'Second Term';
+
+  @override
+  String get notificationSentSuccess => 'Notification sent successfully!';
+
+  @override
+  String get receivedNotifications => 'Received Notifications';
+
+  @override
+  String get sendNotification => 'Send Notification';
+
+  @override
+  String get noNotificationsYet => 'No notifications yet.';
+
+  @override
+  String get markAsRead => 'Mark as read';
+
+  @override
+  String get allUsers => 'All (Staff & Students)';
+
+  @override
+  String get allStaff => 'All Staff';
+
+  @override
+  String get roleGradeControl => 'Grade Control';
+
+  @override
+  String get broadcastNewNotification => 'Broadcast New Notification';
+
+  @override
+  String get titleLabel => 'Title';
+
+  @override
+  String get enterNotificationTitle => 'Enter notification title';
+
+  @override
+  String get messageLabel => 'Message';
+
+  @override
+  String get enterNotificationMessage => 'Enter notification message content';
+
+  @override
+  String get recipientRole => 'Recipient Role';
+
+  @override
+  String get unauthorizedSendNotifications =>
+      'Unauthorized to send notifications.';
+
+  @override
+  String errorSendingNotification(String error) {
+    return 'Error sending notification: $error';
+  }
+
+  @override
+  String errorMarkingAsRead(String error) {
+    return 'Error marking as read: $error';
+  }
 }

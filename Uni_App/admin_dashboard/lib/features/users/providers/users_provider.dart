@@ -13,5 +13,7 @@ final userFiltersProvider = StateProvider<Map<String, dynamic>>((ref) => {});
 final usersProvider = FutureProvider<List<ManagedUserModel>>((ref) async {
   final repo = ref.watch(userManagementRepositoryProvider);
   final filters = ref.watch(userFiltersProvider);
-  return repo.getUsers(filters: filters);
+  final cleanFilters = Map<String, dynamic>.from(filters);
+  cleanFilters.removeWhere((key, value) => value == '___all___' || value == -1);
+  return repo.getUsers(filters: cleanFilters);
 });

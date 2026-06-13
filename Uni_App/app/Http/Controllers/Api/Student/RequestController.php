@@ -35,6 +35,11 @@ class RequestController extends Controller
         ]);
 
         try {
+            $requestType = \App\Models\RequestType::find($request->input('request_type_id'));
+            if ($requestType && !$requestType->is_active) {
+                return response()->json(['error' => 'This service is currently unavailable.'], 403);
+            }
+
             // Check if this is an absence excuse request
             // For now, we rely on the presence of 'items' or we could check the request type slug if available.
             // As per instructions, "The student submits... array of courses".

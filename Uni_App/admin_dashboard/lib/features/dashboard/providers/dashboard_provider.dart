@@ -7,13 +7,11 @@ class DashboardStats {
   final int pendingPayments;
   final int pendingRequests;
   final int totalStudents;
-  final double totalRevenue;
 
   const DashboardStats({
     required this.pendingPayments,
     required this.pendingRequests,
     required this.totalStudents,
-    required this.totalRevenue,
   });
 
   factory DashboardStats.fromJson(Map<String, dynamic> json) {
@@ -21,7 +19,6 @@ class DashboardStats {
       pendingPayments: int.tryParse(json['pending_payments'].toString()) ?? 0,
       pendingRequests: int.tryParse(json['pending_requests'].toString()) ?? 0,
       totalStudents: int.tryParse(json['total_students'].toString()) ?? 0,
-      totalRevenue: double.tryParse(json['total_revenue'].toString()) ?? 0.0,
     );
   }
 }

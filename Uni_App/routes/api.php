@@ -25,10 +25,12 @@ use Illuminate\Support\Facades\Route;
 // Academic Structure — used by student portal forms and registration screen
 Route::get('/colleges', [AcademicStructureController::class, 'colleges']);
 Route::get('/programs',  [AcademicStructureController::class, 'programs']);
+Route::get('/semesters', [AcademicStructureController::class, 'semesters']);
 
 // Student Registration Application — public submission
 Route::post('/apply', [StudentApplicationController::class, 'store']);
 Route::get('/apply/{applicationNumber}/status', [StudentApplicationController::class, 'checkStatus']);
+Route::get('/apply/status/{nationalId}', [StudentApplicationController::class, 'checkStatusByNationalId']);
 
 // Auth
 Route::post('/login', [AuthController::class, 'login']);
@@ -54,6 +56,17 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Staff Management (read + create + update — no delete of admins)
         Route::apiResource('staff', StaffManagementController::class);
+
+        // Program Management
+        Route::apiResource('programs', \App\Http\Controllers\Api\Admin\ProgramController::class);
+        Route::post('/programs/{program}/restore', [\App\Http\Controllers\Api\Admin\ProgramController::class, 'restore']);
+
+        // Course Management
+        Route::apiResource('courses', \App\Http\Controllers\Api\Admin\CourseController::class);
+        Route::post('/courses/{course}/restore', [\App\Http\Controllers\Api\Admin\CourseController::class, 'restore']);
+
+        // Semester Management
+        Route::apiResource('semesters', \App\Http\Controllers\Api\Admin\SemesterController::class);
 
         // Student Management (read-only)
         Route::apiResource('students', \App\Http\Controllers\Api\Admin\StudentManagementController::class)->only(['index', 'destroy']);
@@ -92,6 +105,9 @@ Route::middleware('auth:sanctum')->group(function () {
         // Service Requests (Original controller - kept for backward compatibility)
         Route::get('/requests', [StudentRequestController::class, 'index']);
         Route::post('/requests', [StudentRequestController::class, 'store']);
+        
+        // Active Request Types for Student Portal
+        Route::get('/request-types', [\App\Http\Controllers\Api\Admin\RequestTypeController::class, 'activeTypes']);
         
         // Service Requests (New dynamic system with validation)
         Route::post('/service-requests', [ServiceRequestController::class, 'store']);
@@ -183,6 +199,7 @@ Route::middleware('auth:sanctum')->group(function () {
             // Re-enrollment Workflow (write)
             Route::put('/re-enrollment/{id}/ratify', [\App\Http\Controllers\Api\ReEnrollmentController::class, 'ratify']);
             Route::put('/re-enrollment/{id}/approve', [\App\Http\Controllers\Api\ReEnrollmentController::class, 'approve']);
+            Route::put('/re-enrollment/{id}/reject', [\App\Http\Controllers\Api\ReEnrollmentController::class, 'reject']);
         });
 
         // Study Schedules — admin full CRUD, staff read-only
