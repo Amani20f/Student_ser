@@ -5,11 +5,11 @@ void main() async {
   final baseUrl = 'http://127.0.0.1:8000/api/apply';
 
   Future<void> testUpload(String name, String ext, List<int> bytes, Map<String, String> fields) async {
-    print('--- Testing ' + name + ' ---');
+    print('--- Testing $name ---');
     
     // Create temp files
-    final f1 = File('id.' + ext)..writeAsBytesSync(bytes);
-    final f2 = File('qual.' + ext)..writeAsBytesSync(bytes);
+    final f1 = File('id.$ext')..writeAsBytesSync(bytes);
+    final f2 = File('qual.$ext')..writeAsBytesSync(bytes);
     final f3 = File('photo.jpg')..writeAsBytesSync([0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01]);
 
     var request = http.MultipartRequest('POST', Uri.parse(baseUrl));
@@ -23,8 +23,8 @@ void main() async {
     var response = await request.send();
     var responseData = await response.stream.bytesToString();
     
-    print('Status: ' + response.statusCode.toString());
-    print('Body: ' + responseData);
+    print('Status: ${response.statusCode}');
+    print('Body: $responseData');
   }
 
   final pdfBytes = "%PDF-1.4\\n1 0 obj\\n<<\\n/Type /Catalog\\n/Pages 2 0 R\\n>>\\nendobj\\ntrailer\\n<<\\n/Root 1 0 R\\n>>\\n%%EOF".codeUnits;

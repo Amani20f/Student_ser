@@ -17,8 +17,8 @@ return new class extends Migration
         });
 
         // Update PGSQL constraint for grades status to include incomplete
-        DB::statement("ALTER TABLE grades DROP CONSTRAINT IF EXISTS grades_status_check");
-        DB::statement("ALTER TABLE grades ADD CONSTRAINT grades_status_check CHECK (status IN ('passed', 'failed', 'incomplete'))");
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') { \Illuminate\Support\Facades\DB::statement("ALTER TABLE grades DROP CONSTRAINT IF EXISTS grades_status_check"); }
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') { \Illuminate\Support\Facades\DB::statement("ALTER TABLE grades ADD CONSTRAINT grades_status_check CHECK (status IN ('passed', 'failed', 'incomplete'))"); }
     }
 
     /**
@@ -30,7 +30,7 @@ return new class extends Migration
             $table->dropColumn('grade_estimate');
         });
 
-        DB::statement("ALTER TABLE grades DROP CONSTRAINT IF EXISTS grades_status_check");
-        DB::statement("ALTER TABLE grades ADD CONSTRAINT grades_status_check CHECK (status IN ('passed', 'failed'))");
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') { \Illuminate\Support\Facades\DB::statement("ALTER TABLE grades DROP CONSTRAINT IF EXISTS grades_status_check"); }
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') { \Illuminate\Support\Facades\DB::statement("ALTER TABLE grades ADD CONSTRAINT grades_status_check CHECK (status IN ('passed', 'failed'))"); }
     }
 };

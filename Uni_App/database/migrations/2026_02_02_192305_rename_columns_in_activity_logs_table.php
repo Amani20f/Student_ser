@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::table('activity_logs', function (Blueprint $table) {
             $table->renameColumn('user_id', 'causer_id');
+        });
+        Schema::table('activity_logs', function (Blueprint $table) {
             $table->renameColumn('model_id', 'subject_id');
         });
     }
@@ -24,6 +26,8 @@ return new class extends Migration
     {
         Schema::table('activity_logs', function (Blueprint $table) {
             $table->renameColumn('causer_id', 'user_id');
+        });
+        Schema::table('activity_logs', function (Blueprint $table) {
             $table->renameColumn('subject_id', 'model_id');
         });
     }

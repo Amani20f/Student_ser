@@ -152,6 +152,7 @@ class _RegistrationViewState extends State<RegistrationView> {
               barrierDismissible: false,
               builder: (context) => RegistrationSuccessDialog(
                 title: l10n.registrationSuccessful,
+                applicationNumber: state.applicationNumber ?? 'N/A',
                 onOkPressed: () {
                   Navigator.of(context).pop(); // Close dialog
                   Navigator.of(context).pop(); // Go back to login

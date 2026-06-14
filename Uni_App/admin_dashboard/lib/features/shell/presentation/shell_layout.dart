@@ -419,10 +419,11 @@ class ShellLayout extends ConsumerWidget {
       _NavItem('/programs', l10n.programsLabel, Icons.account_balance_rounded),
       _NavItem('/courses', l10n.studyPlansLabel, Icons.library_books_rounded),
       _NavItem('/semesters', isAr ? 'الفصول الدراسية' : 'Semesters', Icons.date_range_rounded),
-      _NavItem('/study-schedules', l10n.studySchedules ?? 'Study Schedules', Icons.schedule_rounded),
+      _NavItem('/study-schedules', l10n.studySchedules, Icons.schedule_rounded),
     ]);
 
     addGroup('Student Services', 'خدمات الطلاب', [
+      _NavItem('/admissions', isAr ? 'القبول والتسجيل' : 'Admissions', Icons.how_to_reg_rounded),
       _NavItem('/pricing', l10n.serviceManagementLabel, Icons.attach_money_rounded),
       _NavItem('/requests', l10n.requests, Icons.assignment_rounded),
       _NavItem('/payments', l10n.payments, Icons.payment_rounded),
@@ -454,7 +455,9 @@ class ShellLayout extends ConsumerWidget {
       case '/courses':
         return l10n.studyPlanManagement;
       case '/study-schedules':
-        return l10n.studySchedules ?? 'Study Schedules';
+        return l10n.studySchedules;
+      case '/admissions':
+        return Localizations.localeOf(context).languageCode == 'ar' ? 'القبول والتسجيل' : 'Admissions';
       case '/pricing':
         return l10n.serviceManagementLabel;
       case '/requests':

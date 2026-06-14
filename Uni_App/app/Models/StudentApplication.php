@@ -27,6 +27,7 @@ class StudentApplication extends Model
         'identity_document_path',
         'qualification_document_path',
         'personal_photo_path',
+        'payment_receipt_path',
         'form_responses',
         'submitted_at',
     ];

@@ -22,6 +22,8 @@ use App\Http\Controllers\Api\Student\GradeController;
 use App\Http\Controllers\Api\Student\StudyScheduleController as StudentStudyScheduleController;
 use App\Http\Controllers\Api\Student\PaymentController as StudentPaymentController;
 use App\Http\Controllers\Api\Student\RequestController as StudentRequestController;
+use App\Http\Controllers\Api\Student\ProfileController;
+use App\Http\Controllers\Api\Student\AcademicRecordController;
 use Illuminate\Support\Facades\Route;
 
 // ── Public Routes (No Authentication Required) ──────────────────────────────
@@ -88,20 +90,32 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/request-types/{requestType}', [RequestTypeController::class, 'update']);
         Route::patch('/request-types/{requestType}/toggle', [RequestTypeController::class, 'toggle']);
 
+    });
+
+    /**
+     * Shared Admin/Student Affairs Endpoints
+     */
+    Route::middleware('role:admin|student_affairs')->prefix('admin')->group(function () {
         // Student Application Management
         Route::get('/applications', [StudentApplicationManagementController::class, 'index']);
         Route::get('/applications/{id}', [StudentApplicationManagementController::class, 'show']);
         Route::post('/applications/{id}/approve', [StudentApplicationManagementController::class, 'approve']);
         Route::post('/applications/{id}/reject', [StudentApplicationManagementController::class, 'reject']);
-
     });
 
     /**
      * Student Endpoints
      */
     Route::middleware('role:student')->prefix('student')->group(function () {
-        // Grades
+        // Profile
+        Route::get('/profile', [ProfileController::class, 'show']);
+        Route::put('/profile', [ProfileController::class, 'update']);
+        Route::put('/change-password', [ProfileController::class, 'changePassword']);
+
+        // Grades & Academic Records
         Route::get('/grades', [GradeController::class, 'index']);
+        Route::get('/results', [AcademicRecordController::class, 'results']);
+        Route::get('/transcript', [AcademicRecordController::class, 'transcript']);
         
         // Payments
         Route::get('/payments', [StudentPaymentController::class, 'index']);
@@ -109,6 +123,7 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // Service Requests (Original controller - kept for backward compatibility)
         Route::get('/requests', [StudentRequestController::class, 'index']);
+        Route::get('/requests/{id}', [StudentRequestController::class, 'show']);
         Route::post('/requests', [StudentRequestController::class, 'store']);
         
         // Active Request Types for Student Portal
@@ -138,8 +153,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/appeals/{id}', [\App\Http\Controllers\Api\Student\AppealController::class, 'show']);
         Route::post('/appeals/pay', [\App\Http\Controllers\Api\Student\AppealController::class, 'submitPayment']);
 
-        // Study Schedules
-        Route::get('/study-schedules', [StudentStudyScheduleController::class, 'index']);
+        // Academic Suspension Requests
+        Route::post('/suspension-request', [\App\Http\Controllers\Api\Student\SuspensionRequestController::class, 'store']);
+        Route::get('/suspension-requests', [\App\Http\Controllers\Api\Student\SuspensionRequestController::class, 'index']);
+        Route::get('/suspension-requests/{id}', [\App\Http\Controllers\Api\Student\SuspensionRequestController::class, 'show']);
+
+        // Study Schedules & Plans
+        Route::get('/study-schedules', [StudentStudyScheduleController::class, 'show']);
+        Route::get('/study-plan', [\App\Http\Controllers\Api\Student\StudyPlanController::class, 'show']);
+        Route::get('/study-schedule', [\App\Http\Controllers\Api\Student\StudyScheduleController::class, 'show']);
     });
 
     /**
@@ -220,16 +242,10 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('/re-enrollment/{id}/ratify', [\App\Http\Controllers\Api\ReEnrollmentController::class, 'ratify']);
             Route::put('/re-enrollment/{id}/approve', [\App\Http\Controllers\Api\ReEnrollmentController::class, 'approve']);
             Route::put('/re-enrollment/{id}/reject', [\App\Http\Controllers\Api\ReEnrollmentController::class, 'reject']);
-        });
 
-        // Study Schedules — admin full CRUD, staff read-only
-        Route::middleware('role:admin')->group(function () {
-            Route::post('/study-schedules', [StaffStudyScheduleController::class, 'store']);
-            Route::put('/study-schedules/{id}', [StaffStudyScheduleController::class, 'update']);
-            Route::delete('/study-schedules/{id}', [StaffStudyScheduleController::class, 'destroy']);
-        });
-        Route::middleware('role:admin|grade_control|student_affairs|accountant')->group(function () {
-            Route::get('/study-schedules', [StaffStudyScheduleController::class, 'index']);
+            // Study Plans and Schedules Documents — student_affairs full CRUD
+            Route::apiResource('study-plans', \App\Http\Controllers\Api\Staff\StudyPlanController::class)->except(['show']);
+            Route::apiResource('study-schedules', StaffStudyScheduleController::class)->except(['show']);
         });
     });
 });

@@ -37,15 +37,59 @@ class SuspensionRequestService
         }
     }
 
-    /**
-     * Validate Level 1 restriction (Rule C).
-     * 
-     * @param Student $student
-     * @return RequestStatusEnum
-     */
-    public function validateLevel1Restriction(Student $student): RequestStatusEnum
+    public function validateLevel1Restriction(Student $student): void
     {
-        return RequestStatusEnum::PENDING;
+        if ($student->current_level <= 1) {
+            throw new Exception('First year students are not allowed to submit academic suspension requests.');
+        }
+    }
+
+    /**
+     * Validate active status.
+     */
+    public function validateActiveStatus(Student $student): void
+    {
+        if ($student->status !== \App\Enums\StudentStatusEnum::ACTIVE) {
+            throw new Exception('Only active students can submit academic suspension requests.');
+        }
+    }
+
+    /**
+     * Validate no pending suspension requests exist.
+     */
+    public function validateNoPendingSuspension(Student $student): void
+    {
+        $hasPending = Request::where('student_id', $student->id)
+            ->whereHas('requestType', function ($q) {
+                $q->where('slug', 'suspension_of_enrollment');
+            })
+            ->where('status', RequestStatusEnum::PENDING)
+            ->exists();
+
+        if ($hasPending) {
+            throw new Exception('You already have a pending suspension request.');
+        }
+    }
+
+    /**
+     * Calculate expected end semester.
+     */
+    public function calculateExpectedEndSemester(int $startSemesterId, int $durationSemesters): int
+    {
+        $startSemester = Semester::findOrFail($startSemesterId);
+
+        // Get all semesters ordered by start_date starting from the selected semester
+        $subsequentSemesters = Semester::where('start_date', '>=', $startSemester->start_date)
+            ->orderBy('start_date', 'asc')
+            ->limit($durationSemesters + 1)
+            ->get();
+
+        // If we found enough semesters, pick the one after duration. If not, fallback to the last one available
+        if ($subsequentSemesters->count() > $durationSemesters) {
+            return $subsequentSemesters[$durationSemesters]->id;
+        }
+
+        return $subsequentSemesters->last()->id;
     }
 
     /**
@@ -85,25 +129,41 @@ class SuspensionRequestService
      */
     public function createSuspensionRequest(array $data, Student $student): Request
     {
-        // Validate deadline (Rule A)
-        if (isset($data['form_data']['semester'])) {
-            $this->validateDeadline($data['form_data']['semester']);
-        }
+        // 1. Status Check
+        $this->validateActiveStatus($student);
 
-        // Validate suspension limit (Rule F)
+        // 2. Pending Request Check
+        $this->validateNoPendingSuspension($student);
+
+        // 3. Level Check
+        $this->validateLevel1Restriction($student);
+
+        // 4. Deadline Check
+        $this->validateDeadline($data['start_semester_id']);
+
+        // 5. Suspension Limit Check
         $this->validateSuspensionLimit($student);
 
-        // Check Level 1 restriction (Rule C)
-        $status = $this->validateLevel1Restriction($student);
+        // 6. Calculate expected end semester
+        $expectedEndId = $this->calculateExpectedEndSemester($data['start_semester_id'], $data['duration_semesters']);
+
+        // Format data to store in form_data JSON
+        $formData = [
+            'suspension_reason'        => $data['suspension_reason'],
+            'start_semester_id'        => $data['start_semester_id'],
+            'duration_semesters'       => $data['duration_semesters'],
+            'expected_end_semester_id' => $expectedEndId,
+            'notes'                    => $data['notes'] ?? null,
+        ];
 
         // Create the request
         $request = Request::create([
-            'student_id' => $student->id,
+            'student_id'      => $student->id,
             'request_type_id' => $data['request_type_id'],
-            'form_data' => $data['form_data'],
-            'description' => $data['description'] ?? null,
-            'attachment' => $data['attachment'] ?? null,
-            'status' => $status,
+            'form_data'       => $formData,
+            'description'     => 'طلب إيقاف قيد مؤقت',
+            'attachment'      => $data['attachment'] ?? null,
+            'status'          => RequestStatusEnum::PENDING,
         ]);
 
         return $request;
@@ -173,20 +233,16 @@ class SuspensionRequestService
         return $request;
     }
 
-    /**
-     * Get suspension details from form_data.
-     * 
-     * @param Request $request
-     * @return array
-     */
     public function getSuspensionDetails(Request $request): array
     {
         $formData = $request->form_data ?? [];
 
         return [
-            'academic_year' => $formData['academic_year'] ?? null,
-            'semester' => $formData['semester'] ?? null,
-            'reason' => $formData['reason'] ?? null,
+            'suspension_reason'        => $formData['suspension_reason'] ?? null,
+            'start_semester_id'        => $formData['start_semester_id'] ?? null,
+            'duration_semesters'       => $formData['duration_semesters'] ?? null,
+            'expected_end_semester_id' => $formData['expected_end_semester_id'] ?? null,
+            'notes'                    => $formData['notes'] ?? null,
         ];
     }
 }

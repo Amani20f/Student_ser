@@ -119,6 +119,7 @@ class StudentApplicationManagementController extends Controller
             // Create user account
             $user = User::create([
                 'name'     => $app->full_name,
+                'username' => $studentNumber,
                 'email'    => $app->email_address,
                 'password' => Hash::make($tempPassword),
                 'role'     => 'student',

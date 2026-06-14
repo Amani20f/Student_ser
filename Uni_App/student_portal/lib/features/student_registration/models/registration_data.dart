@@ -66,7 +66,10 @@ class RegistrationData extends Equatable {
   final String? identityNumber;
   final String? issuePlace;
   final DateTime? issueDate;
+  final String? identityDocumentPath;
+  final String mobileCountryCode;
   final String? mobileNumber;
+  final String whatsappCountryCode;
   final String? whatsappNumber;
   final String? email;
   final String? homeAddress;
@@ -118,7 +121,10 @@ class RegistrationData extends Equatable {
     this.identityNumber,
     this.issuePlace,
     this.issueDate,
+    this.identityDocumentPath,
+    this.mobileCountryCode = '+966',
     this.mobileNumber,
+    this.whatsappCountryCode = '+966',
     this.whatsappNumber,
     this.email,
     this.homeAddress,
@@ -161,7 +167,10 @@ class RegistrationData extends Equatable {
     String? identityNumber,
     String? issuePlace,
     DateTime? issueDate,
+    String? identityDocumentPath,
+    String? mobileCountryCode,
     String? mobileNumber,
+    String? whatsappCountryCode,
     String? whatsappNumber,
     String? email,
     String? homeAddress,
@@ -203,7 +212,10 @@ class RegistrationData extends Equatable {
       identityNumber: identityNumber ?? this.identityNumber,
       issuePlace: issuePlace ?? this.issuePlace,
       issueDate: issueDate ?? this.issueDate,
+      identityDocumentPath: identityDocumentPath ?? this.identityDocumentPath,
+      mobileCountryCode: mobileCountryCode ?? this.mobileCountryCode,
       mobileNumber: mobileNumber ?? this.mobileNumber,
+      whatsappCountryCode: whatsappCountryCode ?? this.whatsappCountryCode,
       whatsappNumber: whatsappNumber ?? this.whatsappNumber,
       email: email ?? this.email,
       homeAddress: homeAddress ?? this.homeAddress,
@@ -248,7 +260,10 @@ class RegistrationData extends Equatable {
     identityNumber,
     issuePlace,
     issueDate,
+    identityDocumentPath,
+    mobileCountryCode,
     mobileNumber,
+    whatsappCountryCode,
     whatsappNumber,
     email,
     homeAddress,

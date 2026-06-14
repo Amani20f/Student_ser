@@ -36,31 +36,28 @@ class _DeclarationStepState extends State<DeclarationStep> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () async {
-                    if (state.data.receiptPath == null) {
-                      final result = await FilePicker.platform.pickFiles(
-                        type: FileType.custom,
-                        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
-                      );
-                      if (result != null && result.files.single.path != null) {
-                        cubit.updateData(
-                          state.data.copyWith(
-                            receiptPath: result.files.single.path,
-                          ),
-                        );
-                      }
-                    } else {
-                      // Remove receipt if clicked again
+                    final result = await FilePicker.platform.pickFiles(
+                      type: FileType.custom,
+                      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+                    );
+                    if (result != null && result.files.single.path != null) {
                       cubit.updateData(
-                        state.data.copyWith(receiptPath: null),
+                        state.data.copyWith(
+                          receiptPath: result.files.single.path,
+                        ),
                       );
                     }
                   },
                   icon: Icon(
                     state.data.receiptPath != null
                         ? Icons.check_circle_rounded
-                        : Icons.badge_rounded,
+                        : Icons.receipt_long_rounded,
                   ),
-                  label: Text(l10n.idDocumentLabel),
+                  label: Text(
+                    state.data.receiptPath != null 
+                        ? state.data.receiptPath!.split('/').last.split('\\').last
+                        : l10n.paymentReceiptLabel ?? 'Upload Payment Receipt'
+                  ),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     backgroundColor:

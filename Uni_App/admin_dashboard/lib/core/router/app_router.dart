@@ -13,6 +13,7 @@ import '../../features/logs/presentation/logs_page.dart';
 import '../../features/notifications/presentation/notifications_page.dart';
 import '../../features/surveys/screens/surveys_screen.dart';
 import '../../features/users/presentation/users_page.dart';
+import '../../features/admissions/presentation/admissions_page.dart';
 import '../../features/announcements/screens/announcements_screen.dart' as admin_announcements;
 import '../../features/appeals/presentation/appeals_page.dart';
 import '../../features/appeals/presentation/appeal_details_page.dart';
@@ -61,6 +62,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/dashboard',
             builder: (context, state) => const DashboardPage(),
+          ),
+          GoRoute(
+            path: '/admissions',
+            builder: (context, state) => const AdmissionsPage(),
           ),
           GoRoute(
             path: '/requests',

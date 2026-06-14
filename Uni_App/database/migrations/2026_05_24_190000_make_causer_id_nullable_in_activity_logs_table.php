@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         // Use DB statement to drop NOT NULL constraint on causer_id
-        DB::statement('ALTER TABLE activity_logs ALTER COLUMN causer_id DROP NOT NULL');
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') { \Illuminate\Support\Facades\DB::statement('ALTER TABLE activity_logs ALTER COLUMN causer_id DROP NOT NULL'); }
     }
 
     /**
@@ -22,6 +22,6 @@ return new class extends Migration
     public function down(): void
     {
         // Re-apply NOT NULL constraint
-        DB::statement('ALTER TABLE activity_logs ALTER COLUMN causer_id SET NOT NULL');
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') { \Illuminate\Support\Facades\DB::statement('ALTER TABLE activity_logs ALTER COLUMN causer_id SET NOT NULL'); }
     }
 };

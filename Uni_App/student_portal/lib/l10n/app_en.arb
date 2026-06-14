@@ -214,5 +214,9 @@
   "invalidMobileNumber": "Invalid mobile number (8 to 15 digits)",
   "useThisNumberForPayment": "You can use this number in the fee payment form for this request.",
   "passwordMinLength": "Password must be at least 8 characters",
-  "passwordsDoNotMatch": "Passwords do not match"
+  "passwordsDoNotMatch": "Passwords do not match",
+  "preliminaryRegistrationNote": "This is a preliminary registration and does not constitute final admission. Applicants must attend, submit all required original documents, and complete university admission procedures.",
+  "registrationSuccessAlternativeDesc": "Your application has been successfully received. You can track your application status later using the National ID, Iqama, or Passport number used for registration.",
+  "uploadIdentityDocument": "Attach National ID / Passport",
+  "paymentReceiptLabel": "Payment Receipt"
 }

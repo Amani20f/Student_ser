@@ -9,49 +9,37 @@ use Illuminate\Http\Request;
 
 class StudyScheduleController extends Controller
 {
-    /**
-     * Get study schedules for the authenticated student.
-     * Filters by the student's program and optionally by semester/level.
-     */
-    public function index(Request $request): JsonResponse
+    public function show(Request $request): JsonResponse
     {
-        $student = auth()->user()->student;
+        $student = $request->user()->student;
 
-        if (!$student) {
-            return response()->json(['error' => 'Student profile not found.'], 404);
+        if (!$student || !$student->program_id) {
+            return response()->json(['message' => 'No program assigned to this student.'], 403);
         }
 
-        $query = StudySchedule::with(['semester'])
-            ->where('program_id', $student->program_id);
+        $activeSemester = \App\Models\Semester::active()->first();
 
-        if ($request->filled('semester_id')) {
-            $query->where('semester_id', $request->semester_id);
-        } else {
-            // Default: return schedule for the current active semester
-            $activeSemester = \App\Models\Semester::where('is_active', true)->first();
-            if ($activeSemester) {
-                $query->where('semester_id', $activeSemester->id);
-            }
-        }
-        
-        if ($request->filled('level')) {
-            $query->where('level', $request->level);
-        } else {
-            // Default: return schedule for the student's current level
-            $query->where('level', $student->current_level);
+        if (!$activeSemester) {
+            return response()->json(['message' => 'No active semester found.'], 404);
         }
 
-        $schedules = $query->get()->map(fn($s) => [
-            'id'                 => $s->id,
-            'program_id'         => $s->program_id,
-            'semester_id'        => $s->semester_id,
-            'academic_year'      => $s->semester->academic_year ?? null,
-            'term'               => $s->semester->term->value ?? null,
-            'level'              => $s->level,
-            'schedule_image_url' => $s->schedule_image_path ? url('storage/' . $s->schedule_image_path) : null,
-            'notes'              => $s->notes,
+        $schedule = StudySchedule::with('program')
+            ->where('program_id', $student->program_id)
+            ->where('semester_id', $activeSemester->id)
+            ->where('level', $student->current_level)
+            ->first();
+
+        if (!$schedule) {
+            return response()->json(['message' => 'Study schedule not found for your program, current level, and active semester.'], 404);
+        }
+
+        return response()->json([
+            'data' => [
+                'title'       => $schedule->title,
+                'program'     => $schedule->program->name ?? null,
+                'file_url'    => $schedule->file_path ? url('storage/' . $schedule->file_path) : null,
+                'uploaded_at' => $schedule->updated_at,
+            ]
         ]);
-
-        return response()->json(['data' => $schedules]);
     }
 }

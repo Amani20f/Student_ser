@@ -16,7 +16,7 @@ return new class extends Migration
             
             // Application identifiers
             $table->string('application_number')->unique();
-            $table->enum('application_status', ['pending', 'submitted', 'completed'])->default('pending');
+            $table->enum('application_status', ['pending', 'submitted', 'completed', 'rejected'])->default('pending');
             
             // PERSONAL INFORMATION
             $table->string('full_name');

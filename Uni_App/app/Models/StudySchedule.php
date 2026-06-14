@@ -12,10 +12,11 @@ class StudySchedule extends Model
 
     protected $fillable = [
         'program_id',
-        'level',
         'semester_id',
-        'schedule_image_path',
-        'notes',
+        'level',
+        'title',
+        'file_path',
+        'uploaded_by',
     ];
 
     protected $casts = [
@@ -28,6 +29,14 @@ class StudySchedule extends Model
     public function program(): BelongsTo
     {
         return $this->belongsTo(Program::class);
+    }
+
+    /**
+     * Get the user who uploaded this schedule.
+     */
+    public function uploader(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'uploaded_by');
     }
 
     /**

@@ -5,7 +5,7 @@ class ApiException implements Exception {
   const ApiException(this.statusCode, this.message);
 
   @override
-  String toString() => 'ApiException ($statusCode): $message';
+  String toString() => message;
 }
 
 class UnauthorizedException implements Exception {

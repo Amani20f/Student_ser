@@ -670,4 +670,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get passwordsDoNotMatch => 'Passwords do not match';
+
+  @override
+  String get preliminaryRegistrationNote =>
+      'This is a preliminary registration and does not constitute final admission. Applicants must attend, submit all required original documents, and complete university admission procedures.';
+
+  @override
+  String get registrationSuccessAlternativeDesc =>
+      'Your application has been successfully received. You can track your application status later using the National ID, Iqama, or Passport number used for registration.';
+
+  @override
+  String get uploadIdentityDocument => 'Attach National ID / Passport';
+
+  @override
+  String get paymentReceiptLabel => 'Payment Receipt';
 }

@@ -1,4 +1,4 @@
-import 'package:university_app/l10n/app_localizations.dart';
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:bloc/bloc.dart';
@@ -50,6 +50,17 @@ class RegistrationCubit extends Cubit<RegistrationState> {
         return;
       }
 
+      if (data.profilePicturePath == null ||
+          data.identityDocumentPath == null ||
+          data.certificatePath == null ||
+          data.receiptPath == null) {
+        emit(state.copyWith(
+          status: RegistrationStatus.failure,
+          errorMessage: 'يجب إرفاق جميع المستندات المطلوبة (الصورة الشخصية، الهوية، الشهادة، وسند الرسوم)',
+        ));
+        return;
+      }
+
       // Map RegistrationData to API fields
       final fields = <String, String>{
         'full_name'          : '${data.fullNameAr} (${data.fullNameEn})'.trim(),
@@ -59,7 +70,7 @@ class RegistrationCubit extends Cubit<RegistrationState> {
             : '',
         'gender'             : data.gender == Gender.male ? 'male' : 'female',
         'nationality'        : data.nationality,
-        'phone_number'       : data.mobileNumber ?? '',
+        'phone_number'       : data.mobileNumber != null ? '${data.mobileCountryCode}${data.mobileNumber}' : '',
         'email_address'      : data.email ?? '',
         'address'            : data.homeAddress ?? '',
         'desired_program_id' : data.academicDesires.first.major!.id.toString(),
@@ -75,6 +86,12 @@ class RegistrationCubit extends Cubit<RegistrationState> {
           files.add(await http.MultipartFile.fromPath('personal_photo', file.path));
         }
       }
+      if (data.identityDocumentPath != null) {
+        final file = File(data.identityDocumentPath!);
+        if (await file.exists()) {
+          files.add(await http.MultipartFile.fromPath('identity_document', file.path));
+        }
+      }
       if (data.certificatePath != null) {
         final file = File(data.certificatePath!);
         if (await file.exists()) {
@@ -84,7 +101,7 @@ class RegistrationCubit extends Cubit<RegistrationState> {
       if (data.receiptPath != null) {
         final file = File(data.receiptPath!);
         if (await file.exists()) {
-          files.add(await http.MultipartFile.fromPath('identity_document', file.path));
+          files.add(await http.MultipartFile.fromPath('payment_receipt', file.path));
         }
       }
 
@@ -122,7 +139,7 @@ class RegistrationCubit extends Cubit<RegistrationState> {
         'major'       : d.major?.name,
         'degree_level': d.degreeLevel?.name,
       }).toList(),
-      'whatsapp_number'      : data.whatsappNumber,
+      'whatsapp_number'      : data.whatsappNumber != null ? '${data.whatsappCountryCode}${data.whatsappNumber}' : null,
       'landline'             : data.landline,
       'guardian_name'        : data.guardianName,
       'guardian_relationship': data.guardianRelationship,

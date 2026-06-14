@@ -7,6 +7,7 @@ import '../../../core/widgets/gradient_background.dart';
 import '../../../core/widgets/support_dialog.dart';
 import 'package:university_app/l10n/app_localizations.dart';
 import '../../auth/screens/login_screen.dart';
+import '../../auth/cubit/auth_cubit.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -36,32 +37,42 @@ class SettingsScreen extends StatelessWidget {
                         context,
                         AppLocalizations.of(context)!.personalInfo,
                       ),
-                      _buildSettingsContainer(
-                        context,
-                        children: [
-                          _buildSettingsTile(
+                      BlocBuilder<AuthCubit, AuthState>(
+                        builder: (context, state) {
+                          String fullName = 'N/A';
+                          String nationalId = 'N/A';
+                          String email = 'N/A';
+                          if (state is Authenticated) {
+                            fullName = state.user['name'] ?? 'N/A';
+                            nationalId = state.user['national_id']?.toString() ?? 'N/A';
+                            email = state.user['email'] ?? 'N/A';
+                          }
+                          return _buildSettingsContainer(
                             context,
-                            icon: Icons.person_rounded,
-                            title: AppLocalizations.of(context)!.fullName,
-                            value: AppLocalizations.of(context)!.studentName,
-                          ),
-                          _buildDivider(context),
-                          _buildSettingsTile(
-                            context,
-                            icon: Icons.badge_rounded,
-                            title: AppLocalizations.of(
-                              context,
-                            )!.nationalIdLabel,
-                            value: '1020304050',
-                          ),
-                          _buildDivider(context),
-                          _buildSettingsTile(
-                            context,
-                            icon: Icons.phone_rounded,
-                            title: AppLocalizations.of(context)!.phoneNumber,
-                            value: '+966 50 123 4567',
-                          ),
-                        ],
+                            children: [
+                              _buildSettingsTile(
+                                context,
+                                icon: Icons.person_rounded,
+                                title: AppLocalizations.of(context)!.fullName,
+                                value: fullName,
+                              ),
+                              _buildDivider(context),
+                              _buildSettingsTile(
+                                context,
+                                icon: Icons.badge_rounded,
+                                title: AppLocalizations.of(context)!.nationalIdLabel,
+                                value: nationalId,
+                              ),
+                              _buildDivider(context),
+                              _buildSettingsTile(
+                                context,
+                                icon: Icons.email_rounded,
+                                title: AppLocalizations.of(context)!.email,
+                                value: email,
+                              ),
+                            ],
+                          );
+                        },
                       ),
 
                       const SizedBox(height: 24),

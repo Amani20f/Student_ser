@@ -31,9 +31,15 @@ class StudentApplicationController extends Controller
             'desired_program_id'     => 'required|exists:programs,id',
             'desired_academic_level' => 'nullable|integer|between:1,8',
             // Document uploads
-            'identity_document'      => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'qualification_document' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'personal_photo'         => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+            'identity_document'      => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'qualification_document' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'personal_photo'         => 'required|file|mimes:jpg,jpeg,png|max:2048',
+            'payment_receipt'        => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        ], [
+            'national_id_number.unique' => 'رقم الهوية أو الإقامة مسجل مسبقاً في النظام.',
+            'email_address.unique'      => 'البريد الإلكتروني مسجل مسبقاً في النظام.',
+            'national_id_number.required' => 'رقم الهوية مطلوب.',
+            'email_address.required'    => 'البريد الإلكتروني مطلوب.',
         ]);
 
         try {
@@ -55,6 +61,10 @@ class StudentApplicationController extends Controller
             if ($request->hasFile('personal_photo')) {
                 $data['personal_photo_path'] = $request->file('personal_photo')
                     ->store('applications/photos', 'public');
+            }
+            if ($request->hasFile('payment_receipt')) {
+                $data['payment_receipt_path'] = $request->file('payment_receipt')
+                    ->store('applications/receipts', 'public');
             }
 
             $data['application_number'] = StudentApplication::generateApplicationNumber();

@@ -218,8 +218,14 @@ class UsersPage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              Text(user.name,
-                  style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
+              Container(
+                constraints: const BoxConstraints(maxWidth: 130),
+                child: Text(
+                  user.name,
+                  style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
         ),
@@ -284,6 +290,8 @@ class UsersPage extends ConsumerWidget {
     final emailCtrl = TextEditingController();
     final passwordCtrl = TextEditingController();
     String selectedRole = 'student_affairs';
+    String? errorMessage;
+    bool isLoading = false;
 
     showDialog(
       context: context,
@@ -304,6 +312,30 @@ class UsersPage extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (errorMessage != null) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: cs.error.withAlpha(20),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: cs.error.withAlpha(50)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.error_outline_rounded, color: cs.error, size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            errorMessage!,
+                            style: tt.bodySmall?.copyWith(color: cs.error),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 _field(nameCtrl, l10n.fullName, Icons.person_outline, cs, tt),
                 const SizedBox(height: 14),
                 _field(usernameCtrl, l10n.usernameLabel,
@@ -315,6 +347,16 @@ class UsersPage extends ConsumerWidget {
                 _field(passwordCtrl, l10n.passwordLabel,
                     Icons.lock_outline_rounded, cs, tt,
                     obscure: true),
+                const SizedBox(height: 6),
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(
+                    Directionality.of(context) == TextDirection.rtl
+                        ? 'يجب أن تحتوي على 8 أحرف على الأقل، تشمل حرفاً ورقماً ورمزاً.'
+                        : 'Must be at least 8 characters with a letter, number, and symbol.',
+                    style: tt.bodySmall?.copyWith(color: cs.onSurface.withAlpha(120), fontSize: 11),
+                  ),
+                ),
                 const SizedBox(height: 14),
                 DropdownButtonFormField<String>(
                   initialValue: selectedRole,
@@ -348,40 +390,48 @@ class UsersPage extends ConsumerWidget {
               child: Text(l10n.cancel),
             ),
             FilledButton(
-              onPressed: () async {
-                Navigator.pop(dialogContext);
-                try {
-                  final repo = ref.read(userManagementRepositoryProvider);
-                  await repo.createUser(
-                    name: nameCtrl.text.trim(),
-                    username: usernameCtrl.text.trim(),
-                    email: emailCtrl.text.trim(),
-                    password: passwordCtrl.text,
-                    role: selectedRole,
-                  );
-                  ref.invalidate(usersProvider);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content: Text(l10n.accountCreatedSuccess),
-                          backgroundColor: cs.primary),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content: Text(l10n.error(e.toString())),
-                          backgroundColor: cs.error),
-                    );
-                  }
-                }
-                nameCtrl.dispose();
-                usernameCtrl.dispose();
-                emailCtrl.dispose();
-                passwordCtrl.dispose();
-              },
-              child: Text(l10n.save),
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      setState(() {
+                        errorMessage = null;
+                        isLoading = true;
+                      });
+                      try {
+                        final repo = ref.read(userManagementRepositoryProvider);
+                        await repo.createUser(
+                          name: nameCtrl.text.trim(),
+                          username: usernameCtrl.text.trim(),
+                          email: emailCtrl.text.trim(),
+                          password: passwordCtrl.text,
+                          role: selectedRole,
+                        );
+                        ref.invalidate(usersProvider);
+                        if (context.mounted) {
+                          Navigator.pop(dialogContext); // Only pop on success
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(l10n.accountCreatedSuccess),
+                                backgroundColor: cs.primary),
+                          );
+                        }
+                      } catch (e) {
+                        setState(() {
+                          errorMessage = e.toString();
+                          isLoading = false;
+                        });
+                      }
+                    },
+              child: isLoading
+                  ? SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: cs.onPrimary,
+                      ),
+                    )
+                  : Text(l10n.save),
             ),
           ],
         ),

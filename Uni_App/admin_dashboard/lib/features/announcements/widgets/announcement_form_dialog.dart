@@ -77,7 +77,7 @@ class _AnnouncementFormDialogState extends ConsumerState<AnnouncementFormDialog>
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: _targetAudience,
+                  initialValue: _targetAudience,
                   decoration: const InputDecoration(labelText: 'الفئة المستهدفة', border: OutlineInputBorder()),
                   items: const [
                     DropdownMenuItem(value: 'all_students', child: Text('جميع الطلاب')),
@@ -96,7 +96,7 @@ class _AnnouncementFormDialogState extends ConsumerState<AnnouncementFormDialog>
                 if (_targetAudience == 'specific_program') ...[
                   const SizedBox(height: 16),
                   DropdownButtonFormField<int>(
-                    value: _targetProgramId,
+                    initialValue: _targetProgramId,
                     decoration: const InputDecoration(labelText: 'البرنامج المستهدف', border: OutlineInputBorder()),
                     items: programs.map((p) => DropdownMenuItem(value: p.id, child: Text(p.name))).toList(),
                     onChanged: (val) => setState(() => _targetProgramId = val),
@@ -106,7 +106,7 @@ class _AnnouncementFormDialogState extends ConsumerState<AnnouncementFormDialog>
                 if (_targetAudience == 'specific_college') ...[
                   const SizedBox(height: 16),
                   DropdownButtonFormField<int>(
-                    value: _targetCollegeId,
+                    initialValue: _targetCollegeId,
                     decoration: const InputDecoration(labelText: 'الكلية المستهدفة', border: OutlineInputBorder()),
                     items: colleges.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
                     onChanged: (val) => setState(() => _targetCollegeId = val),

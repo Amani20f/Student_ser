@@ -13,8 +13,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('student_applications', function (Blueprint $table) {
-            DB::statement('ALTER TABLE student_applications DROP CONSTRAINT IF EXISTS student_applications_application_status_check');
-            DB::statement("ALTER TABLE student_applications ADD CONSTRAINT student_applications_application_status_check CHECK (application_status::text = ANY (ARRAY['pending'::character varying, 'submitted'::character varying, 'completed'::character varying, 'rejected'::character varying]::text[]))");
+            if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') { \Illuminate\Support\Facades\DB::statement('ALTER TABLE student_applications DROP CONSTRAINT IF EXISTS student_applications_application_status_check'); }
+            if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') { \Illuminate\Support\Facades\DB::statement("ALTER TABLE student_applications ADD CONSTRAINT student_applications_application_status_check CHECK (application_status::text = ANY (ARRAY['pending'::character varying, 'submitted'::character varying, 'completed'::character varying, 'rejected'::character varying]::text[]))"); }
         });
     }
 
@@ -24,8 +24,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('student_applications', function (Blueprint $table) {
-            DB::statement('ALTER TABLE student_applications DROP CONSTRAINT IF EXISTS student_applications_application_status_check');
-            DB::statement("ALTER TABLE student_applications ADD CONSTRAINT student_applications_application_status_check CHECK (application_status::text = ANY (ARRAY['pending'::character varying, 'submitted'::character varying, 'completed'::character varying]::text[]))");
+            if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') { \Illuminate\Support\Facades\DB::statement('ALTER TABLE student_applications DROP CONSTRAINT IF EXISTS student_applications_application_status_check'); }
+            if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') { \Illuminate\Support\Facades\DB::statement("ALTER TABLE student_applications ADD CONSTRAINT student_applications_application_status_check CHECK (application_status::text = ANY (ARRAY['pending'::character varying, 'submitted'::character varying, 'completed'::character varying]::text[]))"); }
         });
     }
 };

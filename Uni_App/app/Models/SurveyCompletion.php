@@ -26,3 +26,4 @@ class SurveyCompletion extends Model
     {
         return $this->belongsTo(Student::class);
     }
+}

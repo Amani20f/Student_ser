@@ -646,7 +646,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'يرجى اختيار التخصص (الرغبة الأكاديمية الأولى)';
 
   @override
-  String get idDocumentLabel => 'إرفاق صورة الهوية الوطنية / الإقامة / الجواز';
+  String get idDocumentLabel => 'إرفاق السند (إيصال السداد)';
 
   @override
   String get arabicLettersOnly => 'يجب أن يحتوي على أحرف عربية فقط';
@@ -669,4 +669,18 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get passwordsDoNotMatch => 'كلمة المرور غير متطابقة';
+
+  @override
+  String get preliminaryRegistrationNote =>
+      'هذا التسجيل مبدئي فقط ولا يعتبر قبولاً نهائياً، ويجب على المتقدم الحضور وتسليم جميع الوثائق الأصلية المطلوبة واستكمال إجراءات القبول لدى الجامعة.';
+
+  @override
+  String get registrationSuccessAlternativeDesc =>
+      'تم استلام طلبك بنجاح. يمكنك متابعة حالة الطلب لاحقاً باستخدام رقم الهوية الوطنية أو الإقامة أو الجواز الذي تم التسجيل به.';
+
+  @override
+  String get uploadIdentityDocument => 'إرفاق الهوية الوطنية / الجواز';
+
+  @override
+  String get paymentReceiptLabel => 'سند الرسوم';
 }

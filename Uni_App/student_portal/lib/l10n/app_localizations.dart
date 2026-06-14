@@ -1387,6 +1387,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Passwords do not match'**
   String get passwordsDoNotMatch;
+
+  /// No description provided for @preliminaryRegistrationNote.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a preliminary registration and does not constitute final admission. Applicants must attend, submit all required original documents, and complete university admission procedures.'**
+  String get preliminaryRegistrationNote;
+
+  /// No description provided for @registrationSuccessAlternativeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your application has been successfully received. You can track your application status later using the National ID, Iqama, or Passport number used for registration.'**
+  String get registrationSuccessAlternativeDesc;
+
+  /// No description provided for @uploadIdentityDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach National ID / Passport'**
+  String get uploadIdentityDocument;
+
+  /// No description provided for @paymentReceiptLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Receipt'**
+  String get paymentReceiptLabel;
 }
 
 class _AppLocalizationsDelegate

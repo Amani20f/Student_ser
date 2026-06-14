@@ -6,6 +6,49 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:university_app/core/widgets/gradient_background.dart';
 import 'package:university_app/features/requests/data/requests_repository.dart';
 import 'package:university_app/features/requests/widgets/form_inputs.dart';
+import 'package:university_app/features/auth/cubit/auth_cubit.dart';
+
+/// A single semester entry returned from GET /api/semesters
+class _SuspensionSemesterOption {
+  final int id;
+  final String name;
+  final String academicYear;
+  final DateTime? examsStart;
+
+  _SuspensionSemesterOption({
+    required this.id,
+    required this.name,
+    required this.academicYear,
+    this.examsStart,
+  });
+
+  factory _SuspensionSemesterOption.fromJson(Map<String, dynamic> json) {
+    return _SuspensionSemesterOption(
+      id: json['id'] as int,
+      name: json['name'] as String? ?? '',
+      academicYear: json['year'] as String? ?? '',
+      examsStart: json['exams_start_date'] != null
+          ? DateTime.tryParse(json['exams_start_date'] as String)
+          : null,
+    );
+  }
+
+  /// Returns null if submission is allowed, or an Arabic error message.
+  String? checkDeadline() {
+    if (examsStart == null) return null;
+    final today = DateTime.now();
+    final todayDate = DateTime(today.year, today.month, today.day);
+    final deadline = examsStart!.subtract(const Duration(days: 14));
+    final deadlineDate = DateTime(deadline.year, deadline.month, deadline.day);
+
+    if (todayDate.isAfter(deadlineDate)) {
+      final fmt =
+          '${deadline.year}-${deadline.month.toString().padLeft(2, '0')}-${deadline.day.toString().padLeft(2, '0')}';
+      return 'انتهت فترة تقديم طلب إيقاف القيد. كان آخر موعد للتقديم $fmt (14 يوماً قبل بدء الاختبارات).';
+    }
+    return null;
+  }
+}
 
 class StopEnrollmentScreen extends StatefulWidget {
   const StopEnrollmentScreen({super.key});
@@ -17,59 +60,96 @@ class StopEnrollmentScreen extends StatefulWidget {
 class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  String? _selectedCollege;
-  String? _selectedMajor;
-  String? _selectedLevel;
-  final TextEditingController _otherMajorController = TextEditingController();
-
-  String? _selectedAcademicYear;
-  String? _selectedYearStart;
-  String? _selectedYearEnd;
-
-  late final List<String> _academicYears;
-
-  final _semesterStopController = TextEditingController();
-  final _semesterToController = TextEditingController();
   final _reasonController = TextEditingController();
 
-  static const Map<String, List<String>> _collegeMajors = {
-    'كلية الهندسةو تقنية المعلومات': [
-      'تقنية المعلومات',
-      'تصميم داخلي',
-      'تعدين',
-      ' هندسة معمارية',
-      'هندسة مدنية',
-      'الذكاء الاصطناعي',
-    ],
-    'كلية الطب والعلوم الصحية': [
-      'طب بشري',
-      'مختبرات',
-      'سمع ونطق',
-      'علاج طبيعي',
-      'صيدلة',
-    ],
-    'كلية العلوم الادارية ': ['إدارة أعمال', 'محاسبة'],
-    'كلية طب الاسنان ': ['طب الاسنان'],
-  };
+  // ── Semester selection ──────────────────────────────────────────────────────
+  List<_SuspensionSemesterOption> _semesters = [];
+  _SuspensionSemesterOption? _selectedSemester;
+  bool _loadingSemesters = true;
+  String? _semesterLoadError;
 
   List<PlatformFile> _uploadedFiles = [];
   bool _isSubmitting = false;
 
+  String? _selectedCollege;
+  String? _selectedMajor;
+  String? _selectedLevel;
+  double? _requestPrice;
+
   @override
   void initState() {
     super.initState();
-    final currentYear = DateTime.now().year;
-    _academicYears = [
-      '${currentYear - 1}/$currentYear',
-      '$currentYear/${currentYear + 1}',
-    ];
+    final authState = context.read<AuthCubit>().state;
+    if (authState is Authenticated) {
+      final user = authState.user;
+      final student = user['student'] ?? {};
+      final program = student['program'] ?? {};
+      final college = program['college'] ?? {};
+
+      _selectedCollege = college['name'];
+      _selectedMajor = program['name'];
+
+      final lvl = student['current_level'];
+      if (lvl != null) {
+        final intLvl = int.tryParse(lvl.toString()) ?? 1;
+        final arabicLevels = {
+          1: 'المستوى الأول',
+          2: 'المستوى الثاني',
+          3: 'المستوى الثالث',
+          4: 'المستوى الرابع',
+          5: 'المستوى الخامس',
+          6: 'المستوى السادس',
+          7: 'المستوى السابع',
+          8: 'المستوى الثامن',
+        };
+        _selectedLevel = arabicLevels[intLvl] ?? 'المستوى $intLvl';
+      }
+    }
+    _fetchSemesters();
+  }
+
+  Future<void> _fetchSemesters() async {
+    try {
+      final repo = context.read<RequestsRepository>();
+      final data = await repo.getSemesters();
+
+      double? price;
+      try {
+        final types = await repo.getActiveRequestTypes();
+        final currentType = types.firstWhere(
+          (t) => t['slug'] == 'suspension_of_enrollment',
+          orElse: () => null,
+        );
+        if (currentType != null) {
+          price = double.tryParse(currentType['price']?.toString() ?? '10');
+        }
+      } catch (_) {
+        price = 10.0;
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _semesters = data
+            .map(
+              (e) => _SuspensionSemesterOption.fromJson(
+                Map<String, dynamic>.from(e as Map),
+              ),
+            )
+            .toList();
+        _requestPrice = price ?? 10.0;
+        _loadingSemesters = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _semesterLoadError = 'تعذّر تحميل الفصول الدراسية';
+        _loadingSemesters = false;
+      });
+    }
   }
 
   @override
   void dispose() {
-    _otherMajorController.dispose();
-    _semesterStopController.dispose();
-    _semesterToController.dispose();
     _reasonController.dispose();
     super.dispose();
   }
@@ -94,6 +174,25 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
   }
 
   Future<void> _submit() async {
+    // ── 1. Semester must be selected ──────────────────────────────────────────
+    if (_selectedSemester == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('الرجاء اختيار الفصل الدراسي المراد إيقاف القيد منه'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // ── 2. Exam deadline check (14 days before exams) ────────────────────────
+    final deadlineError = _selectedSemester!.checkDeadline();
+    if (deadlineError != null) {
+      _showDeadlineError(deadlineError);
+      return;
+    }
+
+    // ── 3. Form validation ────────────────────────────────────────────────────
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -116,9 +215,7 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
 
       await repo.submitStopEnrollment(
         requestTypeId: 2, // slug: suspension_of_enrollment
-        yearStart: _selectedYearStart ?? '',
-        semesterTo: _semesterToController.text.trim(),
-        yearEnd: _selectedYearEnd ?? '',
+        semesterId: _selectedSemester!.id,
         reason: _reasonController.text.trim(),
         attachments: attachmentFiles,
       );
@@ -128,7 +225,9 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('تم بنجاح'),
-            content: const Text('طلبك قيد المراجعة وسوف يأتيك الرد عبر التطبيق.'),
+            content: const Text(
+              'طلبك قيد المراجعة وسوف يأتيك الرد عبر التطبيق.',
+            ),
             actions: [
               TextButton(
                 onPressed: () {
@@ -144,7 +243,10 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('فشل الإرسال: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('فشل الإرسال: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -152,8 +254,94 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
     }
   }
 
+  void _showDeadlineError(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.calendar_today, color: Colors.red),
+            SizedBox(width: 8),
+            Text('لا يمكن تقديم الطلب'),
+          ],
+        ),
+        content: Text(message, style: const TextStyle(fontSize: 15)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('حسناً'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final authState = context.watch<AuthCubit>().state;
+    String name = '';
+    String studentNumber = '';
+
+    if (authState is Authenticated) {
+      final user = authState.user;
+      name = user['name'] ?? '';
+      final student = user['student'] ?? {};
+      studentNumber = student['student_number'] ?? '';
+    }
+
+    Widget buildSemesterPicker() {
+      if (_loadingSemesters) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 12),
+          child: Center(child: CircularProgressIndicator()),
+        );
+      }
+      if (_semesterLoadError != null) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Text(
+            _semesterLoadError!,
+            style: TextStyle(color: theme.colorScheme.error),
+          ),
+        );
+      }
+      if (_semesters.isEmpty) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Text('لا توجد فصول دراسية متاحة'),
+        );
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DropdownButtonFormField<_SuspensionSemesterOption>(
+            decoration: InputDecoration(
+              labelText: 'الفصل الدراسي المراد إيقاف القيد منه',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              filled: true,
+              fillColor: theme.colorScheme.surface,
+            ),
+            initialValue: _selectedSemester,
+            items: _semesters
+                .map((s) => DropdownMenuItem(value: s, child: Text(s.name)))
+                .toList(),
+            onChanged: (val) => setState(() => _selectedSemester = val),
+            validator: (val) => val == null ? 'مطلوب' : null,
+          ),
+          // ── Deadline banner ─────────────────────────────────────────────────
+          if (_selectedSemester != null) ...[
+            const SizedBox(height: 8),
+            _DeadlineBanner(semester: _selectedSemester!),
+          ],
+        ],
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text('نموذج إيقاف القيد')),
       body: GradientBackground(
@@ -164,57 +352,62 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('بيانات الطالب', style: Theme.of(context).textTheme.headlineMedium),
+                Text(
+                  'بيانات الطالب',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
                 const SizedBox(height: 16),
-                const LabeledTextField(label: 'الاسم الكامل', readOnly: true, hint: 'نورة أحمد'),
+                LabeledTextField(
+                  label: 'الاسم الكامل',
+                  readOnly: true,
+                  hint: name,
+                ),
                 const SizedBox(height: 16),
-                const LabeledTextField(label: 'الرقم الجامعي', readOnly: true, hint: '20241010'),
+                LabeledTextField(
+                  label: 'الرقم الجامعي',
+                  readOnly: true,
+                  hint: studentNumber,
+                ),
                 const SizedBox(height: 24),
                 const Divider(),
                 const SizedBox(height: 24),
-                Text('بيانات الطلب', style: Theme.of(context).textTheme.headlineMedium),
-                const SizedBox(height: 16),
-                const LabeledTextField(label: 'الكلية', readOnly: true, hint: 'كلية الهندسةو تقنية المعلومات'),
-                const SizedBox(height: 16),
-                const LabeledTextField(label: 'التخصص', readOnly: true, hint: 'تقنية المعلومات'),
-                const SizedBox(height: 16),
-                const LabeledTextField(label: 'المستوى الدراسي', readOnly: true, hint: 'المستوى الرابع'),
-                const SizedBox(height: 16),
-                const LabeledTextField(label: 'العام الجامعي', readOnly: true, hint: '2023/2024'),
-                const SizedBox(height: 16),
-                const LabeledTextField(label: 'الفصل الدراسي المراد إيقاف القيد منه', readOnly: true, hint: 'الفصل الثاني'),
-                const SizedBox(height: 16),
-                const Text('فترة الإيقاف', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                DropdownField(
-                  label: 'من العام الجامعي',
-                  items: _academicYears,
-                  value: _selectedYearStart,
-                  onChanged: (val) => setState(() => _selectedYearStart = val),
-                  validator: (val) => val == null || val.isEmpty ? 'مطلوب' : null,
+                Text(
+                  'بيانات الطلب',
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 16),
-                DropdownField(
-                  label: 'إلى الفصل الدراسي',
-                  items: const ['الفصل الأول', 'الفصل الثاني'],
-                  onChanged: (val) => _semesterToController.text = val ?? '',
-                  validator: (val) => val == null || val.isEmpty ? 'مطلوب' : null,
+                LabeledTextField(
+                  label: 'الكلية',
+                  readOnly: true,
+                  hint: _selectedCollege ?? 'كلية الهندسةو تقنية المعلومات',
                 ),
                 const SizedBox(height: 16),
-                DropdownField(
-                  label: 'نهاية العام الجامعي',
-                  items: _academicYears,
-                  value: _selectedYearEnd,
-                  onChanged: (val) => setState(() => _selectedYearEnd = val),
-                  validator: (val) => val == null || val.isEmpty ? 'مطلوب' : null,
+                LabeledTextField(
+                  label: 'التخصص',
+                  readOnly: true,
+                  hint: _selectedMajor ?? 'تقنية المعلومات',
                 ),
+                const SizedBox(height: 16),
+                LabeledTextField(
+                  label: 'المستوى الدراسي',
+                  readOnly: true,
+                  hint: _selectedLevel ?? 'المستوى الرابع',
+                ),
+                const SizedBox(height: 16),
+                // ── Semester picker ─────────────────────────────────────────
+                buildSemesterPicker(),
                 const SizedBox(height: 16),
                 LabeledTextField(
                   label: 'سبب إيقاف القيد',
                   controller: _reasonController,
                   maxLines: 4,
                   hint: 'اشرح الأسباب الخاصة لطلب الإيقاف...',
-                  validator: (val) => val == null || val.isEmpty ? 'مطلوب' : null,
+                  validator: (val) {
+                    if (val == null || val.isEmpty) return 'مطلوب';
+                    if (val.trim().length < 10)
+                      return 'يجب أن يكون سبب إيقاف القيد 10 أحرف على الأقل';
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 24),
                 FileUploadWidget(
@@ -226,16 +419,61 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
                   errorText: null,
                 ),
                 const SizedBox(height: 24),
+                if (_requestPrice != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.secondary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.secondary.withOpacity(0.3),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.payment,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'رسوم طلب إيقاف القيد: ${_requestPrice!.toStringAsFixed(0)} دولار',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.secondary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.3)),
+                    border: Border.all(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.3),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline, color: Theme.of(context).colorScheme.primary),
+                      Icon(
+                        Icons.info_outline,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                       const SizedBox(width: 12),
                       const Expanded(
                         child: Text(
@@ -267,11 +505,19 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                     child: _isSubmitting
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('إرسال الطلب', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        : const Text(
+                            'إرسال الطلب',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -279,6 +525,62 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ── Exam Deadline Status Banner ────────────────────────────────────────────────
+class _DeadlineBanner extends StatelessWidget {
+  final _SuspensionSemesterOption semester;
+
+  const _DeadlineBanner({required this.semester});
+
+  @override
+  Widget build(BuildContext context) {
+    if (semester.examsStart == null) return const SizedBox.shrink();
+
+    final error = semester.checkDeadline();
+    final isAllowed = error == null;
+
+    final deadline = semester.examsStart!.subtract(const Duration(days: 14));
+    final deadlineFmt =
+        '${deadline.year}-${deadline.month.toString().padLeft(2, '0')}-${deadline.day.toString().padLeft(2, '0')}';
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: isAllowed
+            ? Colors.green.withOpacity(0.1)
+            : Colors.red.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isAllowed ? Colors.green : Colors.red,
+          width: 1.2,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            isAllowed ? Icons.check_circle_outline : Icons.warning_amber,
+            color: isAllowed ? Colors.green : Colors.red,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              isAllowed
+                  ? 'يمكنك التقديم حتى $deadlineFmt (14 يوماً قبل بدء الاختبارات)'
+                  : error,
+              style: TextStyle(
+                fontSize: 13,
+                color: isAllowed ? Colors.green.shade700 : Colors.red.shade700,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

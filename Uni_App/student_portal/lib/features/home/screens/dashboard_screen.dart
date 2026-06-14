@@ -464,7 +464,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         child: Center(
           child: Text(
-            AppLocalizations.of(context)!.noStudySchedules ?? 'No study schedules available for your current level and program.',
+            AppLocalizations.of(context)!.noStudySchedules,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
           ),
@@ -552,7 +552,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   if (notes != null && notes.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     Text(
-                      '${l10n.notes ?? 'Notes'}: $notes',
+                      '${l10n.notes}: $notes',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontStyle: FontStyle.italic,
                           ),
@@ -570,7 +570,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }
                         },
                         icon: const Icon(Icons.open_in_new),
-                        label: Text(l10n.viewSchedule ?? 'View Schedule'),
+                        label: Text(l10n.viewSchedule),
                       ),
                     ),
                   ],
@@ -691,7 +691,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 leading: Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: color.withOpacity(0.1),
+                                    color: color.withValues(alpha: 0.1),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(

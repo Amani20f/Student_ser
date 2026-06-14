@@ -69,13 +69,74 @@ class RequestController extends Controller
     }
 
     /**
-     * Get student's request history.
+     * Get student's request history with pagination.
      */
     public function index(): JsonResponse
     {
-        $requests = $this->serviceRequestService->getStudentRequests(auth()->user()->student->id);
+        $requests = \App\Models\Request::with('requestType')
+            ->where('student_id', auth()->user()->student->id)
+            ->latest()
+            ->paginate(10);
+
+        $mappedData = $requests->map(function ($req) {
+            return [
+                'id'           => $req->id,
+                'request_type' => $req->requestType->name ?? 'Unknown',
+                'status'       => $req->status instanceof \App\Enums\RequestStatusEnum 
+                                    ? $req->status->value 
+                                    : (string) $req->status,
+                'created_at'   => $req->created_at->toDateTimeString(),
+                'updated_at'   => $req->updated_at->toDateTimeString(),
+            ];
+        });
+
         return response()->json([
-            'data' => RequestResource::collection($requests)
+            'data' => $mappedData,
+            'meta' => [
+                'current_page' => $requests->currentPage(),
+                'last_page'    => $requests->lastPage(),
+                'per_page'     => $requests->perPage(),
+                'total'        => $requests->total(),
+            ]
         ]);
+    }
+
+    /**
+     * Get details of a specific request.
+     */
+    public function show($id): JsonResponse
+    {
+        try {
+            $req = \App\Models\Request::with(['requestType', 'processedBy'])
+                ->where('student_id', auth()->user()->student->id)
+                ->findOrFail($id);
+
+            $processedByData = null;
+            if ($req->processedBy) {
+                $processedByData = [
+                    'name' => $req->processedBy->name,
+                    'role' => $req->processedBy->role ?? 'staff',
+                ];
+            }
+
+            return response()->json([
+                'data' => [
+                    'id'           => $req->id,
+                    'request_type' => $req->requestType->name ?? 'Unknown',
+                    'description'  => $req->description,
+                    'attachment'   => $req->attachment,
+                    'status'       => $req->status instanceof \App\Enums\RequestStatusEnum 
+                                        ? $req->status->value 
+                                        : (string) $req->status,
+                    'created_at'   => $req->created_at->toDateTimeString(),
+                    'updated_at'   => $req->updated_at->toDateTimeString(),
+                    'processed_by' => $processedByData,
+                    'processed_at' => $processedByData ? $req->updated_at->toDateTimeString() : null,
+                    'response'     => $req->admin_notes,
+                ]
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Request not found.'], 404);
+        }
     }
 }

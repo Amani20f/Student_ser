@@ -20,7 +20,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
   String _recipientType = 'role';
   String _targetRole = 'all';
   int? _selectedUserId;
-  Set<int> _selectedUserIds = {};
+  final Set<int> _selectedUserIds = {};
   bool _isSending = false;
 
   @override
@@ -285,8 +285,8 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
     List<DropdownMenuItem<String>> dropdownItems = [];
     if (userRole == 'admin') {
       dropdownItems = [
-        DropdownMenuItem(value: 'all', child: Text(l10n.allUsers ?? 'All Users')),
-        DropdownMenuItem(value: 'all_staff', child: Text(l10n.allStaff ?? 'All Staff')),
+        DropdownMenuItem(value: 'all', child: Text(l10n.allUsers)),
+        DropdownMenuItem(value: 'all_staff', child: Text(l10n.allStaff)),
         DropdownMenuItem(value: 'student_affairs', child: Text(l10n.roleStaffAffairs)),
         DropdownMenuItem(value: 'accountant', child: Text(l10n.roleAccountant)),
         DropdownMenuItem(value: 'grade_control', child: Text(l10n.roleGradeControl)),
@@ -328,7 +328,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n.broadcastNewNotification ?? 'Send New Message',
+              l10n.broadcastNewNotification,
               style: tt.titleLarge
                   ?.copyWith(fontWeight: FontWeight.bold, color: cs.primary),
             ),
@@ -375,7 +375,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
 
             if (_recipientType == 'role')
               DropdownButtonFormField<String>(
-                value: _targetRole,
+                initialValue: _targetRole,
                 decoration: InputDecoration(
                   labelText: l10n.recipientRole,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -391,7 +391,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
                 error: (err, _) => Text('Error loading users: $err'),
                 data: (usersList) {
                   return DropdownButtonFormField<int>(
-                    value: _recipientType == 'specific' ? _selectedUserId : null,
+                    initialValue: _recipientType == 'specific' ? _selectedUserId : null,
                     decoration: InputDecoration(
                       labelText: _recipientType == 'specific' ? 'Select User' : 'Add User',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),

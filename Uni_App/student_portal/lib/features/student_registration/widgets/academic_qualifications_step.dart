@@ -103,6 +103,7 @@ class _AcademicQualificationsStepState
                   label: l10n.seatNumber,
                   prefixIcon: Icons.confirmation_number_rounded,
                   controller: _seatNumberController,
+                  keyboardType: TextInputType.number,
                   onChanged: (value) =>
                       cubit.updateData(state.data.copyWith(seatNumber: value)),
                   validator: (value) {
@@ -114,7 +115,7 @@ class _AcademicQualificationsStepState
                 ModernTextField(
                   label: l10n.gradePercentage,
                   prefixIcon: Icons.percent_rounded,
-                  keyboardType: TextInputType.number,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   controller: _gradeController,
                   onChanged: (value) {
                     final grade = double.tryParse(value);

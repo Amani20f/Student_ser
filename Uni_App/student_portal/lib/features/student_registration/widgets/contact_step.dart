@@ -158,29 +158,73 @@ class _ContactStepState extends State<ContactStep> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                ModernTextField(
-                  label: l10n.mobileNumber,
-                  prefixIcon: Icons.phone_android_rounded,
-                  controller: _mobileController,
-                  keyboardType: TextInputType.phone,
-                  onChanged: (value) => cubit.updateData(
-                    state.data.copyWith(mobileNumber: value),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) return l10n.requiredField;
-                    if (!RegExp(r'^\+?[0-9]{8,15}$').hasMatch(value)) return l10n.invalidMobileNumber;
-                    return null;
-                  },
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 110,
+                      margin: const EdgeInsets.only(right: 8, left: 8),
+                      child: ModernDropdownField<String>(
+                        label: 'Code',
+                        prefixIcon: Icons.flag_rounded,
+                        value: state.data.mobileCountryCode,
+                        items: ['+966', '+971', '+965', '+973', '+974', '+968', '+962', '+20']
+                            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                            .toList(),
+                        onChanged: (value) => cubit.updateData(
+                          state.data.copyWith(mobileCountryCode: value),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: ModernTextField(
+                        label: l10n.mobileNumber,
+                        prefixIcon: Icons.phone_android_rounded,
+                        controller: _mobileController,
+                        keyboardType: TextInputType.phone,
+                        onChanged: (value) => cubit.updateData(
+                          state.data.copyWith(mobileNumber: value),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) return l10n.requiredField;
+                          if (!RegExp(r'^[0-9]{8,15}$').hasMatch(value)) return l10n.invalidMobileNumber;
+                          return null;
+                        },
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
-                ModernTextField(
-                  label: l10n.whatsappNumber,
-                  prefixIcon: Icons.message_rounded,
-                  controller: _whatsappController,
-                  keyboardType: TextInputType.phone,
-                  onChanged: (value) => cubit.updateData(
-                    state.data.copyWith(whatsappNumber: value),
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 110,
+                      margin: const EdgeInsets.only(right: 8, left: 8),
+                      child: ModernDropdownField<String>(
+                        label: 'Code',
+                        prefixIcon: Icons.flag_rounded,
+                        value: state.data.whatsappCountryCode,
+                        items: ['+966', '+971', '+965', '+973', '+974', '+968', '+962', '+20']
+                            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                            .toList(),
+                        onChanged: (value) => cubit.updateData(
+                          state.data.copyWith(whatsappCountryCode: value),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: ModernTextField(
+                        label: l10n.whatsappNumber,
+                        prefixIcon: Icons.message_rounded,
+                        controller: _whatsappController,
+                        keyboardType: TextInputType.phone,
+                        onChanged: (value) => cubit.updateData(
+                          state.data.copyWith(whatsappNumber: value),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 ModernTextField(

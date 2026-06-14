@@ -5,11 +5,13 @@ import 'dart:ui';
 
 class RegistrationSuccessDialog extends StatelessWidget {
   final String title;
+  final String applicationNumber;
   final VoidCallback onOkPressed;
 
   const RegistrationSuccessDialog({
     super.key,
     required this.title,
+    required this.applicationNumber,
     required this.onOkPressed,
   });
 
@@ -86,7 +88,8 @@ class RegistrationSuccessDialog extends StatelessWidget {
                           .moveY(begin: 10, end: 0, curve: Curves.easeOut),
                       const SizedBox(height: 8),
                       Text(
-                        AppLocalizations.of(context)!.registrationSuccessDesc,
+                        AppLocalizations.of(context)?.registrationSuccessAlternativeDesc ?? 
+                        "تم استلام طلبك بنجاح. يمكنك الاستعلام عن حالة الطلب لاحقاً باستخدام رقم الهوية الوطنية أو الإقامة أو الجواز الذي تم التسجيل به.",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Theme.of(
@@ -95,46 +98,6 @@ class RegistrationSuccessDialog extends StatelessWidget {
                           fontSize: 14,
                         ),
                       ).animate().fadeIn(delay: 200.ms),
-                      const SizedBox(height: 24),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 16,
-                          horizontal: 24,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest
-                              .withValues(alpha: isDark ? 0.3 : 0.5),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              AppLocalizations.of(
-                                context,
-                              )!.referenceNumberLabel,
-                              style: TextStyle(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.6),
-                                fontSize: 12,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            SelectableText(
-                              'REF-2024#',
-                              style: TextStyle(
-                                color: primaryColor,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ).animate().fadeIn(delay: 300.ms).scale(),
                       const SizedBox(height: 32),
                       SizedBox(
                         width: double.infinity,

@@ -86,6 +86,31 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
             key: widget.formKey,
             child: Column(
               children: [
+                Container(
+                  margin: const EdgeInsets.only(bottom: 24),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.1),
+                    border: Border.all(color: Colors.orange.shade300),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline_rounded, color: Colors.orange.shade700),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          l10n.preliminaryRegistrationNote,
+                          style: TextStyle(
+                            color: Colors.orange.shade800,
+                            fontWeight: FontWeight.w600,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 ModernTextField(
                   label: l10n.fullNameAr,
                   prefixIcon: Icons.person_rounded,
@@ -232,26 +257,20 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                   },
                 ),
                 const SizedBox(height: 16),
-                // Documents Upload
+                // Documents Upload (Certificate)
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () async {
-                      if (state.data.certificatePath == null) {
-                        final result = await FilePicker.platform.pickFiles(
-                          type: FileType.custom,
-                          allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
-                        );
-                        if (result != null && result.files.single.path != null) {
-                          cubit.updateData(
-                            state.data.copyWith(
-                              certificatePath: result.files.single.path,
-                            ),
-                          );
-                        }
-                      } else {
+                      final result = await FilePicker.platform.pickFiles(
+                        type: FileType.custom,
+                        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+                      );
+                      if (result != null && result.files.single.path != null) {
                         cubit.updateData(
-                          state.data.copyWith(certificatePath: null),
+                          state.data.copyWith(
+                            certificatePath: result.files.single.path,
+                          ),
                         );
                       }
                     },
@@ -260,11 +279,56 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                           ? Icons.check_circle_rounded
                           : Icons.upload_file,
                     ),
-                    label: Text(l10n.uploadDocuments),
+                    label: Text(
+                      state.data.certificatePath != null 
+                          ? state.data.certificatePath!.split('/').last.split('\\').last
+                          : l10n.uploadDocuments
+                    ),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       backgroundColor:
                           state.data.certificatePath != null
+                              ? Colors.green
+                              : const Color(0xFF009688),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Identity Document Upload
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      final result = await FilePicker.platform.pickFiles(
+                        type: FileType.custom,
+                        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+                      );
+                      if (result != null && result.files.single.path != null) {
+                        cubit.updateData(
+                          state.data.copyWith(
+                            identityDocumentPath: result.files.single.path,
+                          ),
+                        );
+                      }
+                    },
+                    icon: Icon(
+                      state.data.identityDocumentPath != null
+                          ? Icons.check_circle_rounded
+                          : Icons.badge_rounded,
+                    ),
+                    label: Text(
+                      state.data.identityDocumentPath != null 
+                          ? state.data.identityDocumentPath!.split('/').last.split('\\').last
+                          : l10n.uploadIdentityDocument
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor:
+                          state.data.identityDocumentPath != null
                               ? Colors.green
                               : const Color(0xFF009688),
                       foregroundColor: Colors.white,
@@ -280,21 +344,15 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () async {
-                      if (state.data.profilePicturePath == null) {
-                        final result = await FilePicker.platform.pickFiles(
-                          type: FileType.custom,
-                          allowedExtensions: ['jpg', 'jpeg', 'png'],
-                        );
-                        if (result != null && result.files.single.path != null) {
-                          cubit.updateData(
-                            state.data.copyWith(
-                              profilePicturePath: result.files.single.path,
-                            ),
-                          );
-                        }
-                      } else {
+                      final result = await FilePicker.platform.pickFiles(
+                        type: FileType.custom,
+                        allowedExtensions: ['jpg', 'jpeg', 'png'],
+                      );
+                      if (result != null && result.files.single.path != null) {
                         cubit.updateData(
-                          state.data.copyWith(profilePicturePath: null),
+                          state.data.copyWith(
+                            profilePicturePath: result.files.single.path,
+                          ),
                         );
                       }
                     },
@@ -303,7 +361,11 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                           ? Icons.check_circle_rounded
                           : Icons.add_photo_alternate_rounded,
                     ),
-                    label: Text(l10n.uploadPhotos),
+                    label: Text(
+                      state.data.profilePicturePath != null 
+                          ? state.data.profilePicturePath!.split('/').last.split('\\').last
+                          : l10n.uploadPhotos
+                    ),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       backgroundColor:

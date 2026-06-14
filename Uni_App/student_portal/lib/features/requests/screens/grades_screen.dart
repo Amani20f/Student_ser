@@ -217,16 +217,18 @@ class _GradesScreenState extends State<GradesScreen> {
                         ],
                         rows: displayedGrades.map((course) {
                           final courseMap = course as Map<String, dynamic>;
-                          final courseName = courseMap['courseName'] ?? '';
-                          final courseworkVal = (courseMap['first'] ?? 0) + (courseMap['second'] ?? 0);
-                          final midtermVal = courseMap['midterm'] ?? 0;
-                          final finalVal = courseMap['final'] ?? 0;
-                          final totalVal = courseMap['total'] ?? 0;
+                          final courseName = courseMap['courseName']?.toString() ?? '';
+                          final firstVal = num.tryParse(courseMap['first']?.toString() ?? '0') ?? 0;
+                          final secondVal = num.tryParse(courseMap['second']?.toString() ?? '0') ?? 0;
+                          final courseworkVal = firstVal + secondVal;
+                          final midtermVal = num.tryParse(courseMap['midterm']?.toString() ?? '0') ?? 0;
+                          final finalVal = num.tryParse(courseMap['final']?.toString() ?? '0') ?? 0;
+                          final totalVal = num.tryParse(courseMap['total']?.toString() ?? '0') ?? 0;
                           
-                          final rawStatus = courseMap['status'] ?? 'pass';
+                          final rawStatus = courseMap['status']?.toString() ?? 'pass';
                           final statusText = rawStatus == 'pass' ? 'ناجح' : 'راسب';
                           
-                          final gpaVal = courseMap['gpa'] ?? 0.0;
+                          final gpaVal = num.tryParse(courseMap['gpa']?.toString() ?? '0') ?? 0.0;
                           final gradeLetter = _calculateLetterGrade(totalVal);
 
                           return DataRow(
@@ -312,7 +314,7 @@ class _GradesScreenState extends State<GradesScreen> {
                   setState(() => _isLoading = true);
                   await context.read<ApiClient>().post(
                     ApiConstants.completeSurvey,
-                    data: {'survey_id': surveyId},
+                    body: {'survey_id': surveyId},
                   );
                   setState(() => _surveyData = null);
                   _loadGrades();
