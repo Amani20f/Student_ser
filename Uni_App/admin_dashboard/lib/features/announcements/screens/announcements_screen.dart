@@ -45,8 +45,8 @@ class AnnouncementsScreen extends ConsumerWidget {
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
-            child: SizedBox(
-              width: double.infinity,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
               child: DataTable(
                 headingRowColor: WidgetStateProperty.all(Colors.grey[200]),
                 columns: [
@@ -87,8 +87,24 @@ class AnnouncementsScreen extends ConsumerWidget {
                               )
                             : const Text('-'),
                       ),
-                      DataCell(Text(announcement.title)),
-                      DataCell(Text(announcement.targetAudienceLabel)),
+                      DataCell(
+                        SizedBox(
+                          width: 150,
+                          child: Text(
+                            announcement.title,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                      DataCell(
+                        SizedBox(
+                          width: 200,
+                          child: Text(
+                            announcement.targetAudienceLabel,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
                       DataCell(Text(announcement.publishedAt?.toString().substring(0, 10) ?? '-')),
                       DataCell(
                         Switch(
@@ -99,42 +115,45 @@ class AnnouncementsScreen extends ConsumerWidget {
                         ),
                       ),
                       DataCell(
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blue),
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => AnnouncementFormDialog(announcement: announcement),
-                                );
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () async {
-                                final confirm = await showDialog<bool>(
-                                  context: context,
-                                  builder: (ctx) => AlertDialog(
-                                    title: Text(l10n.confirmDelete),
-                                    content: Text(l10n.confirmDeleteAnnouncement),
-                                    actions: [
-                                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
-                                      ElevatedButton(
-                                        onPressed: () => Navigator.pop(ctx, true),
-                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                                        child: Text(l10n.delete, style: const TextStyle(color: Colors.white)),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                                if (confirm == true) {
-                                  ref.read(announcementsProvider.notifier).deleteAnnouncement(announcement.id);
-                                }
-                              },
-                            ),
-                          ],
+                        SizedBox(
+                          width: 100,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AnnouncementFormDialog(announcement: announcement),
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () async {
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: Text(l10n.confirmDelete),
+                                      content: Text(l10n.confirmDeleteAnnouncement),
+                                      actions: [
+                                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+                                        ElevatedButton(
+                                          onPressed: () => Navigator.pop(ctx, true),
+                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                          child: Text(l10n.delete, style: const TextStyle(color: Colors.white)),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirm == true) {
+                                    ref.read(announcementsProvider.notifier).deleteAnnouncement(announcement.id);
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],

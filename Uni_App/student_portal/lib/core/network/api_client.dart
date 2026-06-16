@@ -26,7 +26,7 @@ class ApiClient {
   }
 
   Future<dynamic> get(String path, {Map<String, String>? queryParams}) async {
-    final response = await http.get(_uri(path, queryParams), headers: _headers);
+    final response = await http.get(_uri(path, queryParams), headers: _headers).timeout(const Duration(seconds: 10));
     return _handleResponse(response);
   }
 
@@ -35,7 +35,7 @@ class ApiClient {
       _uri(path),
       headers: _headers,
       body: body != null ? jsonEncode(body) : null,
-    );
+    ).timeout(const Duration(seconds: 10));
     return _handleResponse(response);
   }
 
@@ -44,7 +44,7 @@ class ApiClient {
       _uri(path),
       headers: _headers,
       body: body != null ? jsonEncode(body) : null,
-    );
+    ).timeout(const Duration(seconds: 10));
     return _handleResponse(response);
   }
 
@@ -53,12 +53,12 @@ class ApiClient {
       _uri(path),
       headers: _headers,
       body: body != null ? jsonEncode(body) : null,
-    );
+    ).timeout(const Duration(seconds: 10));
     return _handleResponse(response);
   }
 
   Future<dynamic> delete(String path) async {
-    final response = await http.delete(_uri(path), headers: _headers);
+    final response = await http.delete(_uri(path), headers: _headers).timeout(const Duration(seconds: 10));
     return _handleResponse(response);
   }
 
@@ -93,6 +93,12 @@ class ApiClient {
       throw const UnauthorizedException();
     }
     if (response.statusCode >= 400) {
+      print('=====================================');
+      print('HTTP STATUS CODE: ${response.statusCode}');
+      print('FULL ERROR RESPONSE BODY:');
+      print(response.body);
+      print('=====================================');
+
       final body = response.body.isNotEmpty
           ? jsonDecode(response.body)
           : {'error': 'Unknown error'};

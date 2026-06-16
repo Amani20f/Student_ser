@@ -83,9 +83,12 @@ class _RegistrationViewState extends State<RegistrationView> {
                   ),
                 ],
               ),
-              content: Text(
-                l10n.registrationFeeWarning,
-                style: const TextStyle(fontSize: 16, height: 1.5),
+              content: SingleChildScrollView(
+                child: Text(
+                  l10n.registrationFeeWarning,
+                  style: const TextStyle(fontSize: 15, height: 1.6),
+                  textAlign: TextAlign.justify,
+                ),
               ),
               actions: [
                 TextButton(

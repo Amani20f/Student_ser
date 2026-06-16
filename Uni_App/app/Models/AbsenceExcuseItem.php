@@ -12,12 +12,21 @@ class AbsenceExcuseItem extends Model
 
     protected $fillable = [
         'absence_excuse_id',
+        'course_id',
         'course_name',
         'absence_date',
         'day',
         'prev_excused_count',
         'prev_unexcused_count',
     ];
+
+    /**
+     * Get the course associated with this excuse item.
+     */
+    public function course(): BelongsTo
+    {
+        return $this->belongsTo(Course::class);
+    }
 
     /**
      * Get the absence excuse that owns the item.

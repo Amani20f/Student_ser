@@ -1,6 +1,7 @@
 class ProgramModel {
   final int id;
   final int departmentId;
+  final int? collegeId;
   final String name;
   final String code;
   final int durationYears;
@@ -13,6 +14,7 @@ class ProgramModel {
   ProgramModel({
     required this.id,
     required this.departmentId,
+    this.collegeId,
     required this.name,
     required this.code,
     required this.durationYears,
@@ -27,6 +29,7 @@ class ProgramModel {
     return ProgramModel(
       id: json['id'],
       departmentId: json['department_id'] ?? 0,
+      collegeId: json['college_id'],
       name: json['name'] ?? '',
       code: json['code'] ?? '',
       durationYears: json['duration_years'] ?? 4,

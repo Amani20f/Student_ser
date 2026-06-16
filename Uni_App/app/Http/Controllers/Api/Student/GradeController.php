@@ -20,11 +20,29 @@ class GradeController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $studentId = auth()->user()->student->id;
+            $student = auth()->user()->student;
+            $studentId = $student->id;
+            $programId = $student->program_id;
+            $collegeId = $student->program?->department?->college_id;
+            $currentLevel = $student->current_level;
 
-            // Check for required survey
+            // Check for required survey that targets this student
             $latestRequiredSurvey = \App\Models\Survey::where('is_active', true)
                 ->where('is_required_for_grades', true)
+                ->where(function($query) use ($programId, $collegeId, $currentLevel) {
+                    // College matches OR is not set
+                    $query->where(function ($sub) use ($collegeId) {
+                        $sub->whereNull('target_college_id')->orWhere('target_college_id', $collegeId);
+                    })
+                    // AND Program matches OR is not set
+                    ->where(function ($sub) use ($programId) {
+                        $sub->whereNull('target_program_id')->orWhere('target_program_id', $programId);
+                    })
+                    // AND Level matches OR is not set
+                    ->where(function ($sub) use ($currentLevel) {
+                        $sub->whereNull('target_level')->orWhere('target_level', $currentLevel);
+                    });
+                })
                 ->latest()
                 ->first();
 

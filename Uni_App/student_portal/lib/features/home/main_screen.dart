@@ -3,6 +3,7 @@ import 'screens/dashboard_screen.dart';
 import 'package:university_app/l10n/app_localizations.dart';
 import 'package:university_app/features/settings/screens/settings_screen.dart';
 import 'package:university_app/features/requests/screens/requests_list_screen.dart';
+import 'package:university_app/features/surveys/screens/optional_surveys_screen.dart';
 import '../announcements/screens/announcements_screen.dart';
 import '../../core/widgets/modern_bottom_nav_bar.dart';
 
@@ -20,6 +21,7 @@ class _MainScreenState extends State<MainScreen> {
     DashboardScreen(),
     RequestsListScreen(),
     AnnouncementsScreen(),
+    OptionalSurveysScreen(),
     SettingsScreen(),
   ];
 
@@ -52,6 +54,11 @@ class _MainScreenState extends State<MainScreen> {
             icon: Icons.campaign_rounded,
             selectedIcon: Icons.campaign_rounded,
             label: AppLocalizations.of(context)!.navAnnouncements,
+          ),
+          ModernNavItem(
+            icon: Icons.poll_rounded,
+            selectedIcon: Icons.poll_rounded,
+            label: 'الاستبيانات', // Hardcoded as requested or could use l10n later
           ),
           ModernNavItem(
             icon: Icons.settings_rounded,

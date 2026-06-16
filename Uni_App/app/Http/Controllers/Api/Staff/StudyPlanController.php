@@ -25,8 +25,8 @@ class StudyPlanController extends Controller
     {
         $validated = $request->validate([
             'program_id' => 'required|exists:programs,id',
-            'file'       => 'required|file|mimes:pdf,png,jpg,jpeg|max:10240',
-            'title'      => 'required|string|max:255',
+            'file'       => 'required|file|mimes:pdf|max:10240',
+            'title'      => 'nullable|string|max:255',
         ]);
 
         $existing = StudyPlan::where('program_id', $validated['program_id'])->first();
@@ -40,7 +40,7 @@ class StudyPlanController extends Controller
         $plan = StudyPlan::updateOrCreate(
             ['program_id' => $validated['program_id']],
             [
-                'title'       => $validated['title'],
+                'title'       => $validated['title'] ?? 'Study Plan',
                 'file_path'   => $path,
                 'uploaded_by' => $request->user()->id,
             ]
@@ -58,7 +58,7 @@ class StudyPlanController extends Controller
 
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
-            'file'  => 'sometimes|file|mimes:pdf,png,jpg,jpeg|max:10240',
+            'file'  => 'sometimes|file|mimes:pdf|max:10240',
         ]);
 
         if ($request->hasFile('file')) {

@@ -15,32 +15,27 @@ use Illuminate\Support\Facades\DB;
 class ReEnrollmentService
 {
     /**
-     * Submit a re-enrollment request with two file uploads.
+     * Submit a re-enrollment request.
      * 
      * @param array $data
      * @param Student $student
-     * @param UploadedFile $suspensionForm
-     * @param UploadedFile $universityId
      * @return Request
      * @throws Exception
      */
     public function submitReEnrollment(
         array $data,
-        Student $student,
-        UploadedFile $suspensionForm,
-        UploadedFile $universityId
+        Student $student
     ): Request {
         // Validate student is suspended
         if ($student->status !== StudentStatusEnum::SUSPENDED) {
             throw new Exception('لا يمكن تقديم طلب إعادة قيد إلا للطلاب الموقوفين.');
         }
 
-        return DB::transaction(function () use ($data, $student, $suspensionForm, $universityId) {
-            // Store suspension form as main attachment
-            $suspensionFormPath = $suspensionForm->store('requests/re-enrollment', 'public');
-
-            // Store university ID
-            $universityIdPath = $universityId->store('requests/re-enrollment', 'public');
+        return DB::transaction(function () use ($data, $student) {
+            // Extract paths from attachments array
+            $attachments = $data['attachment'] ?? [];
+            $suspensionFormPath = is_array($attachments) ? ($attachments['suspension_form'] ?? null) : $attachments;
+            $universityIdPath = is_array($attachments) ? ($attachments['university_id'] ?? null) : null;
 
             // Create the request
             $request = Request::create([
@@ -48,6 +43,7 @@ class ReEnrollmentService
                 'request_type_id' => $data['request_type_id'],
                 'description' => $data['description'] ?? 'طلب إعادة قيد',
                 'attachment' => $suspensionFormPath,
+                'form_data' => $data['form_data'] ?? null,
                 'status' => RequestStatusEnum::PENDING,
             ]);
 

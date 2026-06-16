@@ -27,11 +27,37 @@ class AcademicRecordController extends Controller
             return response()->json(['message' => 'No active semester found.'], 404);
         }
 
-        // Check for required active questionnaire (survey)
-        $requiredSurvey = \App\Models\Survey::where('semester_id', $activeSemester->id)
-            ->where('is_active', true)
+        $programId = $student->program_id;
+        $collegeId = $student->program?->department?->college_id;
+        $currentLevel = $student->current_level;
+
+        // Check for required active questionnaire (survey) that targets this student
+        $requiredSurvey = \App\Models\Survey::where('is_active', true)
             ->where('is_required_for_grades', true)
+            ->where(function($query) use ($programId, $collegeId, $currentLevel) {
+                // College matches OR is not set
+                $query->where(function ($sub) use ($collegeId) {
+                    $sub->whereNull('target_college_id')->orWhere('target_college_id', $collegeId);
+                })
+                // AND Program matches OR is not set
+                ->where(function ($sub) use ($programId) {
+                    $sub->whereNull('target_program_id')->orWhere('target_program_id', $programId);
+                })
+                // AND Level matches OR is not set
+                ->where(function ($sub) use ($currentLevel) {
+                    $sub->whereNull('target_level')->orWhere('target_level', $currentLevel);
+                });
+            })
             ->first();
+
+        \Log::info("AcademicRecord API Hit:", [
+            'student_id' => $student->id,
+            'program_id' => $programId,
+            'college_id' => $collegeId,
+            'returned_survey_id' => $requiredSurvey ? $requiredSurvey->id : null,
+            'target_college_id' => $requiredSurvey ? $requiredSurvey->target_college_id : null,
+            'target_program_id' => $requiredSurvey ? $requiredSurvey->target_program_id : null,
+        ]);
 
         if ($requiredSurvey) {
             $isCompleted = \App\Models\SurveyCompletion::where('survey_id', $requiredSurvey->id)
@@ -45,6 +71,7 @@ class AcademicRecordController extends Controller
                     'survey' => [
                         'id' => $requiredSurvey->id,
                         'title' => $requiredSurvey->title,
+                        'description' => $requiredSurvey->description,
                         'url' => $requiredSurvey->google_form_url,
                     ]
                 ], 403);
@@ -144,6 +171,29 @@ class AcademicRecordController extends Controller
                 'total_completed_credit_hours' => $student->completed_credit_hours,
                 'transcript' => $groupedTranscript
             ]
+        ]);
+    }
+
+    /**
+     * Get the student's current level courses.
+     */
+    public function currentCourses(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $student = $user->student;
+
+        if (!$student) {
+            return response()->json(['message' => 'Student record not found.'], 404);
+        }
+
+        $courses = \App\Models\Course::where('program_id', $student->program_id)
+            ->where('semester_level', $student->current_level)
+            ->get(['id', 'course_code', 'course_name', 'credit_hours']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $courses
         ]);
     }
 }

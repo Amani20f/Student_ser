@@ -53,7 +53,7 @@ final List<RequestType> mockRequestTypes = [
   ),
   RequestType(
     id: '4',
-    title: 'طلب عرض درجات',
+    title: 'الدرجات والنتائج',
     description: 'يستخدم هذا الطلب لمراجعة الدرجات الأكاديمية للفصل الحالي.',
     formUrl: '',
     isGradesRequest: true,

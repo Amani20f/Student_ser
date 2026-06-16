@@ -14,7 +14,7 @@ class StoreAppealRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'semester_id' => 'required|exists:semesters,id',
+            'semester_id' => 'nullable|exists:semesters,id',
             'academic_year' => 'required|string|max:20',
             'term' => 'required|string|max:20',
             'student_note' => 'required|string|max:2000',
@@ -41,6 +41,16 @@ class StoreAppealRequest extends FormRequest
             'items.*.coursework_before' => 'nullable|numeric|min:0|max:100',
             'items.*.final_before' => 'nullable|numeric|min:0|max:100',
             'items.*.total_before' => 'nullable|numeric|min:0|max:100',
+            'attachments' => 'required|array|min:1',
+            'attachments.*' => 'file|mimes:pdf,png,jpg,jpeg|max:10240',
+        ];
+    }
+    
+    public function messages(): array
+    {
+        return [
+            'attachments.required' => 'يرجى إرفاق المستندات الداعمة.',
+            'attachments.min' => 'يجب إرفاق ملف واحد على الأقل.',
         ];
     }
 }

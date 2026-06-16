@@ -39,6 +39,8 @@ class AuthCubit extends Cubit<AuthState> {
     if (token != null && userJson != null) {
       try {
         final user = jsonDecode(userJson) as Map<String, dynamic>;
+        print("=== AUTH_CUBIT checkAuthStatus user['student']['program']['college'] ===");
+        print(user['student']?['program']?['college']);
         emit(Authenticated(user));
       } catch (_) {
         emit(Unauthenticated());
@@ -70,6 +72,9 @@ class AuthCubit extends Cubit<AuthState> {
       // Save token and user details to SharedPreferences
       await _prefs.setString('auth_token', token);
       await _prefs.setString('cached_user', jsonEncode(user));
+
+      print("=== AUTH_CUBIT login user['student']['program']['college'] ===");
+      print(user['student']?['program']?['college']);
 
       emit(Authenticated(user));
     } catch (e) {
@@ -103,6 +108,12 @@ class AuthCubit extends Cubit<AuthState> {
       // Re-emit error for screen to show toast/snackbar
       throw Exception(e.toString().replaceAll('ApiException:', '').replaceAll('Exception:', '').trim());
     }
+  }
+
+  /// Update user in state and prefs
+  Future<void> updateUser(Map<String, dynamic> updatedUser) async {
+    await _prefs.setString('cached_user', jsonEncode(updatedUser));
+    emit(Authenticated(updatedUser));
   }
 
   /// Log out and clear preferences

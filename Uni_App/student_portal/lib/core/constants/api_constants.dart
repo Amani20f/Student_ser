@@ -1,10 +1,10 @@
 class ApiConstants {
   // ─── Base URL ─────────────────────────────────────────────────────────────
   // • Web / Desktop   : 'http://localhost:8000/api'
-  // • Android Emulator: 'http://33.3.1.174:8080/api'
+  // • Android Emulator: 'http://10.0.2.2:8000/api'
   // • iOS Simulator   : 'http://localhost:8000/api'
   // • Real Device     : 'http://<YOUR_LOCAL_IP>:8000/api'
-  static const String baseUrl = 'http://33.3.1.174:8080/api';
+  static const String baseUrl = 'http://10.0.2.2:8000/api';
 
   // Auth Endpoints
   static const String login = '/login';
@@ -16,12 +16,15 @@ class ApiConstants {
   // Student Portal Specific
   static const String grades = '/student/grades';
   static const String completeSurvey = '/student/surveys/complete';
+  static const String optionalSurveys = '/student/optional-surveys';
+  static String markOptionalSurveyViewed(int id) => '/student/optional-surveys/$id/view';
   static const String payments = '/student/payments';
   static const String serviceRequests = '/student/service-requests';
   static const String myRequests = '/student/my-requests';
   static const String reEnrollment = '/student/re-enrollment';
   static const String notifications = '/student/notifications';
-  static const String requestTypes = '/request-types';
+  static const String requestTypes = '/student/request-types';
+  static const String updateProfile = '/student/profile';
   static const String semesters = '/semesters';
 
   static String markNotificationRead(int id) =>

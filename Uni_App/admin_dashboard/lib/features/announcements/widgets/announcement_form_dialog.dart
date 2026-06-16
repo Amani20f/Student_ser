@@ -182,8 +182,8 @@ class _AnnouncementFormDialogState extends ConsumerState<AnnouncementFormDialog>
       'target_audience': _targetAudience,
       if (_targetProgramId != null) 'target_program_id': _targetProgramId,
       if (_targetCollegeId != null) 'target_college_id': _targetCollegeId,
-      'is_active': _isActive,
-      'send_notification': _sendNotification,
+      'is_active': _isActive ? 1 : 0,
+      'send_notification': _sendNotification ? 1 : 0,
     };
 
     http.MultipartFile? imageFile;

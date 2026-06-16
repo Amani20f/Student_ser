@@ -12,14 +12,9 @@ class AnnouncementsCubit extends Cubit<AnnouncementsState> {
   Future<void> fetchAnnouncements() async {
     emit(AnnouncementsLoading());
     try {
-      final response = await _apiClient.get('/student/announcements');
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        final announcements = data.map((json) => Announcement.fromJson(json)).toList();
-        emit(AnnouncementsLoaded(announcements));
-      } else {
-        emit(const AnnouncementsError('فشل في تحميل الإعلانات'));
-      }
+      final List<dynamic> data = await _apiClient.get('/student/announcements');
+      final announcements = data.map((json) => Announcement.fromJson(json)).toList();
+      emit(AnnouncementsLoaded(announcements));
     } catch (e) {
       emit(const AnnouncementsError('حدث خطأ أثناء الاتصال بالخادم'));
     }

@@ -11,6 +11,7 @@ import 'forgot_password_screen.dart';
 import '../../student_registration/screens/registration_screen.dart';
 // Assuming linkage
 import '../../../../core/widgets/support_dialog.dart';
+import 'package:university_app/features/home/main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -50,6 +51,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
+          );
+        } else if (state is Authenticated) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const MainScreen()),
+            (route) => false,
           );
         }
       },
@@ -114,11 +120,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                         return AppLocalizations.of(
                                           context,
                                         )!.requiredField;
-                                      }
-                                      if (!val.contains('@')) {
-                                        return AppLocalizations.of(
-                                          context,
-                                        )!.invalidEmail;
                                       }
                                       return null;
                                     },

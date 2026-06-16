@@ -53,30 +53,38 @@ class ApplicationModel extends Equatable {
   });
 
   factory ApplicationModel.fromJson(Map<String, dynamic> json) {
-    return ApplicationModel(
-      id: json['id'] as int,
-      applicationNumber: json['application_number'] ?? '',
-      fullName: json['full_name'] ?? '',
-      nationalIdNumber: json['national_id_number'],
-      dateOfBirth: json['date_of_birth'],
-      gender: json['gender'],
-      nationality: json['nationality'],
-      phoneNumber: json['phone_number'],
-      emailAddress: json['email_address'],
-      address: json['address'],
-      status: json['status'],
-      desiredProgram: json['desired_program'],
-      department: json['department'],
-      college: json['college'],
-      submittedAt: json['submitted_at'],
-      rejectionReason: json['rejection_reason'],
-      identityDocumentUrl: json['identity_document_url'],
-      qualificationDocumentUrl: json['qualification_document_url'],
-      personalPhotoUrl: json['personal_photo_url'],
-      hasIdentityDoc: json['has_identity_doc'] ?? false,
-      hasQualification: json['has_qualification'] ?? false,
-      hasPhoto: json['has_photo'] ?? false,
-    );
+    print('### [Log] ApplicationModel.fromJson parsing application_number: ${json['application_number']}');
+    try {
+      final model = ApplicationModel(
+        id: json['id'] as int,
+        applicationNumber: json['application_number'] ?? '',
+        fullName: json['full_name'] ?? '',
+        nationalIdNumber: json['national_id_number'],
+        dateOfBirth: json['date_of_birth'],
+        gender: json['gender'],
+        nationality: json['nationality'],
+        phoneNumber: json['phone_number'],
+        emailAddress: json['email_address'],
+        address: json['address'],
+        status: json['status'],
+        desiredProgram: json['desired_program'],
+        department: json['department'],
+        college: json['college'],
+        submittedAt: json['submitted_at'],
+        rejectionReason: json['rejection_reason'],
+        identityDocumentUrl: json['identity_document_url'],
+        qualificationDocumentUrl: json['qualification_document_url'],
+        personalPhotoUrl: json['personal_photo_url'],
+        hasIdentityDoc: json['has_identity_doc'] ?? false,
+        hasQualification: json['has_qualification'] ?? false,
+        hasPhoto: json['has_photo'] ?? false,
+      );
+      print('### [Log] ApplicationModel.fromJson SUCCESS for id: ${model.id}');
+      return model;
+    } catch (e) {
+      print('### [Log] ApplicationModel.fromJson ERROR for json: $json \nError: $e');
+      rethrow;
+    }
   }
 
   @override

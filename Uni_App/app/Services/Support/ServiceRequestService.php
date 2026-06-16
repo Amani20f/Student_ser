@@ -51,10 +51,19 @@ class ServiceRequestService
 
             // 3. Create AbsenceExcuseItems
             foreach ($items as $item) {
+                $courseId = $item['course_id'] ?? null;
+                $courseName = $item['course_name'] ?? '';
+                if ($courseId && empty($courseName)) {
+                    $dbCourse = \App\Models\Course::find($courseId);
+                    if ($dbCourse) {
+                        $courseName = $dbCourse->course_name;
+                    }
+                }
                 $absenceExcuse->items()->create([
-                    'course_name' => $item['course_name'],
+                    'course_id' => $courseId,
+                    'course_name' => $courseName,
                     'absence_date' => $item['absence_date'],
-                    // prev_excused_count and prev_unexcused_count are nullable and filled by admin later
+                    'day' => $item['day'] ?? null,
                 ]);
             }
 

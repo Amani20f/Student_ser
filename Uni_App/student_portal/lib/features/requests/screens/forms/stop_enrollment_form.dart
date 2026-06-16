@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:university_app/core/widgets/gradient_background.dart';
 import 'package:university_app/features/requests/data/requests_repository.dart';
 import 'package:university_app/features/requests/widgets/form_inputs.dart';
+import 'package:university_app/features/requests/screens/forms/payment_form.dart';
 import 'package:university_app/features/auth/cubit/auth_cubit.dart';
 
 /// A single semester entry returned from GET /api/semesters
@@ -14,12 +15,14 @@ class _SuspensionSemesterOption {
   final String name;
   final String academicYear;
   final DateTime? examsStart;
+  final bool isCurrent;
 
   _SuspensionSemesterOption({
     required this.id,
     required this.name,
     required this.academicYear,
     this.examsStart,
+    this.isCurrent = false,
   });
 
   factory _SuspensionSemesterOption.fromJson(Map<String, dynamic> json) {
@@ -27,6 +30,7 @@ class _SuspensionSemesterOption {
       id: json['id'] as int,
       name: json['name'] as String? ?? '',
       academicYear: json['year'] as String? ?? '',
+      isCurrent: json['is_current'] as bool? ?? false,
       examsStart: json['exams_start_date'] != null
           ? DateTime.tryParse(json['exams_start_date'] as String)
           : null,
@@ -126,25 +130,32 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
       } catch (_) {
         price = 10.0;
       }
-
-      if (!mounted) return;
-      setState(() {
-        _semesters = data
-            .map(
-              (e) => _SuspensionSemesterOption.fromJson(
-                Map<String, dynamic>.from(e as Map),
-              ),
-            )
-            .toList();
-        _requestPrice = price ?? 10.0;
-        _loadingSemesters = false;
-      });
+      
+      if (mounted) {
+        setState(() {
+          _semesters = data
+              .map((e) => _SuspensionSemesterOption.fromJson(Map<String, dynamic>.from(e as Map)))
+              .toList();
+          
+          try {
+            _selectedSemester = _semesters.firstWhere((s) => s.isCurrent);
+          } catch (e) {
+            if (_semesters.isNotEmpty) {
+              _selectedSemester = _semesters.first; // Fallback
+            }
+          }
+          
+          _requestPrice = price ?? 10.0;
+          _loadingSemesters = false;
+        });
+      }
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _semesterLoadError = 'تعذّر تحميل الفصول الدراسية';
-        _loadingSemesters = false;
-      });
+      if (mounted) {
+        setState(() {
+          _semesterLoadError = 'فشل تحميل الفصول الدراسية';
+          _loadingSemesters = false;
+        });
+      }
     }
   }
 
@@ -162,7 +173,7 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
     );
     if (result != null) {
       setState(() {
-        _uploadedFiles = result.files;
+        _uploadedFiles.addAll(result.files);
       });
     }
   }
@@ -203,6 +214,17 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
       return;
     }
 
+    // ── 4. Attachments validation ─────────────────────────────────────────────
+    if (_uploadedFiles.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('يرجى إرفاق المستندات الداعمة (مرفق واحد على الأقل)'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
     try {
@@ -213,29 +235,64 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
           .map((f) => File(f.path!))
           .toList();
 
-      await repo.submitStopEnrollment(
+      print('=====================================');
+      print('FLUTTER FORM SUBMISSION DATA:');
+      print('requestTypeId: 2');
+      print('semesterId: ${_selectedSemester!.id}');
+      print('reason: ${_reasonController.text.trim()}');
+      print('attachments count: ${attachmentFiles.length}');
+      print('=====================================');
+
+      final response = await repo.submitStopEnrollment(
         requestTypeId: 2, // slug: suspension_of_enrollment
         semesterId: _selectedSemester!.id,
         reason: _reasonController.text.trim(),
         attachments: attachmentFiles,
       );
 
+      final requestId = response['data']?['id']?.toString() ?? '';
+      final refNumber = requestId.isNotEmpty ? 'REF-$requestId' : '';
+
       if (mounted) {
         showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (context) => AlertDialog(
             title: const Text('تم بنجاح'),
-            content: const Text(
-              'طلبك قيد المراجعة وسوف يأتيك الرد عبر التطبيق.',
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('تم استلام طلبك بنجاح وهو قيد المراجعة.'),
+                const SizedBox(height: 8),
+                if (refNumber.isNotEmpty)
+                  Text('رقمك المرجعي: $refNumber', style: const TextStyle(fontWeight: FontWeight.bold)),
+              ],
             ),
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pop(context);
+                  Navigator.pop(context); // close dialog
+                  Navigator.pop(context); // close form screen
                 },
-                child: const Text('موافق'),
+                child: const Text('إغلاق'),
               ),
+              if (refNumber.isNotEmpty)
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context); // close dialog
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PaymentFormScreen(
+                          initialRefNumber: refNumber,
+                          initialServiceType: 'إيقاف قيد — 10 دولار',
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text('سداد الرسوم الآن'),
+                ),
             ],
           ),
         );
@@ -317,21 +374,10 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          DropdownButtonFormField<_SuspensionSemesterOption>(
-            decoration: InputDecoration(
-              labelText: 'الفصل الدراسي المراد إيقاف القيد منه',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              filled: true,
-              fillColor: theme.colorScheme.surface,
-            ),
-            initialValue: _selectedSemester,
-            items: _semesters
-                .map((s) => DropdownMenuItem(value: s, child: Text(s.name)))
-                .toList(),
-            onChanged: (val) => setState(() => _selectedSemester = val),
-            validator: (val) => val == null ? 'مطلوب' : null,
+          LabeledTextField(
+            label: 'الفصل الدراسي المراد إيقاف القيد منه',
+            readOnly: true,
+            hint: _selectedSemester?.name ?? '',
           ),
           // ── Deadline banner ─────────────────────────────────────────────────
           if (_selectedSemester != null) ...[
@@ -404,8 +450,9 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
                   hint: 'اشرح الأسباب الخاصة لطلب الإيقاف...',
                   validator: (val) {
                     if (val == null || val.isEmpty) return 'مطلوب';
-                    if (val.trim().length < 10)
+                    if (val.trim().length < 10) {
                       return 'يجب أن يكون سبب إيقاف القيد 10 أحرف على الأقل';
+                    }
                     return null;
                   },
                 ),
@@ -499,10 +546,10 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
                 const SizedBox(height: 30),
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
                   child: ElevatedButton(
                     onPressed: _isSubmitting ? null : _submit,
                     style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(

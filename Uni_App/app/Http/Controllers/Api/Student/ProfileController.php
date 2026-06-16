@@ -19,7 +19,7 @@ class ProfileController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
         
-        $user->load('student.program');
+        $user->load('student.program.department.college');
 
         return new UserResource($user);
     }
@@ -33,36 +33,25 @@ class ProfileController extends Controller
         $user = auth()->user();
         $validated = $request->validated();
 
-        DB::transaction(function () use ($user, $validated) {
-            // Update User fields
-            $userData = [
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-            ];
-            
-            if (array_key_exists('username', $validated)) {
-                $userData['username'] = $validated['username'];
-            }
-            
-            $user->update($userData);
-
-            // Update Student fields
+        DB::transaction(function () use ($user, $validated, $request) {
+            // Update Student fields (phone and profile_photo)
             if ($user->student) {
                 $studentData = [
                     'phone' => $validated['phone'] ?? $user->student->phone,
                 ];
-                
-                if (array_key_exists('national_id', $validated)) {
-                    $studentData['national_id'] = $validated['national_id'];
+
+                if ($request->hasFile('profile_photo')) {
+                    $path = $request->file('profile_photo')->store('profiles', 'public');
+                    $studentData['profile_photo_path'] = asset('storage/' . $path);
                 }
-                
+
                 $user->student->update($studentData);
             }
         });
 
         // Reload the user model to return fresh data
         $user->refresh();
-        $user->load('student.program');
+        $user->load('student.program.department.college');
 
         return new UserResource($user);
     }

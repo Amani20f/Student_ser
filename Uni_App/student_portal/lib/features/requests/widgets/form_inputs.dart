@@ -35,10 +35,16 @@ class LabeledTextField extends StatelessWidget {
           controller: controller,
           readOnly: readOnly,
           maxLines: maxLines,
+          minLines: maxLines > 1 ? maxLines : null,
+          textAlignVertical: maxLines > 1 ? TextAlignVertical.top : null,
           validator: validator,
-          keyboardType: keyboardType,
+          keyboardType: maxLines > 1 ? TextInputType.multiline : keyboardType,
           style: theme.textTheme.bodyLarge,
-          decoration: InputDecoration(hintText: hint, suffixIcon: suffixIcon),
+          decoration: InputDecoration(
+            hintText: hint,
+            suffixIcon: suffixIcon,
+            alignLabelWithHint: maxLines > 1,
+          ),
         ),
       ],
     );
@@ -49,12 +55,14 @@ class DatePickerField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
   final String? Function(String?)? validator;
+  final void Function(DateTime)? onDateSelected;
 
   const DatePickerField({
     super.key,
     required this.label,
     required this.controller,
     this.validator,
+    this.onDateSelected,
   });
 
   Future<void> _selectDate(BuildContext context) async {
@@ -67,6 +75,9 @@ class DatePickerField extends StatelessWidget {
     if (picked != null) {
       controller.text =
           "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      if (onDateSelected != null) {
+        onDateSelected!(picked);
+      }
     }
   }
 

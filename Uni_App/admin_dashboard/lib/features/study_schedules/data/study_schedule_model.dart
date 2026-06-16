@@ -30,8 +30,8 @@ class StudyScheduleModel {
       academicYear: json['academic_year']?.toString(),
       term: json['term']?.toString(),
       level: json['level'] as int,
-      scheduleImageUrl: json['schedule_image_url']?.toString(),
-      notes: json['notes']?.toString(),
+      scheduleImageUrl: json['file_url']?.toString(),
+      notes: json['title']?.toString(),
     );
   }
 }

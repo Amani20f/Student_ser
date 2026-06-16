@@ -48,23 +48,21 @@ class StudyScheduleRepository {
   /// Create a new study schedule.
   Future<void> createSchedule({
     required int programId,
-    required int semesterId,
     required int level,
     required List<int> fileBytes,
     required String filename,
     String? notes,
   }) async {
     final multipartFile = http.MultipartFile.fromBytes(
-      'image',
+      'file',
       fileBytes,
       filename: filename,
     );
 
     final fields = {
       'program_id': programId.toString(),
-      'semester_id': semesterId.toString(),
       'level': level.toString(),
-      if (notes != null && notes.isNotEmpty) 'notes': notes,
+      'title': (notes != null && notes.isNotEmpty) ? notes : 'Schedule',
     };
 
     await _apiClient.multipartRequest(
@@ -86,14 +84,14 @@ class StudyScheduleRepository {
   }) async {
     if (fileBytes != null && filename != null) {
       final multipartFile = http.MultipartFile.fromBytes(
-        'image',
+        'file',
         fileBytes,
         filename: filename,
       );
 
       final fields = {
         '_method': 'PUT',
-        if (notes != null) 'notes': notes,
+        if (notes != null) 'title': notes,
       };
 
       await _apiClient.multipartRequest(
@@ -106,7 +104,7 @@ class StudyScheduleRepository {
       await _apiClient.put(
         ApiConstants.staffStudyScheduleById(id),
         body: {
-          'notes': notes ?? '',
+          'title': notes ?? '',
         },
       );
     }

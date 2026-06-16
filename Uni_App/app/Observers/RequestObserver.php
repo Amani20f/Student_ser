@@ -46,7 +46,6 @@ class RequestObserver
             // Load request type to check slug
             $requestType = $request->requestType;
             
-            // If this is a re-enrollment request, restore student status
             if ($requestType && $requestType->slug === 're_enrollment') {
                 $student = $request->student;
                 
@@ -60,6 +59,21 @@ class RequestObserver
                         'request_id' => $request->id,
                         'old_status' => 'suspended',
                         'new_status' => 'active',
+                    ]);
+                }
+            } elseif ($requestType && $requestType->slug === 'suspension_of_enrollment') {
+                $student = $request->student;
+                
+                if ($student && $student->status === \App\Enums\StudentStatusEnum::ACTIVE) {
+                    $student->status = \App\Enums\StudentStatusEnum::SUSPENDED;
+                    $student->save();
+                    
+                    // Log status suspension
+                    \Illuminate\Support\Facades\Log::info('Student status changed to suspended via suspension request', [
+                        'student_id' => $student->id,
+                        'request_id' => $request->id,
+                        'old_status' => 'active',
+                        'new_status' => 'suspended',
                     ]);
                 }
             } elseif ($requestType && $requestType->slug === 'absence_excuse') {

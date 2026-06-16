@@ -98,7 +98,7 @@ class StudySchedulesPage extends ConsumerWidget {
 
   Widget _buildFilterBar(BuildContext context, WidgetRef ref, Map<String, dynamic> filters) {
     final l10n = AppLocalizations.of(context)!;
-    final programsAsync = ref.watch(programsProvider);
+    final programsAsync = ref.watch(publicProgramsProvider);
     final semestersAsync = ref.watch(dynamicSemestersProvider);
 
     return Padding(
@@ -255,7 +255,7 @@ class StudySchedulesPage extends ConsumerWidget {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
-            final programsAsync = ref.watch(programsProvider);
+            final programsAsync = ref.watch(publicProgramsProvider);
             final semestersAsync = ref.watch(dynamicSemestersProvider);
 
             return AlertDialog(
@@ -268,7 +268,7 @@ class StudySchedulesPage extends ConsumerWidget {
                       // Program
                       programsAsync.maybeWhen(
                         data: (programs) => DropdownButtonFormField<int>(
-                          decoration: InputDecoration(labelText: l10n.programName),
+                          decoration: InputDecoration(labelText: Localizations.localeOf(context).languageCode == 'ar' ? 'التخصص' : 'Program'),
                           initialValue: selectedProgram,
                           items: programs.map((p) => DropdownMenuItem(value: p.id, child: Text(p.name))).toList(),
                           onChanged: (val) => setState(() => selectedProgram = val),
@@ -277,23 +277,13 @@ class StudySchedulesPage extends ConsumerWidget {
                       ),
                       const SizedBox(height: 12),
                       
-                      // Semester
-                      semestersAsync.maybeWhen(
-                        data: (semesters) => DropdownButtonFormField<int>(
-                          decoration: const InputDecoration(labelText: 'Semester'),
-                          initialValue: selectedSemester,
-                          items: semesters.map((s) => DropdownMenuItem(value: s.id, child: Text('${s.name} - ${s.year}'))).toList(),
-                          onChanged: (val) => setState(() => selectedSemester = val),
-                        ),
-                        orElse: () => const CircularProgressIndicator(),
-                      ),
-                      const SizedBox(height: 12),
+
 
                       // Level
                       DropdownButtonFormField<int>(
                         decoration: InputDecoration(labelText: l10n.level),
                         initialValue: selectedLevel,
-                        items: List.generate(8, (index) => index + 1).map((lvl) => DropdownMenuItem(value: lvl, child: Text('$lvl'))).toList(),
+                        items: List.generate(8, (index) => index + 1).map((lvl) => DropdownMenuItem(value: lvl, child: Text('${l10n.level} $lvl'))).toList(),
                         onChanged: (val) => setState(() => selectedLevel = val),
                       ),
                       const SizedBox(height: 12),
@@ -322,7 +312,7 @@ class StudySchedulesPage extends ConsumerWidget {
                             }
                           },
                           icon: const Icon(Icons.upload_file),
-                          label: Text(pickedFile != null ? (pickedFile!.name) : 'Pick PDF/Image'),
+                          label: Text(pickedFile != null ? (pickedFile!.name) : (Localizations.localeOf(context).languageCode == 'ar' ? 'اختر ملف الجدول (PDF/صورة)' : 'Pick Schedule File (PDF/Image)')),
                         ),
                         if (pickedFile != null)
                           IconButton(
@@ -338,8 +328,8 @@ class StudySchedulesPage extends ConsumerWidget {
                 TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancel)),
                 ElevatedButton(
                   onPressed: () async {
-                    if (!isEdit && (selectedProgram == null || selectedSemester == null || selectedLevel == null || pickedFile == null)) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all fields and select a file.')));
+                    if (!isEdit && (selectedProgram == null || selectedLevel == null || pickedFile == null)) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('الرجاء إكمال جميع الحقول وإرفاق ملف.')));
                       return;
                     }
 
@@ -355,7 +345,6 @@ class StudySchedulesPage extends ConsumerWidget {
                       } else {
                         await repo.createSchedule(
                           programId: selectedProgram!,
-                          semesterId: selectedSemester!,
                           level: selectedLevel!,
                           fileBytes: pickedFile!.bytes!,
                           filename: pickedFile!.name,

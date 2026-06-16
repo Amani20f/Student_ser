@@ -8,6 +8,7 @@ class AdmissionsRepository {
   AdmissionsRepository(this._client);
 
   Future<List<ApplicationModel>> getApplications({Map<String, dynamic>? filters}) async {
+    print('### [Log] AdmissionsRepository.getApplications called with filters: $filters');
     final queryParams = <String, String>{};
     filters?.forEach((key, value) {
       if (value != null && value.toString().isNotEmpty) {
@@ -15,14 +16,23 @@ class AdmissionsRepository {
       }
     });
 
-    final data = await _client.get(
-      ApiConstants.adminApplications,
-      queryParams: queryParams.isNotEmpty ? queryParams : null,
-    );
-    final list = data['data'] as List<dynamic>;
-    return list
-        .map((e) => ApplicationModel.fromJson(e as Map<String, dynamic>))
-        .toList();
+    try {
+      final data = await _client.get(
+        ApiConstants.adminApplications,
+        queryParams: queryParams.isNotEmpty ? queryParams : null,
+      );
+      print('### [Log] AdmissionsRepository received data keys: ${data.keys}');
+      final list = data['data'] as List<dynamic>;
+      print('### [Log] AdmissionsRepository raw list length: ${list.length}');
+      final parsedList = list
+          .map((e) => ApplicationModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+      print('### [Log] AdmissionsRepository parsed list length: ${parsedList.length}');
+      return parsedList;
+    } catch (e) {
+      print('### [Log] AdmissionsRepository error: $e');
+      rethrow;
+    }
   }
 
   Future<ApplicationModel> getApplicationDetails(int id) async {

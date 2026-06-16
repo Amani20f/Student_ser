@@ -58,6 +58,7 @@ class AcademicStructureController extends Controller
                 'id'             => $prog->id,
                 'name'           => $prog->name,
                 'code'           => $prog->code,
+                'duration_years' => $prog->duration_years,
                 'degree_type'    => $prog->degree_type instanceof \BackedEnum
                     ? $prog->degree_type->value
                     : $prog->degree_type,

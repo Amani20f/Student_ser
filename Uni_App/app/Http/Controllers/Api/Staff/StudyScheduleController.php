@@ -31,15 +31,19 @@ class StudyScheduleController extends Controller
     {
         $validated = $request->validate([
             'program_id'  => 'required|exists:programs,id',
-            'semester_id' => 'required|exists:semesters,id',
             'level'       => 'required|integer|min:1|max:10',
             'file'        => 'required|file|mimes:pdf,png,jpg,jpeg|max:10240',
             'title'       => 'required|string|max:255',
         ]);
 
+        $activeSemester = \App\Models\Semester::active()->first();
+        if (!$activeSemester) {
+            return response()->json(['message' => 'No active semester found. Please set an active semester first.'], 400);
+        }
+
         $existing = StudySchedule::where([
             'program_id'  => $validated['program_id'],
-            'semester_id' => $validated['semester_id'],
+            'semester_id' => $activeSemester->id,
             'level'       => $validated['level'],
         ])->first();
 
@@ -52,7 +56,7 @@ class StudyScheduleController extends Controller
         $schedule = StudySchedule::updateOrCreate(
             [
                 'program_id'  => $validated['program_id'],
-                'semester_id' => $validated['semester_id'],
+                'semester_id' => $activeSemester->id,
                 'level'       => $validated['level'],
             ],
             [

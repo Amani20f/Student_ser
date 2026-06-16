@@ -19,12 +19,16 @@ class AuthController extends Controller
     {
         try {
             $result = $this->authService->login($request->only('email', 'password'));
+            $user = $result['user'];
+            if ($user) {
+                $user->load('student.program.department.college');
+            }
 
             return response()->json([
                 'success' => true,
                 'message' => 'Login successful',
                 'data' => [
-                    'user' => new UserResource($result['user']),
+                    'user' => new UserResource($user),
                     'token' => $result['token'],
                     'token_type' => $result['token_type'],
                 ]

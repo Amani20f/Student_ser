@@ -27,9 +27,13 @@ class StoreAbsenceExcuseRequest extends BaseServiceRequestRequest
             'form_data.courses' => ['required', 'array', 'min:1'],
 
             // Course Array Validation
-            'form_data.courses.*.course_name' => ['required', 'string', 'max:255'],
+            'form_data.courses.*.course_id' => ['required', 'integer', 'exists:courses,id'],
             'form_data.courses.*.absence_date' => ['required', 'date', 'before_or_equal:today'],
             'form_data.courses.*.day' => ['required', 'string', 'in:Saturday,Sunday,Monday,Tuesday,Wednesday,Thursday,Friday'],
+
+            // Attachments
+            'attachments' => ['required', 'array', 'min:1'],
+            'attachments.*' => ['file', 'mimes:pdf,png,jpg,jpeg', 'max:10240'],
         ]);
     }
 
@@ -89,11 +93,14 @@ class StoreAbsenceExcuseRequest extends BaseServiceRequestRequest
             'form_data.absence_reason.max' => 'Absence reason must not exceed 1000 characters.',
             'form_data.courses.required' => 'At least one course absence must be specified.',
             'form_data.courses.min' => 'At least one course absence must be specified.',
-            'form_data.courses.*.course_name.required' => 'Course name is required for each absence.',
+            'form_data.courses.*.course_id.required' => 'Course ID is required for each absence.',
+            'form_data.courses.*.course_id.exists' => 'Selected course is invalid.',
             'form_data.courses.*.absence_date.required' => 'Absence date is required for each course.',
             'form_data.courses.*.absence_date.before_or_equal' => 'Absence date cannot be in the future.',
             'form_data.courses.*.day.required' => 'Day of the week is required for each absence.',
             'form_data.courses.*.day.in' => 'Day must be a valid weekday (Saturday through Friday).',
+            'attachments.required' => 'يرجى إرفاق المستندات الداعمة (التقرير الطبي أو ما شابه).',
+            'attachments.min' => 'يجب إرفاق ملف واحد على الأقل.',
         ]);
     }
 }

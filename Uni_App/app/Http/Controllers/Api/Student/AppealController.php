@@ -60,9 +60,28 @@ class AppealController extends Controller
     public function store(StoreAppealRequest $request): JsonResponse
     {
         try {
+            $data = $request->validated();
+            
+            if (empty($data['semester_id'])) {
+                $latestSemester = \App\Models\Semester::orderBy('created_at', 'desc')->first();
+                if (!$latestSemester) {
+                    throw new \Exception('لا يوجد فصل دراسي متاح للتظلم.');
+                }
+                $data['semester_id'] = $latestSemester->id;
+            }
+
+            $attachmentPaths = [];
+
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $attachmentPaths[] = $file->store('appeals/attachments', 'public');
+                }
+            }
+            $data['attachment_paths'] = $attachmentPaths;
+
             $appeal = $this->appealService->createAppeal(
                 auth()->user()->student,
-                $request->validated()
+                $data
             );
 
             return response()->json([

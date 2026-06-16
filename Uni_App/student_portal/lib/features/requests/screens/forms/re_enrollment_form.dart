@@ -3,9 +3,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:university_app/core/widgets/gradient_background.dart';
 import 'package:university_app/features/requests/data/requests_repository.dart';
 import 'package:university_app/features/requests/widgets/form_inputs.dart';
+import 'package:university_app/features/requests/screens/forms/payment_form.dart';
+import 'package:university_app/features/auth/cubit/auth_cubit.dart';
 
 class ReEnrollmentScreen extends StatefulWidget {
   const ReEnrollmentScreen({super.key});
@@ -65,6 +68,16 @@ class _ReEnrollmentScreenState extends State<ReEnrollmentScreen> {
       return;
     }
 
+    if (_stopFormFiles.isEmpty || _idCardFiles.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('يرجى إرفاق استمارة إيقاف القيد والبطاقة الجامعية'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
     try {
@@ -80,7 +93,7 @@ class _ReEnrollmentScreenState extends State<ReEnrollmentScreen> {
         idCardFile = File(_idCardFiles.first.path!);
       }
 
-      await repo.submitReEnrollment(
+      final response = await repo.submitReEnrollment(
         requestTypeId: 3, // slug: re_enrollment
         prevStopsCount: _prevStopsCountController.text.trim(),
         prevSemester: _prevSemesterController.text.trim(),
@@ -89,20 +102,49 @@ class _ReEnrollmentScreenState extends State<ReEnrollmentScreen> {
         idCardFile: idCardFile,
       );
 
+      final requestId = response['data']?['id']?.toString() ?? '';
+      final refNumber = requestId.isNotEmpty ? 'REF-$requestId' : '';
+
       if (mounted) {
         showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (context) => AlertDialog(
             title: const Text('تم بنجاح'),
-            content: const Text('طلبك قيد المراجعة وسوف يأتيك الرد عبر التطبيق.'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('تم استلام طلبك بنجاح وهو قيد المراجعة.'),
+                const SizedBox(height: 8),
+                if (refNumber.isNotEmpty)
+                  Text('رقمك المرجعي: $refNumber', style: const TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pop(context);
+                  Navigator.pop(context); // close dialog
+                  Navigator.pop(context); // close form screen
                 },
-                child: const Text('موافق'),
+                child: const Text('إغلاق'),
               ),
+              if (refNumber.isNotEmpty)
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context); // close dialog
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PaymentFormScreen(
+                          initialRefNumber: refNumber,
+                          initialServiceType: 'إعادة قيد — 10 دولار',
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text('سداد الرسوم الآن'),
+                ),
             ],
           ),
         );
@@ -135,19 +177,73 @@ class _ReEnrollmentScreenState extends State<ReEnrollmentScreen> {
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 16),
-                const LabeledTextField(label: 'الاسم الكامل', readOnly: true, hint: 'نورة أحمد'),
-                const SizedBox(height: 16),
-                const LabeledTextField(
-                  label: 'الرقم الجامعي',
-                  readOnly: true,
-                  hint: '20241010',
+                BlocBuilder<AuthCubit, AuthState>(
+                  builder: (context, state) {
+                    String name = '';
+                    String studentNumber = '';
+                    String collegeName = '';
+                    String majorName = '';
+                    String levelName = '';
+
+                    if (state is Authenticated) {
+                      final user = state.user;
+                      final student = user['student'] ?? {};
+                      final program = student['program'] ?? {};
+                      final college = program['college'] ?? {};
+
+                      name = user['name'] ?? '';
+                      studentNumber = student['student_number']?.toString() ?? '';
+                      collegeName = college['name'] ?? '';
+                      majorName = program['name'] ?? '';
+
+                      final lvl = student['current_level'];
+                      if (lvl != null) {
+                        final intLvl = int.tryParse(lvl.toString()) ?? 1;
+                        final arabicLevels = {
+                          1: 'المستوى الأول', 2: 'المستوى الثاني',
+                          3: 'المستوى الثالث', 4: 'المستوى الرابع',
+                          5: 'المستوى الخامس', 6: 'المستوى السادس',
+                          7: 'المستوى السابع', 8: 'المستوى الثامن',
+                        };
+                        levelName = arabicLevels[intLvl] ?? 'المستوى $intLvl';
+                      }
+                    }
+
+                    return Column(
+                      children: [
+                        LabeledTextField(
+                          label: 'الاسم الكامل',
+                          readOnly: true,
+                          hint: name.isNotEmpty ? name : 'جاري التحميل...',
+                        ),
+                        const SizedBox(height: 16),
+                        LabeledTextField(
+                          label: 'الرقم الجامعي',
+                          readOnly: true,
+                          hint: studentNumber.isNotEmpty ? studentNumber : 'جاري التحميل...',
+                        ),
+                        const SizedBox(height: 16),
+                        LabeledTextField(
+                          label: 'الكلية',
+                          readOnly: true,
+                          hint: collegeName.isNotEmpty ? collegeName : 'جاري التحميل...',
+                        ),
+                        const SizedBox(height: 16),
+                        LabeledTextField(
+                          label: 'التخصص',
+                          readOnly: true,
+                          hint: majorName.isNotEmpty ? majorName : 'جاري التحميل...',
+                        ),
+                        const SizedBox(height: 16),
+                        LabeledTextField(
+                          label: 'المستوى الدراسي',
+                          readOnly: true,
+                          hint: levelName.isNotEmpty ? levelName : 'جاري التحميل...',
+                        ),
+                      ],
+                    );
+                  },
                 ),
-                const SizedBox(height: 16),
-                const LabeledTextField(label: 'الكلية', readOnly: true, hint: 'كلية الهندسةو تقنية المعلومات'),
-                const SizedBox(height: 16),
-                const LabeledTextField(label: 'التخصص', readOnly: true, hint: 'تقنية المعلومات'),
-                const SizedBox(height: 16),
-                const LabeledTextField(label: 'المستوى الدراسي', readOnly: true, hint: 'المستوى الرابع'),
                 const SizedBox(height: 16),
                 DropdownField(
                   label: 'عدد مرات وقف القيد السابق',
@@ -165,12 +261,7 @@ class _ReEnrollmentScreenState extends State<ReEnrollmentScreen> {
                   validator: (val) =>
                       val == null || val.isEmpty ? 'مطلوب' : null,
                 ),
-                const SizedBox(height: 16),
-                const LabeledTextField(
-                  label: 'العام الجامعي',
-                  readOnly: true,
-                  hint: '2023/2024',
-                ),
+
                 const SizedBox(height: 24),
                 const Divider(),
                 const SizedBox(height: 24),
@@ -235,10 +326,10 @@ class _ReEnrollmentScreenState extends State<ReEnrollmentScreen> {
                 const SizedBox(height: 30),
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
                   child: ElevatedButton(
                     onPressed: _isSubmitting ? null : _submit,
                     style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

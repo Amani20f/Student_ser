@@ -7,6 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../auth/cubit/auth_cubit.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../study_plans/screens/study_plan_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -72,17 +73,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final scheduleResponse = await context.read<ApiClient>().get(
           '/student/study-schedules?semester_id=${activeSemester['id']}',
         );
-        final schedules = (scheduleResponse['data'] as List<dynamic>?) ?? [];
-        if (schedules.isNotEmpty) {
-          // Sort by id descending just in case to get the latest
-          schedules.sort((a, b) => (b['id'] as int).compareTo(a['id'] as int));
+        print('=== RUNTIME AUDIT: SCHEDULE API ===');
+        print('Raw Response: $scheduleResponse');
+        print('Response runtimeType: ${scheduleResponse.runtimeType}');
+        
+        final scheduleData = scheduleResponse['data'];
+        print('Data payload: $scheduleData');
+        print('Data runtimeType: ${scheduleData.runtimeType}');
+        
+        if (scheduleData != null && scheduleData is Map<String, dynamic>) {
+          print('Parsed title: ${scheduleData['title']}');
+          print('Parsed program: ${scheduleData['program']}');
+          print('Parsed file_url: ${scheduleData['file_url']}');
+          
           setState(() {
-            _latestSchedule = schedules.first;
+            _latestSchedule = scheduleData;
           });
+          print('Widget state updated: _latestSchedule is now set');
+        } else {
+          print('Widget state NOT updated: condition failed.');
         }
       }
-    } catch (e) {
-      // Handle error implicitly
+    } catch (e, stackTrace) {
+      print('=== RUNTIME AUDIT: EXCEPTION ===');
+      print('Error: $e');
+      print('Stack Trace: $stackTrace');
     } finally {
       if (mounted) {
         setState(() {
@@ -153,6 +168,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(height: 12),
                       _buildScheduleCard(context),
+                      const SizedBox(height: 24),
+                      
+                      // Study Plan Button
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const StudyPlanScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.menu_book_rounded),
+                        label: Text(
+                          Localizations.localeOf(context).languageCode == 'ar'
+                              ? 'عرض الخطة الدراسية'
+                              : 'View Study Plan',
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
                     ]
                     .animate(interval: 30.ms)
                     .fadeIn(duration: 200.ms, curve: Curves.easeOut)
@@ -180,6 +220,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     final name = user['name'] ?? AppLocalizations.of(context)!.studentName;
+    final profilePhoto = student['profile_photo_path'];
     final studentIdNum = student['student_number'] ?? '';
     final studentIdLabel = studentIdNum.isNotEmpty
         ? 'الرقم الجامعي: $studentIdNum'
@@ -255,14 +296,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 2),
                         ),
-                        child: const CircleAvatar(
+                        child: CircleAvatar(
                           radius: 28,
                           backgroundColor: Colors.white,
-                          child: Icon(
-                            Icons.person,
-                            size: 36,
-                            color: Colors.grey,
-                          ),
+                          backgroundImage: profilePhoto != null && profilePhoto.isNotEmpty ? NetworkImage(profilePhoto) : null,
+                          child: profilePhoto == null || profilePhoto.isEmpty
+                            ? Text(
+                                (name.isNotEmpty) ? name[0] : 'U',
+                                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.grey),
+                              )
+                            : null,
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -473,8 +516,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     final schedule = _latestSchedule!;
-    final notes = schedule['notes'] as String?;
-    final imageUrl = schedule['schedule_image_url'] as String?;
+    final notes = schedule['title'] as String?;
+    final imageUrl = schedule['file_url'] as String?;
     final l10n = AppLocalizations.of(context)!;
 
     return Container(
@@ -532,34 +575,91 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              '${schedule['term']} ${schedule['academic_year']}',
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${l10n.level} ${schedule['level']}',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.grey[600],
+                            if (schedule['program'] != null)
+                              Text(
+                                '${schedule['program']}',
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.bold),
                               ),
-                            ),
+                            if (schedule['level'] != null || schedule['term'] != null || schedule['academic_year'] != null) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                [
+                                  if (schedule['term'] != null) schedule['term'],
+                                  if (schedule['academic_year'] != null) schedule['academic_year'],
+                                  if (schedule['level'] != null) '${l10n.level} ${schedule['level']}',
+                                ].join(' - '),
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
                     ],
                   ),
-                  if (notes != null && notes.isNotEmpty) ...[
+                  if (notes != null && notes.isNotEmpty && !['schedule', 'study schedule', 'جدول دراسي', 'الجدول الدراسي'].contains(notes.toLowerCase().trim())) ...[
                     const SizedBox(height: 16),
                     Text(
-                      '${l10n.notes}: $notes',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontStyle: FontStyle.italic,
+                      notes,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
                           ),
                     ),
                   ],
                   if (imageUrl != null) ...[
                     const SizedBox(height: 16),
+                    if (imageUrl.toLowerCase().endsWith('.png') || imageUrl.toLowerCase().endsWith('.jpg') || imageUrl.toLowerCase().endsWith('.jpeg') || imageUrl.toLowerCase().endsWith('.webp')) ...[
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => Dialog(
+                              backgroundColor: Colors.transparent,
+                              insetPadding: const EdgeInsets.all(16),
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  InteractiveViewer(
+                                    panEnabled: true,
+                                    minScale: 1.0,
+                                    maxScale: 4.0,
+                                    child: Image.network(imageUrl),
+                                  ),
+                                  Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: IconButton(
+                                      icon: const Icon(Icons.close, color: Colors.white, size: 32),
+                                      onPressed: () => Navigator.of(context).pop(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            errorBuilder: (context, error, stackTrace) {
+                              print('=== IMAGE LOAD ERROR ===');
+                              print(error);
+                              return Container(
+                                height: 100,
+                                color: Colors.red.withValues(alpha: 0.1),
+                                child: const Center(child: Icon(Icons.broken_image, color: Colors.red)),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(

@@ -72,6 +72,28 @@ class RequestsListScreen extends StatelessWidget {
                     );
                   }
 
+                  if (snapshot.hasError) {
+                    return Padding(
+                      padding: const EdgeInsets.all(40.0),
+                      child: Column(
+                        children: [
+                          const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                          const SizedBox(height: 16),
+                          Text(
+                            'حدث خطأ أثناء تحميل الطلبات',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            snapshot.error.toString(),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
                   final activeTypesList = snapshot.data ?? [];
                   final activeDbIds = activeTypesList.map((e) => e['id'].toString()).toSet();
 

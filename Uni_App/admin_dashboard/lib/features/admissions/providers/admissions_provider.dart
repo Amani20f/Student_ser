@@ -11,9 +11,12 @@ final admissionsRepositoryProvider = Provider<AdmissionsRepository>((ref) {
 final admissionsFiltersProvider = StateProvider<Map<String, dynamic>>((ref) => {});
 
 final applicationsListProvider = FutureProvider<List<ApplicationModel>>((ref) async {
+  print('### [Log] AdmissionsProvider fetching data...');
   final repo = ref.watch(admissionsRepositoryProvider);
   final filters = ref.watch(admissionsFiltersProvider);
-  return await repo.getApplications(filters: filters);
+  final result = await repo.getApplications(filters: filters);
+  print('### [Log] AdmissionsProvider result length: ${result.length}');
+  return result;
 });
 
 final applicationDetailsProvider = FutureProvider.family<ApplicationModel, int>((ref, id) async {

@@ -41,6 +41,11 @@ class UserResource extends JsonResource
                         'id' => $this->student->program->id,
                         'name' => $this->student->program->name,
                         'code' => $this->student->program->code,
+                        'college' => ($this->student->program->department && $this->student->program->department->college) ? [
+                            'id' => $this->student->program->department->college->id,
+                            'name' => $this->student->program->department->college->name,
+                            'code' => $this->student->program->department->college->code,
+                        ] : null,
                     ] : null,
                 ];
             }),

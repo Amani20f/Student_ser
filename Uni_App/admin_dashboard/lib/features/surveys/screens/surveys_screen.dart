@@ -34,62 +34,98 @@ class SurveysScreen extends ConsumerWidget {
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Card(
-              child: DataTable(
-                columns: [
-                  DataColumn(label: Text(l10n.titleLabel)),
-                  DataColumn(label: Text(l10n.surveyLink)),
-                  DataColumn(label: Text(l10n.requiredForGrades)),
-                  DataColumn(label: Text(l10n.statusColumn)),
-                  DataColumn(label: Text(l10n.dateAdded)),
-                  DataColumn(label: Text(l10n.actionsColumn)),
-                ],
-                rows: surveys.map((survey) {
-                  return DataRow(
-                    cells: [
-                      DataCell(Text(survey.title)),
-                      DataCell(
-                        Tooltip(
-                          message: survey.googleFormUrl,
-                          child: SizedBox(
-                            width: 150,
-                            child: Text(
-                              survey.googleFormUrl,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columns: [
+                    DataColumn(label: Text(l10n.titleLabel)),
+                    DataColumn(label: Text('الوصف')),
+                    DataColumn(label: Text(l10n.surveyLink)),
+                    DataColumn(label: Text('الفئة المستهدفة')),
+                    DataColumn(label: Text(l10n.requiredForGrades)),
+                    DataColumn(label: Text(l10n.statusColumn)),
+                    DataColumn(label: Text(l10n.dateAdded)),
+                    DataColumn(label: Text(l10n.actionsColumn)),
+                  ],
+                  rows: surveys.map((survey) {
+                    return DataRow(
+                      cells: [
+                        DataCell(SizedBox(
+                          width: 150,
+                          child: Text(
+                            survey.title,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        )),
+                        DataCell(SizedBox(
+                          width: 150,
+                          child: Text(
+                            survey.description ?? '-',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        )),
+                        DataCell(
+                          Tooltip(
+                            message: survey.googleFormUrl,
+                            child: SizedBox(
+                              width: 150,
+                              child: Text(
+                                survey.googleFormUrl,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      DataCell(
-                        Icon(
-                          survey.isRequiredForGrades ? Icons.check_circle : Icons.cancel,
-                          color: survey.isRequiredForGrades ? Colors.green : Colors.grey,
-                        ),
-                      ),
-                      DataCell(
-                        Switch(
-                          value: survey.isActive,
-                          onChanged: (val) {
-                            ref.read(surveysProvider.notifier).toggleStatus(survey.id);
-                          },
-                        ),
-                      ),
-                      DataCell(Text(DateFormat('yyyy-MM-dd').format(survey.createdAt))),
-                      DataCell(Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.blue),
-                            onPressed: () => _showSurveyDialog(context, ref, survey: survey),
+                        DataCell(Builder(builder: (context) {
+                          final targets = <String>[];
+                          if (survey.targetCollegeName != null) targets.add('كلية: ${survey.targetCollegeName}');
+                          if (survey.targetProgramName != null) targets.add('تخصص: ${survey.targetProgramName}');
+                          if (survey.targetLevel != null) targets.add('مستوى: ${survey.targetLevel}');
+                          final display = targets.isEmpty ? 'جميع الطلاب' : targets.join(' | ');
+                          return Tooltip(
+                            message: display,
+                            child: SizedBox(
+                              width: 150,
+                              child: Text(
+                                display,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          );
+                        })),
+                        DataCell(
+                          Icon(
+                            survey.isRequiredForGrades ? Icons.check_circle : Icons.cancel,
+                            color: survey.isRequiredForGrades ? Colors.green : Colors.grey,
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => _confirmDelete(context, ref, survey.id),
+                        ),
+                        DataCell(
+                          Switch(
+                            value: survey.isActive,
+                            onChanged: (val) {
+                              ref.read(surveysProvider.notifier).toggleStatus(survey.id);
+                            },
                           ),
-                        ],
-                      )),
-                    ],
-                  );
-                }).toList(),
+                        ),
+                        DataCell(Text(DateFormat('yyyy-MM-dd').format(survey.createdAt))),
+                        DataCell(Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit, color: Colors.blue),
+                              onPressed: () => _showSurveyDialog(context, ref, survey: survey),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => _confirmDelete(context, ref, survey.id),
+                            ),
+                          ],
+                        )),
+                      ],
+                    );
+                  }).toList(),
+                ),
               ),
             ),
           );

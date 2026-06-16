@@ -46,7 +46,7 @@ class ServiceRequestController extends Controller
 
         if ($requestType) {
             $formRequest = null;
-            if ($requestType->slug === 'absence_excuse') {
+            if ($requestType->slug === 'absence_excuse' || $requestType->slug === 'aathr-ghyab') {
                 $formRequest = new \App\Http\Requests\Request\StoreAbsenceExcuseRequest();
             } elseif ($requestType->slug === 're_enrollment') {
                 $formRequest = new \App\Http\Requests\Request\StoreReEnrollmentRequest();
@@ -109,12 +109,25 @@ class ServiceRequestController extends Controller
             // ── Create the base Request record ────────────────────────
             if ($requestType && $requestType->slug === 'suspension_of_enrollment') {
                 $suspensionService = app(\App\Services\Request\SuspensionRequestService::class);
-                $serviceRequest = $suspensionService->createSuspensionRequest([
-                    'request_type_id' => $request->input('request_type_id'),
-                    'form_data' => $formData ?: null,
-                    'description' => $description,
-                    'attachment' => !empty($attachments) ? $attachments : null,
-                ], $student);
+                $serviceRequest = $suspensionService->createSuspensionRequest(
+                    array_merge([
+                        'request_type_id' => $request->input('request_type_id'),
+                        'description' => $description,
+                        'attachment' => !empty($attachments) ? $attachments : null,
+                    ], $formData),
+                    $student
+                );
+            } elseif ($requestType && $requestType->slug === 're_enrollment') {
+                $reEnrollmentService = app(\App\Services\Request\ReEnrollmentService::class);
+                $serviceRequest = $reEnrollmentService->submitReEnrollment(
+                    array_merge([
+                        'request_type_id' => $request->input('request_type_id'),
+                        'description' => $description,
+                        'attachment' => !empty($attachments) ? $attachments : null,
+                        'form_data' => $formData ?: null,
+                    ], $formData),
+                    $student
+                );
             } else {
                 $serviceRequest = Request::create([
                     'student_id'      => $student->id,
@@ -127,7 +140,7 @@ class ServiceRequestController extends Controller
             }
 
             // ── Handle Absence Excuse detail tables ───────────────────
-            if ($requestType && $requestType->slug === 'absence_excuse') {
+            if ($requestType && ($requestType->slug === 'absence_excuse' || $requestType->slug === 'aathr-ghyab')) {
                 $courses = $formData['courses'] ?? [];
                 if (!empty($courses)) {
                     $absenceExcuse = $serviceRequest->absenceExcuse()->create([
@@ -136,12 +149,32 @@ class ServiceRequestController extends Controller
                         'reason'        => $formData['absence_reason'] ?? $formData['reason'] ?? '',
                     ]);
 
+                    $updatedCourses = [];
                     foreach ($courses as $course) {
+                        $courseId = $course['course_id'] ?? null;
+                        $courseName = '';
+                        if ($courseId) {
+                            $dbCourse = \App\Models\Course::find($courseId);
+                            if ($dbCourse) {
+                                $courseName = $dbCourse->course_name;
+                            }
+                        }
+
                         $absenceExcuse->items()->create([
-                            'course_name'  => $course['course_name'] ?? $course,
+                            'course_id'    => $courseId,
+                            'course_name'  => $courseName,
                             'absence_date' => $course['absence_date'] ?? now()->toDateString(),
+                            'day'          => $course['day'] ?? null,
                         ]);
+
+                        // Update the course array for the JSON form_data
+                        $course['course_name'] = $courseName;
+                        $updatedCourses[] = $course;
                     }
+
+                    // Update form_data JSON in database to contain the resolved course names
+                    $formData['courses'] = $updatedCourses;
+                    $serviceRequest->update(['form_data' => $formData]);
 
                     $serviceRequest->load('absenceExcuse.items');
                 }

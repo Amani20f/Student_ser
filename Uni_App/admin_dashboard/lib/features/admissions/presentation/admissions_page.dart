@@ -35,6 +35,7 @@ class _AdmissionsPageState extends ConsumerState<AdmissionsPage> {
 
   @override
   Widget build(BuildContext context) {
+    print('### [Log] AdmissionsPage build triggered');
     final applicationsAsync = ref.watch(applicationsListProvider);
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
@@ -103,6 +104,7 @@ class _AdmissionsPageState extends ConsumerState<AdmissionsPage> {
         Expanded(
           child: applicationsAsync.when(
             data: (apps) {
+              print('### [Log] AdmissionsPage received apps count: ${apps.length}');
               if (apps.isEmpty) {
                 return Center(
                   child: Text(
@@ -123,6 +125,7 @@ class _AdmissionsPageState extends ConsumerState<AdmissionsPage> {
                   separatorBuilder: (_, __) => Divider(height: 1, color: cs.outlineVariant.withAlpha(40)),
                   itemBuilder: (context, index) {
                     final app = apps[index];
+                    print('### [Log] Rendering item \${app.id}');
                     return ListTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                       title: Text(

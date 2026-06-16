@@ -34,7 +34,7 @@ class StudentApplicationController extends Controller
             'identity_document'      => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'qualification_document' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'personal_photo'         => 'required|file|mimes:jpg,jpeg,png|max:2048',
-            'payment_receipt'        => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'payment_receipt'        => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ], [
             'national_id_number.unique' => 'رقم الهوية أو الإقامة مسجل مسبقاً في النظام.',
             'email_address.unique'      => 'البريد الإلكتروني مسجل مسبقاً في النظام.',
@@ -116,19 +116,34 @@ class StudentApplicationController extends Controller
             'pending'   => 'قيد المراجعة',
             'submitted' => 'تم استلامه',
             'completed' => 'مكتمل — تم القبول',
+            'rejected'  => 'مرفوض',
         ];
+
+        $responseData = [
+            'application_status' => $application->application_status,
+            'status_label'       => $statusLabels[$application->application_status] ?? $application->application_status,
+            'applicant_name'     => $application->full_name,
+            'program_name'       => $application->desiredProgram?->name,
+        ];
+
+        if ($application->application_status === 'pending' || $application->application_status === 'submitted') {
+            $responseData['submitted_at'] = $application->submitted_at?->toDateString();
+        } elseif ($application->application_status === 'rejected') {
+            $responseData['rejection_reason'] = $application->rejection_reason;
+        } elseif ($application->application_status === 'completed') {
+            $student = Student::where('national_id', $application->national_id_number)->first();
+            if ($student) {
+                $responseData['student_number'] = $student->student_number;
+            }
+            $responseData['email'] = $application->email_address;
+            $responseData['username'] = $application->email_address;
+            $responseData['temp_password'] = $application->national_id_number;
+            $responseData['temp_password_message'] = 'يرجى استخدام هذه البيانات لتسجيل الدخول وتغيير كلمة المرور بعد أول دخول.';
+        }
 
         return response()->json([
             'success' => true,
-            'data'    => [
-                'application_number' => $application->application_number,
-                'full_name'          => $application->full_name,
-                'status'             => $application->application_status,
-                'status_label'       => $statusLabels[$application->application_status] ?? $application->application_status,
-                'desired_program'    => $application->desiredProgram?->name,
-                'college'            => $application->desiredProgram?->department?->college?->name,
-                'submitted_at'       => $application->submitted_at?->toDateString(),
-            ],
+            'data'    => $responseData,
         ]);
     }
 
@@ -179,6 +194,10 @@ class StudentApplicationController extends Controller
             if ($student) {
                 $responseData['student_number'] = $student->student_number;
             }
+            $responseData['email'] = $application->email_address;
+            $responseData['username'] = $application->email_address;
+            $responseData['temp_password'] = $application->national_id_number;
+            $responseData['temp_password_message'] = 'يرجى استخدام هذه البيانات لتسجيل الدخول وتغيير كلمة المرور بعد أول دخول.';
         }
 
         return response()->json([

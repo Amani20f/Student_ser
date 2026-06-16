@@ -75,6 +75,8 @@ class RequestsRepository {
     for (int i = 0; i < courses.length; i++) {
       final arabicDay = courses[i]['day']?.toString() ?? '';
       final englishDay = dayMapping[arabicDay] ?? arabicDay;
+      fields['form_data[courses][$i][course_id]'] =
+          courses[i]['course_id']?.toString() ?? '';
       fields['form_data[courses][$i][course_name]'] =
           courses[i]['course_name']?.toString() ?? '';
       fields['form_data[courses][$i][day]'] = englishDay;
@@ -109,8 +111,10 @@ class RequestsRepository {
   }) async {
     final fields = <String, String>{
       'request_type_id': requestTypeId.toString(),
-      'form_data[semester]': semesterId.toString(),
-      'form_data[reason]': reason,
+      // Validation keys per StoreSuspensionRequest
+      'form_data[suspension_reason]': reason,
+      'form_data[start_semester_id]': semesterId.toString(),
+      'form_data[duration_semesters]': '1', // default duration
     };
 
     final files = <http.MultipartFile>[];
@@ -123,12 +127,20 @@ class RequestsRepository {
       );
     }
 
+    print('=====================================');
+    print('REPOSITORY FINAL FIELDS SENT TO LARAVEL:');
+    print(fields);
+    print('Files sent: ${files.map((f) => f.field).toList()}');
+    print('=====================================');
+
     return await _apiClient.postMultipart(
       ApiConstants.serviceRequests,
       fields: fields,
       files: files,
     );
   }
+
+
 
   // ── إعادة القيد ───────────────────────────────────────────────────────────
   /// يرسل طلب إعادة القيد مع ملف استمارة الإيقاف وبطاقة الهوية
@@ -146,10 +158,10 @@ class RequestsRepository {
     };
 
     if (prevStopsCount != null && prevStopsCount.isNotEmpty) {
-      fields['form_data[prev_stops_count]'] = prevStopsCount;
+      fields['prev_stops_count'] = prevStopsCount;
     }
     if (prevSemester != null && prevSemester.isNotEmpty) {
-      fields['form_data[prev_semester]'] = prevSemester;
+      fields['prev_semester'] = prevSemester;
     }
 
     final files = <http.MultipartFile>[];
@@ -171,8 +183,6 @@ class RequestsRepository {
     );
   }
 
-  // ── تظلم درجة ─────────────────────────────────────────────────────────────
-  /// يرسل طلب تظلم درجة مع قائمة المقررات وسبب التظلم
   Future<Map<String, dynamic>> submitGrievance({
     required int requestTypeId,
     required String college,
@@ -180,8 +190,9 @@ class RequestsRepository {
     required String level,
     required String academicYear,
     required String semester,
-    required List<String> courseNames,
+    required List<Map<String, dynamic>> courses, // [{course_id, course_name}]
     required String reason,
+    required List<File> attachments,
   }) async {
     final fields = <String, String>{
       'request_type_id': requestTypeId.toString(),
@@ -193,14 +204,36 @@ class RequestsRepository {
       'form_data[reason]': reason,
     };
 
-    for (int i = 0; i < courseNames.length; i++) {
-      fields['form_data[courses][$i]'] = courseNames[i];
+    for (int i = 0; i < courses.length; i++) {
+      fields['form_data[courses][$i][course_id]'] =
+          courses[i]['course_id']?.toString() ?? '';
+      fields['form_data[courses][$i][course_name]'] =
+          courses[i]['course_name']?.toString() ?? '';
+    }
+
+    final multipartFiles = <http.MultipartFile>[];
+    for (int i = 0; i < attachments.length; i++) {
+      multipartFiles.add(
+        await http.MultipartFile.fromPath(
+          'attachments[$i]',
+          attachments[i].path,
+        ),
+      );
     }
 
     return await _apiClient.postMultipart(
-      ApiConstants.serviceRequests,
-      fields: fields,
-      files: [],
+      '/student/appeals',
+      fields: {
+        'academic_year': academicYear,
+        'term': semester,
+        'student_note': reason,
+        ...Map.fromEntries(
+          courses.asMap().entries.map(
+                (e) => MapEntry('items[${e.key}][course_id]', e.value['course_id']?.toString() ?? ''),
+              ),
+        ),
+      },
+      files: multipartFiles,
     );
   }
 
@@ -236,6 +269,12 @@ class RequestsRepository {
       queryParams['program_id'] = programId.toString();
     }
     final response = await _apiClient.get('/courses', queryParams: queryParams);
+    return response['data'] ?? [];
+  }
+
+  // ── جلب المقررات الحالية للطالب ──────────────────────────────────────────────
+  Future<List<dynamic>> getCurrentCourses() async {
+    final response = await _apiClient.get('/student/current-courses');
     return response['data'] ?? [];
   }
 

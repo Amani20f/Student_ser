@@ -1,46 +1,38 @@
 <?php
-require __DIR__ . '/vendor/autoload.php';
-$app = require_once __DIR__ . '/bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
-$kernel->bootstrap();
+$student = \App\Models\Student::first();
+$student->status = \App\Enums\StudentStatusEnum::ACTIVE;
+$student->save();
 
-use App\Models\User;
-use App\Models\Student;
-use App\Models\Request;
-
-$user = User::factory()->create();
-$student = Student::create([
-    'user_id' => $user->id,
-    'national_id' => '200000' . rand(1000, 9999),
-    'student_number' => '2026' . rand(1000, 9999),
-    'phone' => '050' . rand(1000000, 9999999),
-    'full_name_ar' => 'Test Student',
-    'full_name_en' => 'Test Student',
-    'status' => 'active',
-    'program_id' => 2,
-    'academic_level' => 3
-]);
-
-$request = Request::create([
+$requestType = \App\Models\RequestType::where('slug', 'suspension_of_enrollment')->first();
+$req = \App\Models\Request::create([
     'student_id' => $student->id,
-    'request_type' => 'suspension',
-    'status' => 'pending',
-    'reason' => 'Test',
-    'semester' => 'first',
-    'academic_year' => '2026'
+    'request_type_id' => $requestType->id,
+    'description' => 'Test Suspension',
+    'semester_id' => 1,
+    'form_data' => ['semester' => 1, 'reason' => 'test'],
+    'status' => \App\Enums\RequestStatusEnum::PENDING
 ]);
 
-echo "Initial Status: " . $request->status . "\n";
-echo "Initial Student Status: " . $student->status . "\n";
+echo "--- SUSPENSION TEST ---\n";
+echo "Before approval: " . $student->fresh()->status->value . "\n";
 
-// Ratified by accountant
-$request->update(['status' => 'ratified', 'accountant_notes' => 'Ratified ok']);
-echo "After Accountant: " . $request->status . "\n";
+$req->status = \App\Enums\RequestStatusEnum::APPROVED;
+$req->save();
 
-// Approved by Student Affairs
-// Emulate the controller logic
-$request->update(['status' => 'approved', 'admin_notes' => 'Approved ok']);
-$student->update(['status' => 'suspended']);
+echo "After approval: " . $student->fresh()->status->value . "\n";
 
-echo "After SA: " . $request->status . "\n";
-echo "Final Student Status: " . $student->status . "\n";
+echo "--- RE-ENROLLMENT TEST ---\n";
+$requestType2 = \App\Models\RequestType::where('slug', 're_enrollment')->first();
+$req2 = \App\Models\Request::create([
+    'student_id' => $student->id,
+    'request_type_id' => $requestType2->id,
+    'description' => 'Test Re-enrollment',
+    'semester_id' => 1,
+    'form_data' => ['semester' => 1, 'reason' => 'test'],
+    'status' => \App\Enums\RequestStatusEnum::PENDING
+]);
+
+echo "Before approval: " . $student->fresh()->status->value . "\n";
+$req2->status = \App\Enums\RequestStatusEnum::APPROVED;
+$req2->save();
+echo "After approval: " . $student->fresh()->status->value . "\n";

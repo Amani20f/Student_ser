@@ -18,6 +18,7 @@ class AnnouncementController extends Controller
         }
 
         $now = now();
+        $studentCollegeId = $student->program->department->college_id ?? null;
 
         $announcements = Announcement::where('is_active', true)
             ->where(function ($q) use ($now) {
@@ -26,17 +27,15 @@ class AnnouncementController extends Controller
             ->where(function ($q) use ($now) {
                 $q->whereNull('expires_at')->orWhere('expires_at', '>=', $now);
             })
-            ->where(function ($q) use ($student) {
+            ->where(function ($q) use ($student, $studentCollegeId) {
                 $q->where('target_audience', 'all_students')
                   ->orWhere(function ($sub) use ($student) {
                       $sub->where('target_audience', 'specific_program')
                           ->where('target_program_id', $student->program_id);
                   })
-                  ->orWhere(function ($sub) use ($student) {
+                  ->orWhere(function ($sub) use ($studentCollegeId) {
                       $sub->where('target_audience', 'specific_college')
-                          ->whereHas('targetProgram', function ($p) use ($student) {
-                              $p->where('id', $student->program_id);
-                          });
+                          ->where('target_college_id', $studentCollegeId);
                   });
             })
             ->orderBy('created_at', 'desc')

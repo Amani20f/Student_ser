@@ -22,6 +22,7 @@ import '../../features/courses/presentation/courses_page.dart';
 import '../../features/semesters/presentation/semesters_page.dart';
 import '../../features/pricing/presentation/pricing_page.dart';
 import '../../features/study_schedules/presentation/study_schedules_page.dart';
+import '../../features/study_plans/presentation/study_plans_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -111,6 +112,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/study-schedules',
             builder: (context, state) => const StudySchedulesPage(),
+          ),
+          GoRoute(
+            path: '/study-plans',
+            builder: (context, state) => const StudyPlansPage(),
           ),
           GoRoute(
             path: '/appeals',

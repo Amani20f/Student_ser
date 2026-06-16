@@ -39,7 +39,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get newStudentRegistration => 'تسجيل طالب جديد';
 
   @override
-  String get verifyReferenceRequest => 'التحقق من طلب مرجعي';
+  String get verifyReferenceRequest => 'التحقق من الطلب';
 
   @override
   String get changePasswordTitle => 'تغيير كلمة المرور';
@@ -485,7 +485,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get registrationFeeWarning =>
-      'لن يتم قبول المعلومات التي أدخلتها إلا عند دفع رسوم التسجيل.';
+      'هذا التسجيل مبدئي فقط ولا يعتبر قبولاً نهائياً في الجامعة. يجب على المتقدم الحضور شخصياً إلى الجامعة وتقديم جميع الوثائق والمستندات الرسمية المطلوبة واستكمال إجراءات القبول. لن يتم اعتماد الطلب إلا بعد مراجعة الوثائق وسداد الرسوم المطلوبة.';
 
   @override
   String get ok => 'حسناً';

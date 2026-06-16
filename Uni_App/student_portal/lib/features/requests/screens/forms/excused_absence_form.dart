@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:university_app/core/widgets/gradient_background.dart';
 import 'package:university_app/features/requests/data/requests_repository.dart';
 import 'package:university_app/features/requests/widgets/form_inputs.dart';
+import 'package:university_app/features/auth/cubit/auth_cubit.dart';
 
 class ExcusedAbsenceScreen extends StatefulWidget {
   const ExcusedAbsenceScreen({super.key});
@@ -15,7 +16,8 @@ class ExcusedAbsenceScreen extends StatefulWidget {
 }
 
 class _CourseAbsenceItem {
-  TextEditingController courseName = TextEditingController();
+  int? selectedCourseId;
+  String? selectedCourseName;
   String? selectedDay;
   TextEditingController absenceDate = TextEditingController();
 }
@@ -53,6 +55,8 @@ class _ExcusedAbsenceScreenState extends State<ExcusedAbsenceScreen> {
   final _reasonController = TextEditingController();
   final List<_CourseAbsenceItem> _courses = [];
   List<PlatformFile> _uploadedFiles = [];
+  List<dynamic> _availableCourses = [];
+  bool _isLoadingCourses = false;
   bool _isSubmitting = false;
   bool _isConfirmed = false;
 
@@ -62,12 +66,29 @@ class _ExcusedAbsenceScreenState extends State<ExcusedAbsenceScreen> {
     final currentYear = DateTime.now().year;
     _academicYearController = TextEditingController(text: '${currentYear - 1}/$currentYear');
     _addCourse();
+    _loadCourses();
+  }
+
+  Future<void> _loadCourses() async {
+    setState(() {
+      _isLoadingCourses = true;
+    });
+    try {
+      final courses = await context.read<RequestsRepository>().getCurrentCourses();
+      setState(() {
+        _availableCourses = courses;
+        _isLoadingCourses = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingCourses = false;
+      });
+    }
   }
 
   @override
   void dispose() {
     for (var course in _courses) {
-      course.courseName.dispose();
       course.absenceDate.dispose();
     }
     _otherMajorController.dispose();
@@ -86,7 +107,6 @@ class _ExcusedAbsenceScreenState extends State<ExcusedAbsenceScreen> {
   void _removeCourse(int index) {
     if (_courses.length > 1) {
       setState(() {
-        _courses[index].courseName.dispose();
         _courses[index].absenceDate.dispose();
         _courses.removeAt(index);
       });
@@ -120,6 +140,13 @@ class _ExcusedAbsenceScreenState extends State<ExcusedAbsenceScreen> {
       return;
     }
 
+    if (_uploadedFiles.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('يرجى إرفاق المستندات الداعمة (مرفق واحد على الأقل)'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
     try {
@@ -127,7 +154,8 @@ class _ExcusedAbsenceScreenState extends State<ExcusedAbsenceScreen> {
 
       // Build course list
       final coursesList = _courses.map((c) => {
-        'course_name': c.courseName.text.trim(),
+        'course_id': c.selectedCourseId ?? 0,
+        'course_name': c.selectedCourseName ?? '',
         'day': c.selectedDay ?? '',
         'absence_date': c.absenceDate.text.trim(),
       }).toList();
@@ -138,11 +166,32 @@ class _ExcusedAbsenceScreenState extends State<ExcusedAbsenceScreen> {
           .map((f) => File(f.path!))
           .toList();
 
+      final authState = context.read<AuthCubit>().state;
+      String collegeName = _selectedCollege ?? '';
+      String majorName = _selectedMajor ?? _otherMajorController.text.trim();
+      String levelName = _selectedLevel ?? '';
+
+      if (authState is Authenticated) {
+        final user = authState.user;
+        final student = user['student'] ?? {};
+        final program = student['program'] ?? {};
+        final college = program['college'] ?? {};
+
+        collegeName = college['name'] ?? '';
+        majorName = program['name'] ?? '';
+
+        final lvl = student['current_level'];
+        if (lvl != null) {
+          final intLvl = int.tryParse(lvl.toString()) ?? 1;
+          levelName = intLvl.toString();
+        }
+      }
+
       await repo.submitAbsenceExcuse(
         requestTypeId: 1, // slug: absence_excuse
-        college: _selectedCollege ?? '',
-        major: _selectedMajor ?? _otherMajorController.text.trim(),
-        level: _selectedLevel ?? '',
+        college: collegeName,
+        major: majorName,
+        level: levelName,
         semester: _semesterController.text.trim(),
         academicYear: _academicYearController.text.trim(),
         reason: _reasonController.text.trim(),
@@ -192,16 +241,73 @@ class _ExcusedAbsenceScreenState extends State<ExcusedAbsenceScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('بيانات الطالب', style: Theme.of(context).textTheme.headlineMedium),
-                const SizedBox(height: 16),
-                const LabeledTextField(label: 'الاسم الكامل', readOnly: true, hint: 'نورة أحمد'),
-                const SizedBox(height: 16),
-                const LabeledTextField(label: 'الرقم الجامعي', readOnly: true, hint: '20241010'),
-                const SizedBox(height: 16),
-                const LabeledTextField(label: 'الكلية', readOnly: true, hint: 'كلية الهندسةو تقنية المعلومات'),
-                const SizedBox(height: 16),
-                const LabeledTextField(label: 'التخصص', readOnly: true, hint: 'تقنية المعلومات'),
-                const SizedBox(height: 16),
-                const LabeledTextField(label: 'المستوى', readOnly: true, hint: 'المستوى الرابع'),
+                BlocBuilder<AuthCubit, AuthState>(
+                  builder: (context, state) {
+                    String name = '';
+                    String studentNumber = '';
+                    String collegeName = '';
+                    String majorName = '';
+                    String levelName = '';
+
+                    if (state is Authenticated) {
+                      final user = state.user;
+                      final student = user['student'] ?? {};
+                      final program = student['program'] ?? {};
+                      final college = program['college'] ?? {};
+
+                      name = user['name'] ?? '';
+                      studentNumber = student['student_number']?.toString() ?? '';
+                      collegeName = college['name'] ?? '';
+                      majorName = program['name'] ?? '';
+
+                      final lvl = student['current_level'];
+                      if (lvl != null) {
+                        final intLvl = int.tryParse(lvl.toString()) ?? 1;
+                        final arabicLevels = {
+                          1: 'المستوى الأول', 2: 'المستوى الثاني',
+                          3: 'المستوى الثالث', 4: 'المستوى الرابع',
+                          5: 'المستوى الخامس', 6: 'المستوى السادس',
+                          7: 'المستوى السابع', 8: 'المستوى الثامن',
+                        };
+                        levelName = arabicLevels[intLvl] ?? 'المستوى $intLvl';
+                      }
+                    }
+
+                    return Column(
+                      children: [
+                        LabeledTextField(
+                          label: 'الاسم الكامل',
+                          readOnly: true,
+                          hint: name.isNotEmpty ? name : 'جاري التحميل...',
+                        ),
+                        const SizedBox(height: 16),
+                        LabeledTextField(
+                          label: 'الرقم الجامعي',
+                          readOnly: true,
+                          hint: studentNumber.isNotEmpty ? studentNumber : 'جاري التحميل...',
+                        ),
+                        const SizedBox(height: 16),
+                        LabeledTextField(
+                          label: 'الكلية',
+                          readOnly: true,
+                          hint: collegeName.isNotEmpty ? collegeName : 'جاري التحميل...',
+                        ),
+                        const SizedBox(height: 16),
+                        LabeledTextField(
+                          label: 'التخصص',
+                          readOnly: true,
+                          hint: majorName.isNotEmpty ? majorName : 'جاري التحميل...',
+                        ),
+                        const SizedBox(height: 16),
+                        LabeledTextField(
+                          label: 'المستوى الدراسي',
+                          readOnly: true,
+                          hint: levelName.isNotEmpty ? levelName : 'جاري التحميل...',
+                        ),
+                      ],
+                    );
+                  },
+                ),
                 const SizedBox(height: 16),
                 const LabeledTextField(label: 'الفصل الدراسي', readOnly: true, hint: 'الفصل الثاني'),
                 const SizedBox(height: 16),
@@ -254,10 +360,55 @@ class _ExcusedAbsenceScreenState extends State<ExcusedAbsenceScreen> {
                         Row(
                           children: [
                             Expanded(
-                              child: LabeledTextField(
-                                label: 'اسم المادة',
-                                controller: course.courseName,
-                                validator: (v) => v!.isEmpty ? 'مطلوب' : null,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'المادة',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _isLoadingCourses
+                                      ? const Center(
+                                          child: SizedBox(
+                                            height: 20,
+                                            width: 20,
+                                            child: CircularProgressIndicator(strokeWidth: 2),
+                                          ),
+                                        )
+                                      : DropdownButtonFormField<int>(
+                                          value: course.selectedCourseId,
+                                          items: _availableCourses.map<DropdownMenuItem<int>>((c) {
+                                            final name = c['course_name'] ?? '';
+                                            final code = c['course_code'] ?? '';
+                                            return DropdownMenuItem<int>(
+                                              value: c['id'] as int,
+                                              child: Text(
+                                                '$name ($code)',
+                                                style: const TextStyle(fontSize: 14),
+                                              ),
+                                            );
+                                          }).toList(),
+                                          onChanged: (val) {
+                                            setState(() {
+                                              course.selectedCourseId = val;
+                                              final selected = _availableCourses.firstWhere((c) => c['id'] == val);
+                                              course.selectedCourseName = selected['course_name'] ?? '';
+                                            });
+                                          },
+                                          decoration: InputDecoration(
+                                            hintText: _availableCourses.isEmpty ? 'لا توجد مقررات متاحة' : 'اختر المقرر',
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                          validator: (val) => val == null ? 'مطلوب' : null,
+                                        ),
+                                ],
                               ),
                             ),
                             if (_courses.length > 1)
@@ -268,18 +419,30 @@ class _ExcusedAbsenceScreenState extends State<ExcusedAbsenceScreen> {
                           ],
                         ),
                         const SizedBox(height: 12),
-                        DropdownField(
+                        LabeledTextField(
                           label: 'اليوم',
-                          items: const ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
-                          value: course.selectedDay,
-                          onChanged: (val) => setState(() => course.selectedDay = val),
-                          validator: (val) => val == null || val.isEmpty ? 'مطلوب' : null,
+                          hint: course.selectedDay ?? 'اختر التاريخ أولاً',
+                          readOnly: true,
                         ),
                         const SizedBox(height: 16),
                         DatePickerField(
                           label: 'التاريخ',
                           controller: course.absenceDate,
                           validator: (v) => v!.isEmpty ? 'مطلوب' : null,
+                          onDateSelected: (date) {
+                            setState(() {
+                              final arabicDays = {
+                                1: 'الإثنين',
+                                2: 'الثلاثاء',
+                                3: 'الأربعاء',
+                                4: 'الخميس',
+                                5: 'الجمعة',
+                                6: 'السبت',
+                                7: 'الأحد',
+                              };
+                              course.selectedDay = arabicDays[date.weekday];
+                            });
+                          },
                         ),
                       ],
                     ),
@@ -342,10 +505,10 @@ class _ExcusedAbsenceScreenState extends State<ExcusedAbsenceScreen> {
                 const SizedBox(height: 30),
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
                   child: ElevatedButton(
                     onPressed: _isSubmitting ? null : _submit,
                     style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

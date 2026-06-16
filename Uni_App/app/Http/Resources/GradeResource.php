@@ -22,6 +22,7 @@ class GradeResource extends JsonResource
             'semester_id' => $this->semester_id,
             'course_name' => $this->course->course_name ?? null,
             'course_code' => $this->course->course_code ?? null,
+            'credit_hours' => (int) ($this->course->credit_hours ?? 0),
             'academic_year' => $this->semester->academic_year ?? null,
             'semester_term' => $this->semester->term ?? null,
             'first' => $this->first,

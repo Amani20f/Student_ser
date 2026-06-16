@@ -101,6 +101,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/applications/{id}', [StudentApplicationManagementController::class, 'show']);
         Route::post('/applications/{id}/approve', [StudentApplicationManagementController::class, 'approve']);
         Route::post('/applications/{id}/reject', [StudentApplicationManagementController::class, 'reject']);
+        Route::get('/unified-requests', [\App\Http\Controllers\Api\Admin\UnifiedRequestController::class, 'index']);
     });
 
     /**
@@ -116,6 +117,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/grades', [GradeController::class, 'index']);
         Route::get('/results', [AcademicRecordController::class, 'results']);
         Route::get('/transcript', [AcademicRecordController::class, 'transcript']);
+        Route::get('/current-courses', [AcademicRecordController::class, 'currentCourses']);
+        
+        // Optional Surveys
+        Route::get('/optional-surveys', [\App\Http\Controllers\Api\Student\OptionalSurveyController::class, 'index']);
+        Route::post('/optional-surveys/{id}/view', [\App\Http\Controllers\Api\Student\OptionalSurveyController::class, 'markViewed']);
         
         // Payments
         Route::get('/payments', [StudentPaymentController::class, 'index']);

@@ -67,6 +67,9 @@ class AcademicRecordTest extends TestCase
             'completed_credit_hours' => 0,
         ]);
 
+        // Authenticate the user so that subsequent model creations (e.g. Grades) have a causer_id for activity logging.
+        auth()->login($this->user);
+
         // Create semesters
         $this->semester1 = Semester::create([
             'academic_year' => '2023-2024',
@@ -255,5 +258,126 @@ class AcademicRecordTest extends TestCase
         $this->assertEquals(4, $transcript[1]['earned_credit_hours']);
         $this->assertEquals(4, $transcript[1]['total_credit_hours']);
         $this->assertEquals(3.5, $transcript[1]['GPA']);
+    }
+
+    public function test_results_not_locked_by_survey_targeting_different_program()
+    {
+        $otherProgram = \App\Models\Program::create([
+            'name' => 'Other Program',
+            'code' => 'OP',
+            'department_id' => $this->student->program->department_id,
+        ]);
+
+        $survey = \App\Models\Survey::create([
+            'title' => 'Evaluation for Other Program',
+            'google_form_url' => 'http://example.com/form',
+            'semester_id' => $this->semester2->id,
+            'is_active' => true,
+            'is_required_for_grades' => true,
+            'target_program_id' => $otherProgram->id,
+            'target_audience' => 'all_students',
+        ]);
+
+        $response = $this->actingAs($this->user)->getJson('/api/student/results');
+        $response->assertStatus(200);
+    }
+
+    public function test_results_locked_by_survey_targeting_students_program()
+    {
+        $survey = \App\Models\Survey::create([
+            'title' => 'Evaluation for My Program',
+            'google_form_url' => 'http://example.com/form',
+            'semester_id' => $this->semester2->id,
+            'is_active' => true,
+            'is_required_for_grades' => true,
+            'target_program_id' => $this->student->program_id,
+            'target_audience' => 'all_students',
+        ]);
+
+        $response = $this->actingAs($this->user)->getJson('/api/student/results');
+        $response->assertStatus(403);
+        $response->assertJson(['error' => 'questionnaire_required']);
+    }
+
+    public function test_results_not_locked_by_survey_targeting_different_college()
+    {
+        $otherCollege = \App\Models\College::create([
+            'name' => 'Other College',
+            'code' => 'OC',
+        ]);
+
+        $survey = \App\Models\Survey::create([
+            'title' => 'Evaluation for Other College',
+            'google_form_url' => 'http://example.com/form',
+            'semester_id' => $this->semester2->id,
+            'is_active' => true,
+            'is_required_for_grades' => true,
+            'target_college_id' => $otherCollege->id,
+            'target_audience' => 'all_students',
+        ]);
+
+        $response = $this->actingAs($this->user)->getJson('/api/student/results');
+        $response->assertStatus(200);
+    }
+
+    public function test_results_locked_by_survey_targeting_students_college_and_level()
+    {
+        // First, update student's level to ensure it matches
+        $this->student->update(['current_level' => 3]);
+
+        $survey = \App\Models\Survey::create([
+            'title' => 'Evaluation for My College and Level',
+            'google_form_url' => 'http://example.com/form',
+            'semester_id' => $this->semester2->id,
+            'is_active' => true,
+            'is_required_for_grades' => true,
+            'target_college_id' => $this->student->program->department->college_id,
+            'target_level' => 3,
+            'target_audience' => 'all_students',
+        ]);
+
+        $response = $this->actingAs($this->user)->getJson('/api/student/results');
+        $response->assertStatus(403);
+        $response->assertJson(['error' => 'questionnaire_required']);
+    }
+
+    public function test_results_not_locked_if_college_matches_but_level_different()
+    {
+        $this->student->update(['current_level' => 3]);
+
+        $survey = \App\Models\Survey::create([
+            'title' => 'Evaluation for My College but Different Level',
+            'google_form_url' => 'http://example.com/form',
+            'semester_id' => $this->semester2->id,
+            'is_active' => true,
+            'is_required_for_grades' => true,
+            'target_college_id' => $this->student->program->department->college_id,
+            'target_level' => 4, // Different level
+            'target_audience' => 'all_students',
+        ]);
+
+        $response = $this->actingAs($this->user)->getJson('/api/student/results');
+        $response->assertStatus(200); // Should not be locked
+    }
+
+    public function test_survey_completion_works_without_confirmation_code()
+    {
+        $survey = \App\Models\Survey::create([
+            'title' => 'Evaluation Survey',
+            'google_form_url' => 'http://example.com/form',
+            'semester_id' => $this->semester2->id,
+            'is_active' => true,
+            'is_required_for_grades' => true,
+        ]);
+
+        // Complete survey — no confirmation code needed
+        $response = $this->actingAs($this->user)->postJson('/api/student/surveys/complete', [
+            'survey_id' => $survey->id,
+        ]);
+        $response->assertStatus(200);
+
+        // Grades should now be unlocked
+        $responseResults = $this->actingAs($this->user)->getJson('/api/student/results');
+        $responseResults->assertStatus(200);
     }
 }

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:university_app/features/auth/cubit/auth_cubit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:university_app/core/widgets/gradient_background.dart';
 import 'package:university_app/features/requests/data/requests_repository.dart';
@@ -24,7 +25,14 @@ class PaymentItem {
 }
 
 class PaymentFormScreen extends StatefulWidget {
-  const PaymentFormScreen({super.key});
+  final String? initialRefNumber;
+  final String? initialServiceType;
+
+  const PaymentFormScreen({
+    super.key,
+    this.initialRefNumber,
+    this.initialServiceType,
+  });
 
   @override
   State<PaymentFormScreen> createState() => _PaymentFormScreenState();
@@ -48,6 +56,20 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
   void initState() {
     super.initState();
     _fetchPaymentOptions();
+
+    if (widget.initialRefNumber != null) {
+      _refNumberController.text = widget.initialRefNumber!;
+    }
+    if (widget.initialServiceType != null) {
+      _paymentTypeController.text = widget.initialServiceType!;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        try {
+          _onPaymentTypeChanged(widget.initialServiceType);
+        } catch (e) {
+          // ignore if option not exactly found
+        }
+      });
+    }
   }
 
   void _fetchPaymentOptions() {
@@ -202,16 +224,31 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 16),
-                const LabeledTextField(
-                  label: 'الاسم الكامل',
-                  readOnly: true,
-                  hint: 'نورة أحمد',
-                ),
-                const SizedBox(height: 16),
-                const LabeledTextField(
-                  label: 'الرقم الجامعي',
-                  readOnly: true,
-                  hint: '20241010',
+                BlocBuilder<AuthCubit, AuthState>(
+                  builder: (context, state) {
+                    String name = '';
+                    String studentNumber = '';
+                    if (state is Authenticated) {
+                      final user = state.user;
+                      name = user['name'] ?? '';
+                      studentNumber = user['student']?['student_number'] ?? '';
+                    }
+                    return Column(
+                      children: [
+                        LabeledTextField(
+                          label: 'الاسم الكامل',
+                          readOnly: true,
+                          hint: name.isNotEmpty ? name : 'جاري التحميل...',
+                        ),
+                        const SizedBox(height: 16),
+                        LabeledTextField(
+                          label: 'الرقم الجامعي',
+                          readOnly: true,
+                          hint: studentNumber.isNotEmpty ? studentNumber : 'جاري التحميل...',
+                        ),
+                      ],
+                    );
+                  },
                 ),
                 const SizedBox(height: 24),
                 const Divider(),
@@ -223,6 +260,7 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
                 const SizedBox(height: 16),
                 DropdownField(
                   label: 'نوع الخدمة / الرسوم',
+                  value: _paymentTypeController.text.isNotEmpty ? _paymentTypeController.text : null,
                   items: _paymentOptions.map((e) => e.displayName).toList(),
                   onChanged: _onPaymentTypeChanged,
                   validator: (val) =>
@@ -268,10 +306,10 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
                 const SizedBox(height: 30),
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
                   child: ElevatedButton(
                     onPressed: _isSubmitting ? null : _submit,
                     style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(

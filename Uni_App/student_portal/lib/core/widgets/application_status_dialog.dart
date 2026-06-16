@@ -244,8 +244,35 @@ class _ApplicationStatusDialogState extends State<ApplicationStatusDialog> {
                       _buildResultRow('اسم المتقدم:', _result!['applicant_name']),
                       _buildResultRow('التخصص:', _result!['program_name']),
                       
-                      if (_result!['application_status'] == 'completed' && _result!['student_number'] != null)
-                        _buildResultRow('الرقم الجامعي:', _result!['student_number']),
+                      if (_result!['application_status'] == 'completed') ...[
+                        if (_result!['student_number'] != null)
+                          _buildResultRow('الرقم الجامعي:', _result!['student_number']),
+                        if (_result!['email'] != null)
+                          _buildResultRow('البريد الإلكتروني:', _result!['email']),
+                        if (_result!['temp_password'] != null)
+                          _buildResultRow('كلمة المرور المؤقتة:', _result!['temp_password']),
+                        if (_result!['temp_password_message'] != null) ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.green.withValues(alpha: 0.2)),
+                            ),
+                            child: Text(
+                              _result!['temp_password_message'],
+                              style: const TextStyle(
+                                color: Colors.green,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ],
                       
                       if ((_result!['application_status'] == 'pending' || _result!['application_status'] == 'submitted') && _result!['submitted_at'] != null)
                         _buildResultRow('تاريخ التقديم:', _result!['submitted_at']),

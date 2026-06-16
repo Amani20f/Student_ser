@@ -22,11 +22,8 @@ class UpdateProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $this->user()->id],
-            'username' => ['nullable', 'string', 'max:255', 'unique:users,username,' . $this->user()->id],
             'phone' => ['required', 'string', 'max:20'],
-            'national_id' => ['nullable', 'string', 'max:50'],
+            'profile_photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
         ];
     }
 }

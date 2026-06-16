@@ -119,9 +119,9 @@ class StudentApplicationManagementController extends Controller
             // Create user account
             $user = User::create([
                 'name'     => $app->full_name,
-                'username' => $studentNumber,
+                'username' => $app->email_address,
                 'email'    => $app->email_address,
-                'password' => Hash::make($tempPassword),
+                'password' => Hash::make($app->national_id_number),
                 'role'     => 'student',
             ]);
 
@@ -133,6 +133,10 @@ class StudentApplicationManagementController extends Controller
                 'phone'         => $app->phone_number,
                 'current_level' => $app->desired_academic_level ?? 1,
                 'status'        => 'active',
+                'national_id'   => $app->national_id_number,
+                'gender'        => $app->gender,
+                'nationality'   => $app->nationality,
+                'date_of_birth' => $app->date_of_birth,
             ]);
 
             // Update application status
@@ -151,7 +155,7 @@ class StudentApplicationManagementController extends Controller
                 'message'        => 'تم قبول الطالب وإنشاء حسابه بنجاح',
                 'student_number' => $studentNumber,
                 'email'          => $app->email_address,
-                'temp_password'  => $tempPassword,
+                'temp_password'  => $app->national_id_number,
                 'student_id'     => $student->id,
             ], 201);
 

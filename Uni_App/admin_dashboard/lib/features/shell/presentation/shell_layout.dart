@@ -420,6 +420,7 @@ class ShellLayout extends ConsumerWidget {
       _NavItem('/courses', l10n.studyPlansLabel, Icons.library_books_rounded),
       _NavItem('/semesters', isAr ? 'الفصول الدراسية' : 'Semesters', Icons.date_range_rounded),
       _NavItem('/study-schedules', l10n.studySchedules, Icons.schedule_rounded),
+      _NavItem('/study-plans', isAr ? 'الخطط الدراسية' : 'Study Plans', Icons.menu_book_rounded),
     ]);
 
     addGroup('Student Services', 'خدمات الطلاب', [
@@ -456,6 +457,8 @@ class ShellLayout extends ConsumerWidget {
         return l10n.studyPlanManagement;
       case '/study-schedules':
         return l10n.studySchedules;
+      case '/study-plans':
+        return Localizations.localeOf(context).languageCode == 'ar' ? 'الخطط الدراسية' : 'Study Plans';
       case '/admissions':
         return Localizations.localeOf(context).languageCode == 'ar' ? 'القبول والتسجيل' : 'Admissions';
       case '/pricing':

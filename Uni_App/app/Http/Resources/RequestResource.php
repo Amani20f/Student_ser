@@ -38,6 +38,7 @@ class RequestResource extends JsonResource
                 'reason'        => $this->absenceExcuse->reason,
                 'items'         => $this->absenceExcuse->items->map(fn($item) => [
                     'id'                     => $item->id,
+                    'course_id'              => $item->course_id,
                     'course_name'            => $item->course_name ?? 'Unknown',
                     'prev_excused_count'     => $item->prev_excused_count,
                     'prev_unexcused_count'   => $item->prev_unexcused_count,

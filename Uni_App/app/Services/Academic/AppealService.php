@@ -33,8 +33,9 @@ class AppealService
                 'semester_id' => $data['semester_id'],
                 'academic_year' => $data['academic_year'],
                 'term' => $data['term'],
-                'status' => AppealStatusEnum::PENDING_PAYMENT,
+                'status' => AppealStatusEnum::PENDING,
                 'student_note' => $data['student_note'] ?? null,
+                'attachment' => json_encode($data['attachment_paths'] ?? []),
             ];
 
             $appeal = $this->appealRepository->create($appealData);
