@@ -281,7 +281,7 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                     ),
                     label: Text(
                       state.data.certificatePath != null 
-                          ? state.data.certificatePath!.split('/').last.split('\\').last
+                          ? '${state.data.certificatePath!.split('/').last.split('\\').last} (${Localizations.localeOf(context).languageCode == 'ar' ? 'تغيير' : 'Change'})'
                           : l10n.uploadDocuments
                     ),
                     style: ElevatedButton.styleFrom(
@@ -297,6 +297,22 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                     ),
                   ),
                 ),
+                if (state.data.certificatePath != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.info_outline, size: 14, color: Colors.blueGrey),
+                      const SizedBox(width: 4),
+                      Text(
+                        Localizations.localeOf(context).languageCode == 'ar'
+                            ? 'يمكنك النقر على الزر أعلاه لتعديل أو تغيير الملف المرفق'
+                            : 'You can click the button above to modify or replace the attached file',
+                        style: const TextStyle(fontSize: 12, color: Colors.blueGrey, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 16),
                 // Identity Document Upload
                 SizedBox(
@@ -322,7 +338,7 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                     ),
                     label: Text(
                       state.data.identityDocumentPath != null 
-                          ? state.data.identityDocumentPath!.split('/').last.split('\\').last
+                          ? '${state.data.identityDocumentPath!.split('/').last.split('\\').last} (${Localizations.localeOf(context).languageCode == 'ar' ? 'تغيير' : 'Change'})'
                           : l10n.uploadIdentityDocument
                     ),
                     style: ElevatedButton.styleFrom(
@@ -338,6 +354,22 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                     ),
                   ),
                 ),
+                if (state.data.identityDocumentPath != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.info_outline, size: 14, color: Colors.blueGrey),
+                      const SizedBox(width: 4),
+                      Text(
+                        Localizations.localeOf(context).languageCode == 'ar'
+                            ? 'يمكنك النقر على الزر أعلاه لتعديل أو تغيير الملف المرفق'
+                            : 'You can click the button above to modify or replace the attached file',
+                        style: const TextStyle(fontSize: 12, color: Colors.blueGrey, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 16),
                 // Photos Upload
                 SizedBox(
@@ -363,7 +395,7 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                     ),
                     label: Text(
                       state.data.profilePicturePath != null 
-                          ? state.data.profilePicturePath!.split('/').last.split('\\').last
+                          ? '${state.data.profilePicturePath!.split('/').last.split('\\').last} (${Localizations.localeOf(context).languageCode == 'ar' ? 'تغيير' : 'Change'})'
                           : l10n.uploadPhotos
                     ),
                     style: ElevatedButton.styleFrom(
@@ -379,6 +411,22 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
                     ),
                   ),
                 ),
+                if (state.data.profilePicturePath != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.info_outline, size: 14, color: Colors.blueGrey),
+                      const SizedBox(width: 4),
+                      Text(
+                        Localizations.localeOf(context).languageCode == 'ar'
+                            ? 'يمكنك النقر على الزر أعلاه لتعديل أو تغيير الصورة المرفقة'
+                            : 'You can click the button above to modify or replace the attached image',
+                        style: const TextStyle(fontSize: 12, color: Colors.blueGrey, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 16),
                 Divider(
                   thickness: 1.5,

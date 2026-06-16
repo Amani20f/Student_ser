@@ -10,7 +10,7 @@ import 'package:admin_dashboard/core/network/api_client.dart';
 import 'package:admin_dashboard/core/providers/shared_prefs_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:admin_dashboard/l10n/app_localizations.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override

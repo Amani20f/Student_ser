@@ -21,11 +21,16 @@ class Program extends Model
         'duration_years',
         'degree_type',
         'fees',
+        'certificate_type',
+        'minimum_percentage',
+        'is_available',
     ];
 
     protected $casts = [
         'degree_type' => DegreeTypeEnum::class,
         'fees' => 'decimal:2',
+        'minimum_percentage' => 'decimal:2',
+        'is_available' => 'boolean',
     ];
 
     /**

@@ -50,8 +50,13 @@ class AdmissionsRepository {
     return ApplicationModel.fromJson(item);
   }
 
-  Future<Map<String, dynamic>> approveApplication(int id) async {
-    final response = await _client.post(ApiConstants.adminApplicationApprove(id));
+  Future<Map<String, dynamic>> approveApplication(int id, int approvedProgramId) async {
+    final response = await _client.post(
+      ApiConstants.adminApplicationApprove(id),
+      body: {
+        'approved_program_id': approvedProgramId,
+      },
+    );
     return response as Map<String, dynamic>;
   }
 

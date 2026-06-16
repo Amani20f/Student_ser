@@ -15,6 +15,8 @@ class ApplicationDetailsDialog extends ConsumerStatefulWidget {
 
 class _ApplicationDetailsDialogState extends ConsumerState<ApplicationDetailsDialog> {
   final _rejectionController = TextEditingController();
+  int? _selectedProgramId;
+  bool _isProcessing = false;
 
   @override
   void dispose() {
@@ -33,30 +35,19 @@ class _ApplicationDetailsDialogState extends ConsumerState<ApplicationDetailsDia
     }
   }
 
-  void _approveApplication(ApplicationModel app) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
+  void _approveApplication(ApplicationModel app, int? approvedProgramId) {
+    if (approvedProgramId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a program preference to approve.'))
+      );
+      return;
+    }
 
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Approve Application'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Are you sure you want to approve this application?', style: tt.bodyLarge),
-            const SizedBox(height: 16),
-            Text('Student Name: ${app.fullName}'),
-            Text('Desired Program: ${app.desiredProgram}'),
-            Text('College: ${app.college}'),
-            const SizedBox(height: 16),
-            Text(
-              'A student account will be automatically created and an email with the new Student ID and password will be sent.',
-              style: tt.bodySmall?.copyWith(color: cs.onSurface.withAlpha(150)),
-            ),
-          ],
-        ),
+        title: const Text('Confirm Approval'),
+        content: Text('Are you sure you want to approve this application for the selected program?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
@@ -66,19 +57,38 @@ class _ApplicationDetailsDialogState extends ConsumerState<ApplicationDetailsDia
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
             onPressed: () async {
               Navigator.pop(dialogContext); // Close confirm dialog
+              
+              setState(() {
+                _isProcessing = true;
+              });
+
+              final messenger = ScaffoldMessenger.of(context);
+
               try {
                 final repo = ref.read(admissionsRepositoryProvider);
-                final res = await repo.approveApplication(app.id);
+                final res = await repo.approveApplication(app.id, approvedProgramId);
+                
                 if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res['message'] ?? 'Approved successfully')));
-                Navigator.pop(context); // Close main dialog
+                
+                messenger.showSnackBar(
+                  SnackBar(content: Text(res['message'] ?? 'Approved successfully'))
+                );
+                
+                // Close the Application Details dialog
+                Navigator.pop(context); 
+                
+                // Refresh applications list
                 ref.invalidate(applicationsListProvider);
               } catch (e) {
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                if (mounted) {
+                  setState(() {
+                    _isProcessing = false;
+                  });
+                  messenger.showSnackBar(SnackBar(content: Text('Error: $e')));
+                }
               }
             },
-            child: const Text('Approve'),
+            child: const Text('Confirm Approve'),
           ),
         ],
       ),
@@ -118,16 +128,27 @@ class _ApplicationDetailsDialogState extends ConsumerState<ApplicationDetailsDia
                 return;
               }
               Navigator.pop(dialogContext); // Close confirm dialog
+              
+              setState(() {
+                _isProcessing = true;
+              });
+
+              final messenger = ScaffoldMessenger.of(context);
+
               try {
                 final repo = ref.read(admissionsRepositoryProvider);
                 await repo.rejectApplication(app.id, _rejectionController.text.trim());
                 if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Application rejected successfully.')));
+                messenger.showSnackBar(const SnackBar(content: Text('Application rejected successfully.')));
                 Navigator.pop(context); // Close main dialog
                 ref.invalidate(applicationsListProvider);
               } catch (e) {
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                if (mounted) {
+                  setState(() {
+                    _isProcessing = false;
+                  });
+                  messenger.showSnackBar(SnackBar(content: Text('Error: $e')));
+                }
               }
             },
             child: const Text('Reject'),
@@ -151,6 +172,8 @@ class _ApplicationDetailsDialogState extends ConsumerState<ApplicationDetailsDia
         padding: const EdgeInsets.all(32),
         child: appAsync.when(
           data: (app) {
+            final currentSelected = _selectedProgramId ?? app.firstChoiceProgramId;
+
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -173,10 +196,77 @@ class _ApplicationDetailsDialogState extends ConsumerState<ApplicationDetailsDia
                       _buildInfoRow('Nationality', app.nationality ?? 'N/A'),
                       const SizedBox(height: 16),
                       
-                      _buildSectionHeader('Academic Information', tt, cs),
-                      _buildInfoRow('Desired Program', app.desiredProgram ?? 'N/A'),
-                      _buildInfoRow('Department', app.department ?? 'N/A'),
-                      _buildInfoRow('College', app.college ?? 'N/A'),
+                      _buildSectionHeader('Academic Preferences', tt, cs),
+                      if (app.status == 'pending' || app.status == 'submitted') ...[
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: Text(
+                            Localizations.localeOf(context).languageCode == 'ar'
+                                ? 'يرجى اختيار الرغبة الأكاديمية التي سيتم قبول الطالب فيها قبل إنشاء الحساب.'
+                                : 'Select the program preference that will be approved for this applicant before creating the student account.',
+                            style: tt.bodyMedium?.copyWith(
+                              color: cs.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        if (app.firstChoiceProgramId != null)
+                          RadioListTile<int>(
+                            title: Text('1st Choice: ${app.firstChoiceProgramName ?? 'N/A'}'),
+                            subtitle: Text('${app.firstChoiceProgramDept ?? ''} - ${app.firstChoiceProgramCollege ?? ''}'),
+                            value: app.firstChoiceProgramId!,
+                            groupValue: currentSelected,
+                            activeColor: cs.primary,
+                            onChanged: _isProcessing ? null : (val) {
+                              setState(() {
+                                _selectedProgramId = val;
+                              });
+                            },
+                          ),
+                        if (app.secondChoiceProgramId != null)
+                          RadioListTile<int>(
+                            title: Text('2nd Choice: ${app.secondChoiceProgramName ?? 'N/A'}'),
+                            subtitle: Text('${app.secondChoiceProgramDept ?? ''} - ${app.secondChoiceProgramCollege ?? ''}'),
+                            value: app.secondChoiceProgramId!,
+                            groupValue: currentSelected,
+                            activeColor: cs.primary,
+                            onChanged: _isProcessing ? null : (val) {
+                              setState(() {
+                                _selectedProgramId = val;
+                              });
+                            },
+                          ),
+                        if (app.thirdChoiceProgramId != null)
+                          RadioListTile<int>(
+                            title: Text('3rd Choice: ${app.thirdChoiceProgramName ?? 'N/A'}'),
+                            subtitle: Text('${app.thirdChoiceProgramDept ?? ''} - ${app.thirdChoiceProgramCollege ?? ''}'),
+                            value: app.thirdChoiceProgramId!,
+                            groupValue: currentSelected,
+                            activeColor: cs.primary,
+                            onChanged: _isProcessing ? null : (val) {
+                              setState(() {
+                                _selectedProgramId = val;
+                              });
+                            },
+                          ),
+                      ] else ...[
+                        _buildInfoRow('1st Choice', '${app.firstChoiceProgramName ?? 'N/A'} (${app.firstChoiceProgramDept ?? ''} - ${app.firstChoiceProgramCollege ?? ''})'),
+                        _buildInfoRow('2nd Choice', '${app.secondChoiceProgramName ?? 'N/A'} (${app.secondChoiceProgramDept ?? ''} - ${app.secondChoiceProgramCollege ?? ''})'),
+                        if (app.thirdChoiceProgramId != null)
+                          _buildInfoRow('3rd Choice', '${app.thirdChoiceProgramName ?? 'N/A'} (${app.thirdChoiceProgramDept ?? ''} - ${app.thirdChoiceProgramCollege ?? ''})'),
+                      ],
+                      if (app.approvedProgramName != null) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withAlpha(20),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.green.withAlpha(80)),
+                          ),
+                          child: _buildInfoRow('Approved Program', app.approvedProgramName!),
+                        ),
+                      ],
                       const SizedBox(height: 16),
 
                       _buildSectionHeader('Contact Information', tt, cs),
@@ -224,15 +314,21 @@ class _ApplicationDetailsDialogState extends ConsumerState<ApplicationDetailsDia
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       OutlinedButton(
-                        onPressed: () => _rejectApplication(app),
+                        onPressed: _isProcessing ? null : () => _rejectApplication(app),
                         style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
                         child: const Text('Reject'),
                       ),
                       const SizedBox(width: 16),
                       ElevatedButton(
-                        onPressed: () => _approveApplication(app),
+                        onPressed: _isProcessing ? null : () => _approveApplication(app, currentSelected),
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
-                        child: const Text('Approve & Create Account'),
+                        child: _isProcessing
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              )
+                            : const Text('Approve & Create Account'),
                       ),
                     ],
                   )

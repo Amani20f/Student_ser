@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class ModernDropdownField<T> extends StatelessWidget {
   final String label;
-  final IconData prefixIcon;
+  final IconData? prefixIcon;
   final T? value;
   final List<DropdownMenuItem<T>> items;
   final void Function(T?)? onChanged;
@@ -11,7 +11,7 @@ class ModernDropdownField<T> extends StatelessWidget {
   const ModernDropdownField({
     super.key,
     required this.label,
-    required this.prefixIcon,
+    this.prefixIcon,
     required this.items,
     this.value,
     this.onChanged,
@@ -58,12 +58,14 @@ class ModernDropdownField<T> extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      prefixIcon,
-                      color: theme.colorScheme.primary,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 12),
+                    if (prefixIcon != null) ...[
+                      Icon(
+                        prefixIcon,
+                        color: theme.colorScheme.primary,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 12),
+                    ],
                     Text(
                       label,
                       style: theme.textTheme.titleMedium?.copyWith(
@@ -201,12 +203,14 @@ class ModernDropdownField<T> extends StatelessWidget {
                         : theme.colorScheme.primary,
                     fontWeight: FontWeight.bold,
                   ),
-                  prefixIcon: Icon(
-                    prefixIcon,
-                    color: hasError
-                        ? theme.colorScheme.error
-                        : theme.colorScheme.primary,
-                  ),
+                  prefixIcon: prefixIcon != null
+                      ? Icon(
+                          prefixIcon,
+                          color: hasError
+                              ? theme.colorScheme.error
+                              : theme.colorScheme.primary,
+                        )
+                      : null,
                   filled: true,
                   fillColor: isDark
                       ? Colors.grey.shade900.withOpacity(0.6)

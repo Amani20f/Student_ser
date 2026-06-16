@@ -19,7 +19,79 @@ class StudentApplicationController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $request->validate([
+        // Extract certificate type and grade percentage first to compute eligible count
+        $certificateType = null;
+        $gradePercentage = null;
+
+        if ($request->has('certificate_type')) {
+            $certificateType = $request->input('certificate_type');
+        }
+        if ($request->has('grade_percentage')) {
+            $gradePercentage = $request->input('grade_percentage');
+        }
+
+        if ($request->has('form_responses')) {
+            $formResponses = json_decode($request->input('form_responses'), true);
+            if (is_array($formResponses)) {
+                if (!$certificateType && isset($formResponses['previous_major'])) {
+                    $certificateType = $formResponses['previous_major'];
+                }
+                if (!$gradePercentage && isset($formResponses['grade_percentage'])) {
+                    $gradePercentage = $formResponses['grade_percentage'];
+                }
+            }
+        }
+
+        if ($certificateType) {
+            $certificateType = strtolower($certificateType);
+        }
+
+        // Fetch all active/available programs and count how many this student is eligible for
+        $allPrograms = \App\Models\Program::where('is_available', true)->get();
+        $eligibleProgramsCount = 0;
+
+        foreach ($allPrograms as $prog) {
+            if ($certificateType && $gradePercentage !== null) {
+                $isEligibleCertificate = false;
+                if ($prog->certificate_type === 'both') {
+                    $isEligibleCertificate = in_array($certificateType, ['scientific', 'literary']);
+                } else {
+                    $isEligibleCertificate = ($prog->certificate_type === $certificateType);
+                }
+
+                $isEligibleGrade = ($gradePercentage >= $prog->minimum_percentage);
+
+                if ($isEligibleCertificate && $isEligibleGrade) {
+                    $eligibleProgramsCount++;
+                }
+            } else {
+                $eligibleProgramsCount = 3;
+            }
+        }
+
+        // Auto-fill choices for legacy requests if not provided
+        if (!$request->has('first_choice_program_id') && $request->has('desired_program_id')) {
+            $desired = $request->input('desired_program_id');
+            $otherPrograms = [];
+            foreach ($allPrograms as $prog) {
+                if ($prog->id == $desired) continue;
+                if ($certificateType && $gradePercentage !== null) {
+                    $isEligibleCertificate = ($prog->certificate_type === 'both' || $prog->certificate_type === $certificateType);
+                    $isEligibleGrade = ($gradePercentage >= $prog->minimum_percentage);
+                    if ($isEligibleCertificate && $isEligibleGrade) {
+                        $otherPrograms[] = $prog->id;
+                    }
+                }
+            }
+            
+            $request->merge([
+                'first_choice_program_id' => $desired,
+                'second_choice_program_id' => isset($otherPrograms[0]) ? $otherPrograms[0] : null,
+                'third_choice_program_id' => isset($otherPrograms[1]) ? $otherPrograms[1] : null,
+            ]);
+        }
+
+        $rules = [
             'full_name'              => 'required|string|max:255',
             'national_id_number'     => 'required|string|max:50|unique:student_applications,national_id_number',
             'date_of_birth'          => 'required|date|before:today',
@@ -29,24 +101,87 @@ class StudentApplicationController extends Controller
             'email_address'          => 'required|email|max:255|unique:student_applications,email_address',
             'address'                => 'nullable|string|max:500',
             'desired_program_id'     => 'required|exists:programs,id',
+            'first_choice_program_id'  => 'required|exists:programs,id',
             'desired_academic_level' => 'nullable|integer|between:1,8',
             // Document uploads
             'identity_document'      => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'qualification_document' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'personal_photo'         => 'required|file|mimes:jpg,jpeg,png|max:2048',
             'payment_receipt'        => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-        ], [
+        ];
+
+        if ($eligibleProgramsCount >= 2) {
+            $rules['second_choice_program_id'] = 'required|exists:programs,id';
+        } else {
+            $rules['second_choice_program_id'] = 'nullable|exists:programs,id';
+        }
+
+        if ($eligibleProgramsCount >= 3) {
+            $rules['third_choice_program_id'] = 'required|exists:programs,id';
+        } else {
+            $rules['third_choice_program_id'] = 'nullable|exists:programs,id';
+        }
+
+        $request->validate($rules, [
             'national_id_number.unique' => 'رقم الهوية أو الإقامة مسجل مسبقاً في النظام.',
             'email_address.unique'      => 'البريد الإلكتروني مسجل مسبقاً في النظام.',
             'national_id_number.required' => 'رقم الهوية مطلوب.',
             'email_address.required'    => 'البريد الإلكتروني مطلوب.',
         ]);
 
+        // Validate duplicates
+        $firstChoice = $request->input('first_choice_program_id');
+        $secondChoice = $request->input('second_choice_program_id');
+        $thirdChoice = $request->input('third_choice_program_id');
+
+        $providedChoices = array_filter([$firstChoice, $secondChoice, $thirdChoice]);
+        if (count($providedChoices) !== count(array_unique($providedChoices))) {
+            return response()->json([
+                'success' => false,
+                'message' => 'لا يمكن اختيار نفس التخصص في أكثر من رغبة.'
+            ], 422);
+        }
+
+        // Validate Program Eligibility for all provided choices
+        $choices = [];
+        if ($firstChoice) $choices['الرغبة الأولى'] = $firstChoice;
+        if ($secondChoice) $choices['الرغبة الثانية'] = $secondChoice;
+        if ($thirdChoice) $choices['الرغبة الثالثة'] = $thirdChoice;
+
+        foreach ($choices as $label => $programId) {
+            $prog = \App\Models\Program::find($programId);
+            if (!$prog || !$prog->is_available) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'الطالب غير مؤهل لهذا التخصص حسب نوع الثانوية أو النسبة.'
+                ], 422);
+            }
+
+            if ($certificateType && $gradePercentage !== null) {
+                $isEligibleCertificate = false;
+                if ($prog->certificate_type === 'both') {
+                    $isEligibleCertificate = in_array($certificateType, ['scientific', 'literary']);
+                } else {
+                    $isEligibleCertificate = ($prog->certificate_type === $certificateType);
+                }
+
+                $isEligibleGrade = ($gradePercentage >= $prog->minimum_percentage);
+
+                if (!$isEligibleCertificate || !$isEligibleGrade) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'الطالب غير مؤهل لهذا التخصص حسب نوع الثانوية أو النسبة.'
+                    ], 422);
+                }
+            }
+        }
+
         try {
             $data = $request->only([
                 'full_name', 'national_id_number', 'date_of_birth',
                 'gender', 'nationality', 'phone_number', 'email_address',
                 'address', 'desired_program_id', 'desired_academic_level',
+                'first_choice_program_id', 'second_choice_program_id', 'third_choice_program_id',
             ]);
 
             // Upload documents

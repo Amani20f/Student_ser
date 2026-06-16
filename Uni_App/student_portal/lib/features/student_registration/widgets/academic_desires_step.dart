@@ -60,8 +60,32 @@ class _AcademicDesiresStepState extends State<AcademicDesiresStep> {
 
     return BlocBuilder<RegistrationCubit, RegistrationState>(
       buildWhen: (previous, current) =>
-          previous.data.academicDesires != current.data.academicDesires,
+          previous.data.academicDesires != current.data.academicDesires ||
+          previous.data.previousMajor != current.data.previousMajor ||
+          previous.data.gradePercentage != current.data.gradePercentage,
       builder: (context, state) {
+        final certificateType = state.data.previousMajor; // 'Scientific' or 'Literary'
+        final gradePercentage = state.data.gradePercentage ?? 0.0;
+        final isScientific = certificateType == 'Scientific';
+        final isLiterary = certificateType == 'Literary';
+
+        int eligibleCount = 0;
+        if (isScientific) {
+          if (gradePercentage >= 75.0) {
+            eligibleCount = 9;
+          } else if (gradePercentage >= 70.0) {
+            eligibleCount = 5;
+          } else if (gradePercentage >= 60.0) {
+            eligibleCount = 2;
+          }
+        } else if (isLiterary) {
+          if (gradePercentage >= 60.0) {
+            eligibleCount = 2;
+          }
+        }
+
+        final int desiresCount = eligibleCount <= 2 ? 2 : 3;
+
         return StepContainer(
           title: l10n.stepDesires,
           icon: Icons.star_rounded,
@@ -74,11 +98,11 @@ class _AcademicDesiresStepState extends State<AcademicDesiresStep> {
                   key: widget.formKey,
                   child: Column(
                     children: [
-                      for (int i = 0; i < 3; i++)
+                      for (int i = 0; i < desiresCount; i++)
                         _buildDesireItem(
                           context,
                           cubit,
-                          state.data.academicDesires[i],
+                          state,
                           i,
                           l10n,
                         ),
@@ -93,10 +117,11 @@ class _AcademicDesiresStepState extends State<AcademicDesiresStep> {
   Widget _buildDesireItem(
     BuildContext context,
     RegistrationCubit cubit,
-    AcademicDesire desire,
+    RegistrationState state,
     int index,
     AppLocalizations l10n,
   ) {
+    final desire = state.data.academicDesires[index];
     String title;
     switch (index) {
       case 0:
@@ -126,6 +151,39 @@ class _AcademicDesiresStepState extends State<AcademicDesiresStep> {
         availablePrograms.addAll(dept.programs);
       }
     }
+
+    // Filter programs based on certificate type and grade percentage eligibility rules
+    final certificateType = state.data.previousMajor; // 'Scientific' or 'Literary'
+    final gradePercentage = state.data.gradePercentage ?? 0.0;
+    final isScientific = certificateType == 'Scientific';
+    final isLiterary = certificateType == 'Literary';
+
+    availablePrograms = availablePrograms.where((program) {
+      if (isScientific) {
+        // Engineering programs require >= 75%
+        final isEng = ['ID', 'CIVIL', 'ARCH', 'POWER'].contains(program.code);
+        if (isEng && gradePercentage < 75.0) {
+          return false;
+        }
+
+        // IT programs require >= 70%
+        final isIT = ['IT', 'AI', 'CYBER'].contains(program.code);
+        if (isIT && gradePercentage < 70.0) {
+          return false;
+        }
+
+        // Accounting (ACC) and Business (BSBA) require >= 60%
+        return gradePercentage >= 60.0;
+      }
+
+      if (isLiterary) {
+        // Only Accounting (ACC) and Business (BSBA) are allowed for literary, requiring >= 60%
+        final isBusiness = ['ACC', 'BSBA'].contains(program.code);
+        return isBusiness && gradePercentage >= 60.0;
+      }
+
+      return false;
+    }).toList();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),

@@ -21,8 +21,13 @@ class StudentApplicationManagementController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = StudentApplication::with('desiredProgram.department.college')
-            ->orderBy('created_at', 'desc');
+        $query = StudentApplication::with([
+            'desiredProgram.department.college',
+            'firstChoiceProgram.department.college',
+            'secondChoiceProgram.department.college',
+            'thirdChoiceProgram.department.college',
+            'approvedProgram.department.college'
+        ])->orderBy('created_at', 'desc');
 
         if ($request->filled('status')) {
             $query->where('application_status', $request->input('status'));
@@ -45,6 +50,10 @@ class StudentApplicationManagementController extends Controller
                 'desired_program'    => $app->desiredProgram?->name,
                 'department'         => $app->desiredProgram?->department?->name,
                 'college'            => $app->desiredProgram?->department?->college?->name,
+                'first_choice_program' => $app->firstChoiceProgram?->name,
+                'second_choice_program' => $app->secondChoiceProgram?->name,
+                'third_choice_program' => $app->thirdChoiceProgram?->name,
+                'approved_program'    => $app->approvedProgram?->name,
                 'submitted_at'       => $app->submitted_at?->toDateTimeString(),
                 'has_identity_doc'   => !empty($app->identity_document_path),
                 'has_qualification'  => !empty($app->qualification_document_path),
@@ -59,7 +68,13 @@ class StudentApplicationManagementController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $app = StudentApplication::with('desiredProgram.department.college')->findOrFail($id);
+        $app = StudentApplication::with([
+            'desiredProgram.department.college',
+            'firstChoiceProgram.department.college',
+            'secondChoiceProgram.department.college',
+            'thirdChoiceProgram.department.college',
+            'approvedProgram.department.college'
+        ])->findOrFail($id);
 
         return response()->json([
             'success' => true,
@@ -80,6 +95,30 @@ class StudentApplicationManagementController extends Controller
                     'department' => $app->desiredProgram?->department?->name,
                     'college'    => $app->desiredProgram?->department?->college?->name,
                 ],
+                'first_choice_program'      => [
+                    'id'         => $app->firstChoiceProgram?->id,
+                    'name'       => $app->firstChoiceProgram?->name,
+                    'department' => $app->firstChoiceProgram?->department?->name,
+                    'college'    => $app->firstChoiceProgram?->department?->college?->name,
+                ],
+                'second_choice_program'     => [
+                    'id'         => $app->secondChoiceProgram?->id,
+                    'name'       => $app->secondChoiceProgram?->name,
+                    'department' => $app->secondChoiceProgram?->department?->name,
+                    'college'    => $app->secondChoiceProgram?->department?->college?->name,
+                ],
+                'third_choice_program'      => [
+                    'id'         => $app->thirdChoiceProgram?->id,
+                    'name'       => $app->thirdChoiceProgram?->name,
+                    'department' => $app->thirdChoiceProgram?->department?->name,
+                    'college'    => $app->thirdChoiceProgram?->department?->college?->name,
+                ],
+                'approved_program'          => [
+                    'id'         => $app->approvedProgram?->id,
+                    'name'       => $app->approvedProgram?->name,
+                    'department' => $app->approvedProgram?->department?->name,
+                    'college'    => $app->approvedProgram?->department?->college?->name,
+                ],
                 'desired_academic_level'    => $app->desired_academic_level,
                 'status'                    => $app->application_status,
                 'identity_document_url'     => $app->identity_document_path
@@ -98,23 +137,48 @@ class StudentApplicationManagementController extends Controller
      * POST /api/admin/applications/{id}/approve
      * Approve application → creates user + student accounts automatically.
      */
-    public function approve(int $id): JsonResponse
+    public function approve(Request $request, int $id): JsonResponse
     {
-        $app = StudentApplication::with('desiredProgram')->findOrFail($id);
+        $request->validate([
+            'approved_program_id' => 'required|exists:programs,id',
+        ]);
 
-        if ($app->application_status === 'completed') {
-            return response()->json(['success' => false, 'message' => 'هذا الطلب تم قبوله مسبقاً'], 422);
-        }
+        $approvedProgramId = $request->input('approved_program_id');
 
         DB::beginTransaction();
         try {
-            // Generate a student number
-            $studentNumber = 'STU-' . now()->year . '-' . str_pad(
-                Student::count() + 1, 4, '0', STR_PAD_LEFT
-            );
+            // Lock the application row for update inside the transaction
+            $app = StudentApplication::where('id', $id)->lockForUpdate()->first();
 
-            // Generate a temporary password
-            $tempPassword = Str::random(8);
+            if (!$app) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'لم يتم العثور على طلب التسجيل'], 404);
+            }
+
+            if ($app->application_status === 'completed') {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'هذا الطلب تم قبوله مسبقاً'], 422);
+            }
+
+            // Check that approved_program_id is one of the student's choices
+            if (!in_array((int)$approvedProgramId, [
+                (int)$app->first_choice_program_id,
+                (int)$app->second_choice_program_id,
+                (int)$app->third_choice_program_id
+            ])) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'التخصص المعتمد يجب أن يكون أحد الرغبات الثلاث للطالب.'
+                ], 422);
+            }
+
+            // Generate a unique student number
+            $num = Student::count() + 1;
+            do {
+                $studentNumber = 'STU-' . now()->year . '-' . str_pad($num, 4, '0', STR_PAD_LEFT);
+                $num++;
+            } while (Student::where('student_number', $studentNumber)->exists());
 
             // Create user account
             $user = User::create([
@@ -128,7 +192,7 @@ class StudentApplicationManagementController extends Controller
             // Create student record
             $student = Student::create([
                 'user_id'       => $user->id,
-                'program_id'    => $app->desired_program_id,
+                'program_id'    => $approvedProgramId,
                 'student_number'=> $studentNumber,
                 'phone'         => $app->phone_number,
                 'current_level' => $app->desired_academic_level ?? 1,
@@ -140,7 +204,10 @@ class StudentApplicationManagementController extends Controller
             ]);
 
             // Update application status
-            $app->update(['application_status' => 'completed']);
+            $app->update([
+                'application_status' => 'completed',
+                'approved_program_id' => $approvedProgramId,
+            ]);
 
             DB::commit();
 
@@ -148,6 +215,7 @@ class StudentApplicationManagementController extends Controller
                 'application_number' => $app->application_number,
                 'student_number'     => $studentNumber,
                 'user_id'            => $user->id,
+                'approved_program_id'=> $approvedProgramId,
             ]);
 
             return response()->json([

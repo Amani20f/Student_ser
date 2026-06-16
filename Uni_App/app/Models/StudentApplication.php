@@ -30,6 +30,10 @@ class StudentApplication extends Model
         'payment_receipt_path',
         'form_responses',
         'submitted_at',
+        'first_choice_program_id',
+        'second_choice_program_id',
+        'third_choice_program_id',
+        'approved_program_id',
     ];
 
     protected $casts = [
@@ -41,6 +45,26 @@ class StudentApplication extends Model
     public function desiredProgram(): BelongsTo
     {
         return $this->belongsTo(Program::class, 'desired_program_id');
+    }
+
+    public function firstChoiceProgram(): BelongsTo
+    {
+        return $this->belongsTo(Program::class, 'first_choice_program_id');
+    }
+
+    public function secondChoiceProgram(): BelongsTo
+    {
+        return $this->belongsTo(Program::class, 'second_choice_program_id');
+    }
+
+    public function thirdChoiceProgram(): BelongsTo
+    {
+        return $this->belongsTo(Program::class, 'third_choice_program_id');
+    }
+
+    public function approvedProgram(): BelongsTo
+    {
+        return $this->belongsTo(Program::class, 'approved_program_id');
     }
 
     /**

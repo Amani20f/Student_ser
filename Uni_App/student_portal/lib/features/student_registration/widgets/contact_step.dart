@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:university_app/core/widgets/modern_text_field.dart';
 import 'package:university_app/core/widgets/modern_dropdown_field.dart';
@@ -6,7 +7,7 @@ import 'package:university_app/features/student_registration/cubit/registration_
 
 import 'package:university_app/l10n/app_localizations.dart';
 import 'package:university_app/features/student_registration/widgets/step_container.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 class ContactStep extends StatefulWidget {
   final GlobalKey<FormState> formKey;
@@ -162,14 +163,19 @@ class _ContactStepState extends State<ContactStep> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: 110,
+                      width: 120,
                       margin: const EdgeInsets.only(right: 8, left: 8),
                       child: ModernDropdownField<String>(
                         label: 'Code',
-                        prefixIcon: Icons.flag_rounded,
                         value: state.data.mobileCountryCode,
-                        items: ['+966', '+971', '+965', '+973', '+974', '+968', '+962', '+20']
-                            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        items: ['+966', '+971', '+965', '+973', '+974', '+968', '+962', '+20', '+967']
+                            .map((e) => DropdownMenuItem(
+                                  value: e,
+                                  child: Directionality(
+                                    textDirection: ui.TextDirection.ltr,
+                                    child: Text(e),
+                                  ),
+                                ))
                             .toList(),
                         onChanged: (value) => cubit.updateData(
                           state.data.copyWith(mobileCountryCode: value),
@@ -199,14 +205,19 @@ class _ContactStepState extends State<ContactStep> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: 110,
+                      width: 120,
                       margin: const EdgeInsets.only(right: 8, left: 8),
                       child: ModernDropdownField<String>(
                         label: 'Code',
-                        prefixIcon: Icons.flag_rounded,
                         value: state.data.whatsappCountryCode,
-                        items: ['+966', '+971', '+965', '+973', '+974', '+968', '+962', '+20']
-                            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        items: ['+966', '+971', '+965', '+973', '+974', '+968', '+962', '+20', '+967']
+                            .map((e) => DropdownMenuItem(
+                                  value: e,
+                                  child: Directionality(
+                                    textDirection: ui.TextDirection.ltr,
+                                    child: Text(e),
+                                  ),
+                                ))
                             .toList(),
                         onChanged: (value) => cubit.updateData(
                           state.data.copyWith(whatsappCountryCode: value),
@@ -222,6 +233,11 @@ class _ContactStepState extends State<ContactStep> {
                         onChanged: (value) => cubit.updateData(
                           state.data.copyWith(whatsappNumber: value),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) return l10n.requiredField;
+                          if (!RegExp(r'^[0-9]{8,15}$').hasMatch(value)) return l10n.invalidMobileNumber;
+                          return null;
+                        },
                       ),
                     ),
                   ],

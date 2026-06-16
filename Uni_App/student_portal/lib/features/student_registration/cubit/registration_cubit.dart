@@ -42,10 +42,48 @@ class RegistrationCubit extends Cubit<RegistrationState> {
       final apiClient = ApiClient(prefs);
       final data = state.data;
 
-      if (data.academicDesires.isEmpty || data.academicDesires.first.major == null) {
+      final certificateType = data.previousMajor; // 'Scientific' or 'Literary'
+      final gradePercentage = data.gradePercentage ?? 0.0;
+      final isScientific = certificateType == 'Scientific';
+      final isLiterary = certificateType == 'Literary';
+
+      int eligibleCount = 0;
+      if (isScientific) {
+        if (gradePercentage >= 75.0) {
+          eligibleCount = 9;
+        } else if (gradePercentage >= 70.0) {
+          eligibleCount = 5;
+        } else if (gradePercentage >= 60.0) {
+          eligibleCount = 2;
+        }
+      } else if (isLiterary) {
+        if (gradePercentage >= 60.0) {
+          eligibleCount = 2;
+        }
+      }
+
+      final requiredChoicesCount = eligibleCount <= 2 ? 2 : 3;
+
+      if (data.academicDesires.length < requiredChoicesCount ||
+          data.academicDesires[0].major == null ||
+          data.academicDesires[1].major == null ||
+          (requiredChoicesCount == 3 && data.academicDesires[2].major == null)) {
         emit(state.copyWith(
           status: RegistrationStatus.failure,
-          errorMessage: 'يرجى اختيار التخصص (الرغبة الأكاديمية الأولى)',
+          errorMessage: requiredChoicesCount == 2 
+              ? 'يرجى اختيار الرغبتين بالكامل' 
+              : 'يرجى اختيار الرغبات الثلاث بالكامل',
+        ));
+        return;
+      }
+
+      final id1 = data.academicDesires[0].major?.id;
+      final id2 = data.academicDesires[1].major?.id;
+      final id3 = requiredChoicesCount == 3 ? data.academicDesires[2].major?.id : null;
+      if (id1 == id2 || (requiredChoicesCount == 3 && (id1 == id3 || id2 == id3))) {
+        emit(state.copyWith(
+          status: RegistrationStatus.failure,
+          errorMessage: 'لا يمكن اختيار نفس التخصص في أكثر من رغبة.',
         ));
         return;
       }
@@ -74,10 +112,16 @@ class RegistrationCubit extends Cubit<RegistrationState> {
         'email_address'      : data.email ?? '',
         'address'            : data.homeAddress ?? '',
         'desired_program_id' : data.academicDesires.first.major!.id.toString(),
+        'first_choice_program_id'  : data.academicDesires[0].major!.id.toString(),
+        'second_choice_program_id' : data.academicDesires[1].major!.id.toString(),
         'desired_academic_level' : '1',
         // Extra data stored in form_responses (JSON)
         'form_responses'     : _buildFormResponsesJson(data),
       };
+
+      if (requiredChoicesCount == 3 && data.academicDesires[2].major != null) {
+        fields['third_choice_program_id'] = data.academicDesires[2].major!.id.toString();
+      }
 
       final files = <http.MultipartFile>[];
       if (data.profilePicturePath != null) {

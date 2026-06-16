@@ -1,0 +1,7 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// SharedPreferences provider for Admin Dashboard
+final sharedPrefsProvider = Provider<SharedPreferences>((ref) {
+  throw UnimplementedError('Must be overridden in ProviderScope');
+});

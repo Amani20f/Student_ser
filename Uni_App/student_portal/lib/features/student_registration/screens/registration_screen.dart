@@ -382,6 +382,97 @@ class _RegistrationViewState extends State<RegistrationView> {
                       bool isValid = true;
                       if (state.currentStep < 6) {
                         isValid = _formKeys[state.currentStep].currentState?.validate() ?? true;
+                        if (isValid && state.currentStep == 0) {
+                          if (state.data.certificatePath == null ||
+                              state.data.identityDocumentPath == null ||
+                              state.data.profilePicturePath == null) {
+                            isValid = false;
+                            final isAr = Localizations.localeOf(context).languageCode == 'ar';
+                            final msg = isAr
+                                ? 'يرجى إرفاق جميع المستندات المطلوبة (شهادة الثانوي، الهوية/الجواز، والصورة الشخصية) للاستمرار'
+                                : 'Please upload all required documents (Certificate, Identity, and Profile Picture) to proceed';
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(msg),
+                                backgroundColor: Colors.redAccent,
+                              ),
+                            );
+                          }
+                        }
+                        if (isValid && state.currentStep == 1) {
+                          final percentage = state.data.gradePercentage ?? 0.0;
+                          if (percentage < 60.0) {
+                            isValid = false;
+                            final isAr = Localizations.localeOf(context).languageCode == 'ar';
+                            final msg = isAr
+                                ? 'النسبة لا تحقق الحد الأدنى للقبول في البرامج المتاحة حالياً.'
+                                : 'The percentage does not meet the minimum requirement for currently available programs.';
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(msg),
+                                backgroundColor: Colors.redAccent,
+                              ),
+                            );
+                          }
+                        }
+                        if (isValid && state.currentStep == 2) {
+                          final desires = state.data.academicDesires;
+                          final certificateType = state.data.previousMajor; // 'Scientific' or 'Literary'
+                          final gradePercentage = state.data.gradePercentage ?? 0.0;
+                          final isScientific = certificateType == 'Scientific';
+                          final isLiterary = certificateType == 'Literary';
+
+                          int eligibleCount = 0;
+                          if (isScientific) {
+                            if (gradePercentage >= 75.0) {
+                              eligibleCount = 9;
+                            } else if (gradePercentage >= 70.0) {
+                              eligibleCount = 5;
+                            } else if (gradePercentage >= 60.0) {
+                              eligibleCount = 2;
+                            }
+                          } else if (isLiterary) {
+                            if (gradePercentage >= 60.0) {
+                              eligibleCount = 2;
+                            }
+                          }
+
+                          final requiredChoicesCount = eligibleCount <= 2 ? 2 : 3;
+
+                          if (desires.length < requiredChoicesCount ||
+                              desires[0].major == null ||
+                              desires[1].major == null ||
+                              (requiredChoicesCount == 3 && desires[2].major == null)) {
+                            isValid = false;
+                            final isAr = Localizations.localeOf(context).languageCode == 'ar';
+                            final msg = isAr
+                                ? (requiredChoicesCount == 2 ? 'يرجى اختيار الرغبتين بالكامل' : 'يرجى اختيار الرغبات الثلاث بالكامل')
+                                : (requiredChoicesCount == 2 ? 'Please select both preferences' : 'Please select all three preferences');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(msg),
+                                backgroundColor: Colors.redAccent,
+                              ),
+                            );
+                          } else {
+                            final id1 = desires[0].major?.id;
+                            final id2 = desires[1].major?.id;
+                            final id3 = requiredChoicesCount == 3 ? desires[2].major?.id : null;
+                            if (id1 == id2 || (requiredChoicesCount == 3 && (id1 == id3 || id2 == id3))) {
+                              isValid = false;
+                              final isAr = Localizations.localeOf(context).languageCode == 'ar';
+                              final msg = isAr
+                                  ? 'لا يمكن اختيار نفس التخصص في أكثر من رغبة.'
+                                  : 'You cannot select the same program in more than one preference.';
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(msg),
+                                  backgroundColor: Colors.redAccent,
+                                ),
+                              );
+                            }
+                          }
+                        }
                       } else {
                         if (!state.data.declarationChecked) {
                           isValid = false;

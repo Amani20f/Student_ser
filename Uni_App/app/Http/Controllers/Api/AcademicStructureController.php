@@ -17,7 +17,9 @@ class AcademicStructureController extends Controller
      */
     public function colleges(): JsonResponse
     {
-        $colleges = College::with(['departments.programs'])->get();
+        $colleges = College::with(['departments.programs' => function ($query) {
+            $query->where('is_available', true);
+        }])->get();
 
         return response()->json([
             'success' => true,
@@ -38,8 +40,8 @@ class AcademicStructureController extends Controller
                             ? $prog->degree_type->value
                             : $prog->degree_type,
                     ]),
-                ]),
-            ]),
+                ])->filter(fn ($dept) => count($dept['programs']) > 0)->values(),
+            ])->filter(fn ($college) => count($college['departments']) > 0)->values(),
         ]);
     }
 
@@ -50,7 +52,9 @@ class AcademicStructureController extends Controller
      */
     public function programs(): JsonResponse
     {
-        $programs = Program::with(['department.college'])->get();
+        $programs = Program::with(['department.college'])
+            ->where('is_available', true)
+            ->get();
 
         return response()->json([
             'success' => true,
