@@ -149,19 +149,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get courseColumn => 'Course';
 
   @override
-  String get firstColumn => 'First';
+  String get firstColumn => 'Coursework';
 
   @override
-  String get secondColumn => 'Second';
+  String get secondColumn => 'Second Round';
 
   @override
   String get midtermColumn => 'Midterm';
 
   @override
-  String get finalColumn => 'Final';
+  String get finalColumn => 'First Round';
 
   @override
-  String get totalColumn => 'Total';
+  String get totalColumn => 'Final Grade';
 
   @override
   String get gpaColumn => 'GPA';
@@ -418,13 +418,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newPassword => 'New Password';
 
   @override
-  String get gradeAppeals => 'Grade Appeals';
+  String get currentPassword => 'Current Password';
 
   @override
-  String get appealDetails => 'Appeal Details';
+  String get confirmNewPassword => 'Confirm New Password';
 
   @override
-  String get underReviewAppeals => 'Under Review Appeals';
+  String get passwordMismatch => 'New passwords do not match';
+
+  @override
+  String get currentPasswordRequired => 'Current password is required';
+
+  @override
+  String get newPasswordLengthError =>
+      'New password must be at least 8 characters';
+
+  @override
+  String get gradeAppeals => 'Grade Grievances';
+
+  @override
+  String get appealDetails => 'Grievance Details';
+
+  @override
+  String get underReviewAppeals => 'Under Review Grievances';
 
   @override
   String get studentNote => 'Student Note';
@@ -439,30 +455,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get afterGrades => 'AFTER (Proposed)';
 
   @override
-  String get approveAppeal => 'Approve Appeal';
+  String get approveAppeal => 'Approve Grievance';
 
   @override
-  String get rejectAppeal => 'Reject Appeal';
+  String get rejectAppeal => 'Reject Grievance';
 
   @override
-  String get appealApproved => 'Appeal approved successfully';
+  String get appealApproved => 'Grievance approved successfully';
 
   @override
-  String get appealRejected => 'Appeal rejected successfully';
+  String get appealRejected => 'Grievance rejected successfully';
 
   @override
-  String get failedToLoadAppeals => 'Failed to load appeals';
+  String get failedToLoadAppeals => 'Failed to load grievances';
 
   @override
-  String get noAppealsUnderReview => 'No appeals are currently under review';
+  String get noAppealsUnderReview => 'No grievances are currently under review';
 
   @override
   String get confirmApproveAppeal =>
-      'Are you sure you want to approve this appeal and update the student\'s grades?';
+      'Are you sure you want to approve this grievance and update the student\'s grades?';
 
   @override
   String get confirmRejectAppeal =>
-      'Are you sure you want to reject this appeal?';
+      'Are you sure you want to reject this grievance?';
 
   @override
   String get confirmApprovePayment =>
@@ -639,7 +655,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reEnrollment => 'Re-enrollment';
 
   @override
-  String get gradeAppeal => 'Grade Appeal';
+  String get gradeAppeal => 'Grade Grievance';
 
   @override
   String get specializationLabel => 'Specialization';

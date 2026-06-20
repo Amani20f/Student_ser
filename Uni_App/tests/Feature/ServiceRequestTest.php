@@ -19,6 +19,8 @@ class ServiceRequestTest extends TestCase
     protected Student $student;
     protected RequestType $absenceExcuseType;
     protected User $staffUser;
+    protected \App\Models\Course $course1;
+    protected \App\Models\Course $course2;
 
     protected function setUp(): void
     {
@@ -38,6 +40,22 @@ class ServiceRequestTest extends TestCase
             'is_active' => true,
         ]);
 
+        $this->course1 = \App\Models\Course::create([
+            'course_name' => 'Software Engineering',
+            'course_code' => 'CS301',
+            'credit_hours' => 3,
+            'program_id' => $this->student->program_id,
+            'semester_level' => 3,
+        ]);
+
+        $this->course2 = \App\Models\Course::create([
+            'course_name' => 'Database Systems',
+            'course_code' => 'CS302',
+            'credit_hours' => 3,
+            'program_id' => $this->student->program_id,
+            'semester_level' => 3,
+        ]);
+
         $this->staffUser = User::factory()->create();
         $this->staffUser->assignRole('student_affairs');
     }
@@ -53,6 +71,9 @@ class ServiceRequestTest extends TestCase
             'student_id' => $this->student->id,
             'type_id' => $this->absenceExcuseType->id,
             'form_data' => $formData,
+            'attachments' => [
+                \Illuminate\Http\UploadedFile::fake()->create('medical_excuse.pdf', 100)
+            ],
         ]);
 
         $response->assertStatus(201)
@@ -352,11 +373,13 @@ class ServiceRequestTest extends TestCase
                     'course_name' => 'Software Engineering',
                     'absence_date' => '2026-02-01',
                     'day' => 'Saturday',
+                    'course_id' => $this->course1->id,
                 ],
                 [
                     'course_name' => 'Database Systems',
                     'absence_date' => '2026-02-03',
                     'day' => 'Monday',
+                    'course_id' => $this->course2->id,
                 ],
             ],
         ];

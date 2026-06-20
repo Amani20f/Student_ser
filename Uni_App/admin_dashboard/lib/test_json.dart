@@ -27,7 +27,7 @@ void main() {
   try {
     final model = ApplicationModel.fromJson(jsonMap);
     print('Success: \${model.applicationNumber}');
-  } catch (e, stack) {
+  } catch (e) {
     print('Error: \$e\\n\$stack');
   }
 }

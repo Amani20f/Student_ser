@@ -65,4 +65,8 @@ class AdmissionsRepository {
       'rejection_reason': reason,
     });
   }
+
+  Future<void> verifyPayment(int id) async {
+    await _client.put('/staff/applications/$id/verify-payment');
+  }
 }

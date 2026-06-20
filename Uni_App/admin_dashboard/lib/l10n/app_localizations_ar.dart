@@ -149,19 +149,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get courseColumn => 'المقرر';
 
   @override
-  String get firstColumn => 'أول';
+  String get firstColumn => 'الأعمال الفصلية';
 
   @override
-  String get secondColumn => 'ثانٍ';
+  String get secondColumn => 'الدور الثاني';
 
   @override
-  String get midtermColumn => 'منتصف';
+  String get midtermColumn => 'الامتحان النصفي';
 
   @override
-  String get finalColumn => 'نهائي';
+  String get finalColumn => 'الدور الأول';
 
   @override
-  String get totalColumn => 'المجموع';
+  String get totalColumn => 'الدرجة النهائية';
 
   @override
   String get gpaColumn => 'المعدل';
@@ -415,6 +415,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get newPassword => 'كلمة المرور الجديدة';
+
+  @override
+  String get currentPassword => 'كلمة المرور الحالية';
+
+  @override
+  String get confirmNewPassword => 'تأكيد كلمة المرور الجديدة';
+
+  @override
+  String get passwordMismatch => 'كلمتا المرور الجديدتان غير متطابقتين';
+
+  @override
+  String get currentPasswordRequired => 'كلمة المرور الحالية مطلوبة';
+
+  @override
+  String get newPasswordLengthError =>
+      'يجب أن تكون كلمة المرور الجديدة 8 أحرف على الأقل';
 
   @override
   String get gradeAppeals => 'تظلمات الدرجات';

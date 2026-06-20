@@ -23,6 +23,7 @@ import '../../features/semesters/presentation/semesters_page.dart';
 import '../../features/pricing/presentation/pricing_page.dart';
 import '../../features/study_schedules/presentation/study_schedules_page.dart';
 import '../../features/study_plans/presentation/study_plans_page.dart';
+import '../../features/grades/presentation/grade_import_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -79,6 +80,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/grades',
             builder: (context, state) => const GradesPage(),
+            routes: [
+              GoRoute(
+                path: 'import',
+                builder: (context, state) => const GradeImportPage(),
+              ),
+            ],
           ),
           GoRoute(path: '/logs', builder: (context, state) => const LogsPage()),
           GoRoute(

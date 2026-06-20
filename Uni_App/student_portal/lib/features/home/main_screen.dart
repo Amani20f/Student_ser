@@ -58,7 +58,7 @@ class _MainScreenState extends State<MainScreen> {
           ModernNavItem(
             icon: Icons.poll_rounded,
             selectedIcon: Icons.poll_rounded,
-            label: 'الاستبيانات', // Hardcoded as requested or could use l10n later
+            label: AppLocalizations.of(context)!.navSurveys,
           ),
           ModernNavItem(
             icon: Icons.settings_rounded,

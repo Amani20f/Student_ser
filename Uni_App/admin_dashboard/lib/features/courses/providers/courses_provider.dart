@@ -11,6 +11,22 @@ final coursesProvider = FutureProvider.autoDispose<List<CourseModel>>((ref) asyn
   return data.map((e) => CourseModel.fromJson(e)).toList();
 });
 
+/// Staff-accessible courses provider for grade_control role
+/// Uses /staff/courses endpoint which is accessible without admin role
+final staffCoursesProvider = FutureProvider.autoDispose<List<CourseModel>>((ref) async {
+  final apiClient = ref.watch(apiClientProvider);
+  try {
+    final response = await apiClient.get(ApiConstants.staffCourses);
+    final List data = response['data'] ?? [];
+    return data.map((e) => CourseModel.fromJson(e)).toList();
+  } catch (_) {
+    // Fallback to admin endpoint if staff endpoint fails (admin role)
+    final response = await apiClient.get(ApiConstants.adminCourses);
+    final List data = response['data'] ?? [];
+    return data.map((e) => CourseModel.fromJson(e)).toList();
+  }
+});
+
 class CoursesNotifier extends StateNotifier<AsyncValue<void>> {
   final ApiClient apiClient;
   final Ref ref;

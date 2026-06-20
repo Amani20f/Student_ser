@@ -13,6 +13,11 @@ part 'registration_state.dart';
 class RegistrationCubit extends Cubit<RegistrationState> {
   RegistrationCubit() : super(const RegistrationState());
 
+  /// يعيد تهيئة الحالة بالكامل عند فتح تسجيل جديد
+  void resetState() {
+    emit(const RegistrationState());
+  }
+
   void updateData(RegistrationData newData) {
     emit(state.copyWith(data: newData));
   }

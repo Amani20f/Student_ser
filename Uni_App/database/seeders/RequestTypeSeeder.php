@@ -41,7 +41,7 @@ class RequestTypeSeeder extends Seeder
                 'form_url'    => null,
             ],
             [
-                'name'        => 'تظلم درجة',
+                'name'        => 'تظلم درجات',
                 'slug'        => 'grade_grievance',
                 'description' => 'تقديم تظلم رسمي بشأن درجة أحد المساقات.',
                 'target_role' => 'grade_control',

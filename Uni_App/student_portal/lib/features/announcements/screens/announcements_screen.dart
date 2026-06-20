@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:university_app/l10n/app_localizations.dart';
 import '../cubit/announcements_cubit.dart';
 import '../cubit/announcements_state.dart';
-import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
 
 class AnnouncementsScreen extends StatefulWidget {
   const AnnouncementsScreen({super.key});
@@ -23,9 +22,10 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('الإعلانات'),
+        title: Text(l10n.announcementsTitle),
       ),
       body: BlocBuilder<AnnouncementsCubit, AnnouncementsState>(
         builder: (context, state) {
@@ -42,7 +42,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => context.read<AnnouncementsCubit>().fetchAnnouncements(),
-                    child: const Text('إعادة المحاولة'),
+                    child: Text(l10n.retryBtn),
                   ),
                 ],
               ),
@@ -60,7 +60,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                     Icon(Icons.campaign_outlined, size: 80, color: Colors.grey[400]),
                     const SizedBox(height: 16),
                     Text(
-                      'لا توجد إعلانات حالياً',
+                      l10n.noAnnouncements,
                       style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                     ),
                   ],
@@ -97,12 +97,12 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                                     height: 150,
                                     width: double.infinity,
                                     color: Colors.grey[300],
-                                    child: const Column(
+                                    child: Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        Icon(Icons.broken_image, color: Colors.grey, size: 40),
-                                        SizedBox(height: 8),
-                                        Text('تعذر تحميل الصورة', style: TextStyle(color: Colors.grey)),
+                                        const Icon(Icons.broken_image, color: Colors.grey, size: 40),
+                                        const SizedBox(height: 8),
+                                        Text(l10n.couldNotLoadImage, style: const TextStyle(color: Colors.grey)),
                                       ],
                                     ),
                                   );

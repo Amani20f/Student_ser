@@ -21,7 +21,20 @@ class AppealManagementController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $filters = $request->only(['status']);
+        $filters = $request->only(['status', 'program_id']);
+        
+        $user = auth()->user();
+        if ($user && $user->hasRole('grade_control') && !$user->hasRole('accountant')) {
+            $allowedStatuses = ['verified', 'approved', 'rejected'];
+            if (!empty($filters['status'])) {
+                if (!in_array($filters['status'], $allowedStatuses)) {
+                    return response()->json(['data' => []]);
+                }
+            } else {
+                $filters['statuses'] = $allowedStatuses;
+            }
+        }
+
         $appeals = $this->appealService->getAppealsFiltered($filters);
         return response()->json([
             'data' => AppealResource::collection($appeals)
@@ -104,7 +117,7 @@ class AppealManagementController extends Controller
             );
 
             return response()->json([
-                'message' => 'Appeal review completed successfully.',
+                'message' => 'Grievance review completed successfully.',
                 'data' => new AppealResource($appeal)
             ]);
         } catch (\Exception $e) {

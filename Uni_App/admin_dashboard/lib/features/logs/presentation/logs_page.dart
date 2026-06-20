@@ -9,16 +9,52 @@ import '../providers/logs_provider.dart';
 
 /// Fixed action list — includes dynamic ones + user management events.
 const _knownActions = [
-  'user_created',
-  'user_deleted',
-  'request_approved',
-  'request_rejected',
-  'payment_verified',
-  'payment_rejected',
-  'grade_updated',
   'login',
   'logout',
+  'user_created',
+  'user_deleted',
+  'request_created',
+  'request_approved',
+  'request_rejected',
+  'payment_created',
+  'payment_verified',
+  'payment_rejected',
+  'grade_created',
+  'grade_updated',
 ];
+
+String _getLocalizedAction(String? action, BuildContext context) {
+  if (action == null) return '-';
+  final isAr = Localizations.localeOf(context).languageCode == 'ar';
+  switch (action) {
+    case 'login':
+      return isAr ? 'تسجيل دخول' : 'User Login';
+    case 'logout':
+      return isAr ? 'تسجيل خروج' : 'User Logout';
+    case 'user_created':
+      return isAr ? 'إنشاء مستخدم' : 'User Created';
+    case 'user_deleted':
+      return isAr ? 'حذف مستخدم' : 'User Deleted';
+    case 'request_created':
+      return isAr ? 'إنشاء طلب' : 'Request Created';
+    case 'request_approved':
+      return isAr ? 'قبول الطلب' : 'Request Approved';
+    case 'request_rejected':
+      return isAr ? 'رفض الطلب' : 'Request Rejected';
+    case 'payment_created':
+      return isAr ? 'إنشاء دفعة' : 'Payment Created';
+    case 'payment_verified':
+      return isAr ? 'التحقق من الدفع' : 'Payment Verified';
+    case 'payment_rejected':
+      return isAr ? 'رفض الدفع' : 'Payment Rejected';
+    case 'grade_created':
+      return isAr ? 'رصد درجة' : 'Grade Created';
+    case 'grade_updated':
+      return isAr ? 'تحديث الدرجة' : 'Grade Updated';
+    default:
+      return action.replaceAll('_', ' ').split(' ').map((str) => str.isNotEmpty ? '${str[0].toUpperCase()}${str.substring(1)}' : '').join(' ');
+  }
+}
 
 class LogsPage extends ConsumerStatefulWidget {
   const LogsPage({super.key});
@@ -35,6 +71,14 @@ class _LogsPageState extends ConsumerState<LogsPage> {
   List<LogModel>? _logs;
   bool _loading = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchLogs();
+    });
+  }
 
   DateTime? get _fromDate => _dateFrom;
   DateTime? get _toDate => _dateTo != null
@@ -71,10 +115,9 @@ class _LogsPageState extends ConsumerState<LogsPage> {
       _filterAction = null;
       _dateFrom = null;
       _dateTo = null;
-      _logs = null;
-      _hasFetched = false;
       ref.read(backActionProvider.notifier).state = null;
     });
+    _fetchLogs();
   }
 
   @override
@@ -122,6 +165,7 @@ class _LogsPageState extends ConsumerState<LogsPage> {
                         _dateFrom = picked.start;
                         _dateTo = picked.end;
                       });
+                      _fetchLogs();
                     }
                   },
                   borderRadius: BorderRadius.circular(8),
@@ -149,24 +193,22 @@ class _LogsPageState extends ConsumerState<LogsPage> {
                     style: tt.bodySmall?.copyWith(color: cs.onSurface.withAlpha(140))),
                   items: [
                     DropdownMenuItem<String?>(value: '___all___', child: Text(l10n.allActions)),
-                    ..._knownActions.map((a) => DropdownMenuItem(value: a, child: Text(a))),
+                    ..._knownActions.map((a) => DropdownMenuItem(value: a, child: Text(_getLocalizedAction(a, context)))),
                   ],
                   onChanged: (v) {
                     setState(() {
                       _filterAction = v;
                     });
+                    _fetchLogs();
                   },
                 ),
               ),
-              // Apply button
-              FilledButton.icon(
-                onPressed: _loading ? null : _fetchLogs,
-                icon: _loading
-                    ? SizedBox(width: 16, height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: cs.onPrimary))
-                    : const Icon(Icons.search_rounded, size: 18),
-                label: Text(l10n.applyFilters),
-              ),
+              if (_loading)
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: cs.primary),
+                ),
               // Clear button
               if (_hasFetched)
                 OutlinedButton.icon(
@@ -193,6 +235,7 @@ class _LogsPageState extends ConsumerState<LogsPage> {
   }
 
   Widget _buildContent(ColorScheme cs, TextTheme tt, AppLocalizations l10n) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     if (!_hasFetched && _logs == null) {
       return Center(
         child: Column(
@@ -228,7 +271,8 @@ class _LogsPageState extends ConsumerState<LogsPage> {
 
     final logs = _logs ?? [];
     if (logs.isEmpty) {
-      return Center(child: Text(l10n.noLogsFound,
+      final msg = isAr ? 'لا توجد سجلات مطابقة للفلتر المحدد' : 'No activity logs match the selected filters';
+      return Center(child: Text(msg,
           style: tt.titleMedium?.copyWith(color: cs.onSurface.withAlpha(120))));
     }
 
@@ -250,7 +294,7 @@ class _LogsPageState extends ConsumerState<LogsPage> {
               columns: [
                 DataColumn(label: Text(l10n.userColumn)),
                 DataColumn(label: Text(l10n.actionColumn)),
-                DataColumn(label: Text(l10n.modelColumn)),
+                DataColumn(label: Text(isAr ? 'الوصف' : 'Description')),
                 DataColumn(label: Text(l10n.oldValuesColumn)),
                 DataColumn(label: Text(l10n.newValuesColumn)),
                 DataColumn(label: Text(l10n.dateColumn)),
@@ -266,13 +310,16 @@ class _LogsPageState extends ConsumerState<LogsPage> {
   DataRow _buildRow(BuildContext context, LogModel log) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final l10n = AppLocalizations.of(context)!;
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
 
     final isUserEvent = log.action == 'user_created' || log.action == 'user_deleted';
     final badgeColor = isUserEvent ? cs.tertiary : cs.primary;
 
+    final causerRoleText = log.causerRole ?? (isAr ? 'نظام' : 'System');
+    final causerDisplay = log.causer != null ? '${log.causer} ($causerRoleText)' : (isAr ? 'النظام' : 'System');
+
     return DataRow(cells: [
-      DataCell(Text(log.causer ?? l10n.system)),
+      DataCell(Text(causerDisplay)),
       DataCell(
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -280,13 +327,21 @@ class _LogsPageState extends ConsumerState<LogsPage> {
             color: badgeColor.withAlpha(20),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Text(log.action ?? '-',
+          child: Text(_getLocalizedAction(log.action, context),
               style: tt.bodySmall?.copyWith(color: badgeColor, fontWeight: FontWeight.w500)),
         ),
       ),
-      DataCell(Text(log.subjectType ?? '-')),
       DataCell(ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 200),
+        constraints: const BoxConstraints(maxWidth: 300),
+        child: Tooltip(
+          message: log.getDescription(isAr),
+          child: Text(log.getDescription(isAr),
+              overflow: TextOverflow.ellipsis,
+              style: tt.bodySmall?.copyWith(fontWeight: FontWeight.w500)),
+        ),
+      )),
+      DataCell(ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 150),
         child: Tooltip(
           message: log.oldValuesDisplay,
           child: Text(log.oldValuesDisplay,
@@ -295,7 +350,7 @@ class _LogsPageState extends ConsumerState<LogsPage> {
         ),
       )),
       DataCell(ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 200),
+        constraints: const BoxConstraints(maxWidth: 150),
         child: Tooltip(
           message: log.newValuesDisplay,
           child: Text(log.newValuesDisplay,

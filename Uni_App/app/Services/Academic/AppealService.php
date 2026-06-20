@@ -70,11 +70,11 @@ class AppealService
             $appeal = $this->appealRepository->findById($data['appeal_id']);
             
             if (!$appeal || $appeal->student_id !== $student->id) {
-                throw new Exception("Appeal not found or not owned by student.");
+                throw new Exception("Grievance not found or not owned by student.");
             }
 
             if ($appeal->status !== AppealStatusEnum::PENDING_PAYMENT) {
-                throw new Exception("This appeal is not pending payment.");
+                throw new Exception("This grievance is not pending payment.");
             }
 
             // Create payment
@@ -84,7 +84,7 @@ class AppealService
                 'student_id' => $student->id,
                 'semester_id' => $data['semester_id'],
                 'amount' => $data['amount'],
-                'purpose' => "Grade Appeal Fee - Appeal #{$appeal->id}",
+                'purpose' => "Grade Grievance Fee - Grievance #{$appeal->id}",
                 'receipt_image' => $receiptPath,
                 'status' => PaymentStatusEnum::PENDING,
                 'appeal_id' => $appeal->id,
@@ -116,12 +116,12 @@ class AppealService
             $appeal = $this->appealRepository->findById($appealId);
             
             if (!$appeal || $appeal->status !== AppealStatusEnum::PAID) {
-                throw new Exception("Appeal not found or not in PAID status.");
+                throw new Exception("Grievance not found or not in PAID status.");
             }
 
             if ($decision === 'approved') {
                 $this->appealRepository->update($appealId, [
-                    'status' => AppealStatusEnum::UNDER_REVIEW,
+                    'status' => AppealStatusEnum::VERIFIED,
                     'accountant_id' => $userId,
                     'paid_at' => now(),
                 ]);
@@ -155,7 +155,7 @@ class AppealService
      */
     public function getUnderReviewAppeals()
     {
-        return $this->appealRepository->getAppealsByStatus(AppealStatusEnum::UNDER_REVIEW->value);
+        return $this->appealRepository->getAppealsByStatus(AppealStatusEnum::VERIFIED->value);
     }
 
     /**
@@ -175,11 +175,11 @@ class AppealService
             $appeal = $this->appealRepository->findById($appealId);
             
             if (!$appeal) {
-                throw new Exception("Appeal with ID {$appealId} not found.");
+                throw new Exception("Grievance with ID {$appealId} not found.");
             }
 
-            if ($appeal->status !== AppealStatusEnum::UNDER_REVIEW && $appeal->status !== AppealStatusEnum::PAID) {
-                throw new Exception("Appeal #{$appealId} cannot be reviewed because its current status is '{$appeal->status->value}'. It must be 'under_review' or 'paid'.");
+            if ($appeal->status !== AppealStatusEnum::VERIFIED) {
+                throw new Exception("Grievance #{$appealId} cannot be reviewed because its current status is '{$appeal->status->value}'. Only Verified grievances can be reviewed.");
             }
 
             if ($decision === 'approved') {
@@ -225,7 +225,7 @@ class AppealService
                 'approved' => 'مقبول',
                 'rejected' => 'مرفوض',
                 'pending' => 'قيد الانتظار',
-                'under_review' => 'تحت المراجعة',
+                'verified' => 'مؤكد',
                 'paid' => 'مدفوع',
                 default => $statusRaw,
             };

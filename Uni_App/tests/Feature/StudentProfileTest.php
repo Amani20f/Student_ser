@@ -6,14 +6,52 @@ use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\Student;
+use App\Models\Program;
+use Spatie\Permission\Models\Role;
+
 class StudentProfileTest extends TestCase
 {
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->artisan('db:seed', ['--class' => 'RoleAndPermissionSeeder']);
+
+        $user = User::factory()->create(['role' => 'student']);
+        $user->assignRole('student');
+        
+        $college = \App\Models\College::create(['name' => 'IT', 'code' => 'IT']);
+        $dept = \App\Models\Department::create(['name' => 'CS', 'code' => 'CS', 'college_id' => $college->id]);
+        $program = Program::create([
+            'department_id' => $dept->id,
+            'name' => 'CS Program',
+            'code' => 'CS_PROG',
+            'duration_years' => 4,
+            'degree_type' => 'bachelor',
+            'fees' => 3000,
+            'is_available' => true
+        ]);
+
+        Student::create([
+            'user_id' => $user->id,
+            'program_id' => $program->id,
+            'student_number' => 'STU-12345',
+            'phone' => '1234567890',
+            'current_level' => 1,
+            'status' => 'active',
+            'national_id' => 'NAT-1234',
+            'gender' => 'male',
+            'nationality' => 'Saudi',
+            'date_of_birth' => '2000-01-01',
+        ]);
+    }
+
     public function test_can_get_profile()
     {
         $user = User::whereHas('roles', function($q) { $q->where('name', 'student'); })->first();
-        if (!$user) {
-            $this->markTestSkipped('No student user found.');
-        }
 
         $response = $this->actingAs($user)->getJson('/api/student/profile');
 

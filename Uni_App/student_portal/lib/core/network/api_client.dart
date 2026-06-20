@@ -93,11 +93,6 @@ class ApiClient {
       throw const UnauthorizedException();
     }
     if (response.statusCode >= 400) {
-      print('=====================================');
-      print('HTTP STATUS CODE: ${response.statusCode}');
-      print('FULL ERROR RESPONSE BODY:');
-      print(response.body);
-      print('=====================================');
 
       final body = response.body.isNotEmpty
           ? jsonDecode(response.body)

@@ -30,7 +30,7 @@ class StudentApplicationManagementTest extends TestCase
         $this->program = Program::create(['name' => 'BSc CS', 'code' => 'BSC_CS', 'department_id' => $department->id]);
     }
 
-    private function createStudentApplication()
+    private function createStudentApplication($status = 'pending')
     {
         return StudentApplication::create([
             'application_number' => 'APP-' . time(),
@@ -43,8 +43,11 @@ class StudentApplicationManagementTest extends TestCase
             'date_of_birth' => '2000-01-01',
             'address' => 'Riyadh',
             'desired_program_id' => $this->program->id,
+            'first_choice_program_id' => $this->program->id,
+            'second_choice_program_id' => $this->program->id,
+            'third_choice_program_id' => $this->program->id,
             'desired_academic_level' => 1,
-            'application_status' => 'pending',
+            'application_status' => $status,
             'submitted_at' => now(),
         ]);
     }
@@ -53,7 +56,7 @@ class StudentApplicationManagementTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $admin->assignRole('admin');
-        $this->createStudentApplication();
+        $this->createStudentApplication('pending');
 
         $response = $this->actingAs($admin)->getJson('/api/admin/applications');
 
@@ -66,7 +69,7 @@ class StudentApplicationManagementTest extends TestCase
     {
         $studentAffairs = User::factory()->create(['role' => 'student_affairs']);
         $studentAffairs->assignRole('student_affairs');
-        $this->createStudentApplication();
+        $this->createStudentApplication('payment_verified');
 
         $response = $this->actingAs($studentAffairs)->getJson('/api/admin/applications');
 
@@ -79,7 +82,7 @@ class StudentApplicationManagementTest extends TestCase
     {
         $studentAffairs = User::factory()->create(['role' => 'student_affairs']);
         $studentAffairs->assignRole('student_affairs');
-        $app = $this->createStudentApplication();
+        $app = $this->createStudentApplication('payment_verified');
 
         $response = $this->actingAs($studentAffairs)->getJson("/api/admin/applications/{$app->id}");
 
@@ -91,9 +94,11 @@ class StudentApplicationManagementTest extends TestCase
     {
         $studentAffairs = User::factory()->create(['role' => 'student_affairs']);
         $studentAffairs->assignRole('student_affairs');
-        $app = $this->createStudentApplication();
+        $app = $this->createStudentApplication('payment_verified');
 
-        $response = $this->actingAs($studentAffairs)->postJson("/api/admin/applications/{$app->id}/approve");
+        $response = $this->actingAs($studentAffairs)->postJson("/api/admin/applications/{$app->id}/approve", [
+            'approved_program_id' => $this->program->id,
+        ]);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('student_applications', [
@@ -112,7 +117,7 @@ class StudentApplicationManagementTest extends TestCase
     {
         $studentAffairs = User::factory()->create(['role' => 'student_affairs']);
         $studentAffairs->assignRole('student_affairs');
-        $app = $this->createStudentApplication();
+        $app = $this->createStudentApplication('payment_verified');
 
         $response = $this->actingAs($studentAffairs)->postJson("/api/admin/applications/{$app->id}/reject", [
             'rejection_reason' => 'Missing documents',

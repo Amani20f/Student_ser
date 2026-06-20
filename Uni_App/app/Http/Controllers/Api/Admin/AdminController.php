@@ -50,16 +50,29 @@ class AdminController extends Controller
 
         $logs = $this->activityLogRepository->getRecentActions(1000, $filters);
 
-        $formattedLogs = $logs->map(fn($log) => [
-            'id'          => $log->id,
-            'causer'      => $log->causer->name ?? 'System',
-            'action'      => $log->action,
-            'subjectType' => class_basename($log->model_type),
-            'subjectId'   => $log->subject_id,
-            'oldValues'   => $log->old_values,
-            'newValues'   => $log->new_values,
-            'createdAt'   => $log->created_at,
-        ]);
+        $formattedLogs = $logs->map(function($log) {
+            $r = $log->causer ? ($log->causer->role ?? ($log->causer->roles->first()->name ?? 'System')) : 'System';
+            $roleName = match($r) {
+                'admin' => 'Admin',
+                'student_affairs' => 'Student Affairs',
+                'accountant' => 'Accountant',
+                'grade_control' => 'Grade Control',
+                'student' => 'Student',
+                default => ucfirst($r),
+            };
+
+            return [
+                'id'          => $log->id,
+                'causer'      => $log->causer->name ?? 'System',
+                'causerRole'  => $roleName,
+                'action'      => $log->action,
+                'subjectType' => class_basename($log->model_type),
+                'subjectId'   => $log->subject_id,
+                'oldValues'   => $log->old_values,
+                'newValues'   => $log->new_values,
+                'createdAt'   => $log->created_at,
+            ];
+        });
 
         return response()->json(['data' => $formattedLogs]);
     }

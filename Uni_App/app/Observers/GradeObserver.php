@@ -35,7 +35,7 @@ class GradeObserver
             'causer_id' => auth()->id(),
             'model_type' => Grade::class,
             'subject_id' => $grade->id,
-            'action' => 'updated',
+            'action' => 'grade_updated',
             'old_values' => $grade->getOriginal(),
             'new_values' => $grade->getChanges(),
         ]);

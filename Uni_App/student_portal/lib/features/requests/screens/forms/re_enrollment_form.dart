@@ -31,6 +31,13 @@ class _ReEnrollmentScreenState extends State<ReEnrollmentScreen> {
   @override
   void initState() {
     super.initState();
+    final authState = context.read<AuthCubit>().state;
+    if (authState is Authenticated) {
+      final user = authState.user;
+      final student = user['student'] ?? {};
+      final count = student['approved_suspensions_count'] ?? 0;
+      _prevStopsCountController.text = count.toString();
+    }
   }
 
   @override
@@ -151,8 +158,9 @@ class _ReEnrollmentScreenState extends State<ReEnrollmentScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final errorMsg = e.toString().replaceAll('ApiException:', '').replaceAll('Exception:', '').trim();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('فشل الإرسال: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -245,13 +253,10 @@ class _ReEnrollmentScreenState extends State<ReEnrollmentScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                DropdownField(
-                  label: 'عدد مرات وقف القيد السابق',
-                  items: const ['0', '1', '2', '3+'],
-                  onChanged: (val) =>
-                      _prevStopsCountController.text = val ?? '',
-                  validator: (val) =>
-                      val == null || val.isEmpty ? 'مطلوب' : null,
+                LabeledTextField(
+                  label: 'عدد مرات وقف القيد السابق (محسوب تلقائياً)',
+                  controller: _prevStopsCountController,
+                  readOnly: true,
                 ),
                 const SizedBox(height: 16),
                 DropdownField(

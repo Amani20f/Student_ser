@@ -9,13 +9,20 @@ final appealRepositoryProvider = Provider<AppealRepository>((ref) {
 });
 
 /// Holds the current status filter for appeals.
-final appealStatusFilterProvider = StateProvider<String?>((ref) => null);
+final appealStatusFilterProvider = StateProvider<dynamic>((ref) => 'verified');
 
-/// Fetches all appeals with optional status filtering.
+/// Holds the current program filter for appeals.
+final appealProgramFilterProvider = StateProvider<dynamic>((ref) => '__all__');
+
+/// Fetches all appeals with optional status and program filtering.
 final underReviewAppealsProvider = FutureProvider<List<AppealModel>>((ref) async {
   final repository = ref.watch(appealRepositoryProvider);
   final status = ref.watch(appealStatusFilterProvider);
-  return repository.getAppeals(status: status == '___all___' ? null : status);
+  final programId = ref.watch(appealProgramFilterProvider);
+  return repository.getAppeals(
+    status: (status == '___all___' || status == '__all__' || status == null) ? null : status,
+    programId: (programId == '___all___' || programId == '__all__' || programId == null) ? null : int.tryParse(programId.toString()),
+  );
 });
 
 /// Fetches specific appeal details by ID.

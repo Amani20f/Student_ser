@@ -1411,6 +1411,720 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Payment Receipt'**
   String get paymentReceiptLabel;
+
+  /// No description provided for @navSurveys.
+  ///
+  /// In en, this message translates to:
+  /// **'Surveys'**
+  String get navSurveys;
+
+  /// No description provided for @studentIdWithNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'University ID: {id}'**
+  String studentIdWithNumber(Object id);
+
+  /// No description provided for @relatedRequestNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'The related request was not found or has been deleted.'**
+  String get relatedRequestNotFound;
+
+  /// No description provided for @errorLoadingRequestDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading request details. Please try again.'**
+  String get errorLoadingRequestDetails;
+
+  /// No description provided for @errorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred. Please try again later.'**
+  String get errorGeneric;
+
+  /// No description provided for @errorClearNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to clear notifications. Please try again.'**
+  String get errorClearNotifications;
+
+  /// No description provided for @errorPhotoUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update photo. Please try again.'**
+  String get errorPhotoUpdate;
+
+  /// No description provided for @errorPhoneUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update phone number. Please try again.'**
+  String get errorPhoneUpdate;
+
+  /// No description provided for @photoUpdatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo updated successfully'**
+  String get photoUpdatedSuccess;
+
+  /// No description provided for @phoneUpdatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number updated successfully'**
+  String get phoneUpdatedSuccess;
+
+  /// No description provided for @editPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Phone Number'**
+  String get editPhoneNumber;
+
+  /// No description provided for @pickFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick from Gallery'**
+  String get pickFromGallery;
+
+  /// No description provided for @dateOfBirthLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of Birth'**
+  String get dateOfBirthLabel;
+
+  /// No description provided for @genderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender'**
+  String get genderLabel;
+
+  /// No description provided for @maleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get maleLabel;
+
+  /// No description provided for @femaleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get femaleLabel;
+
+  /// No description provided for @nationalityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Nationality'**
+  String get nationalityLabel;
+
+  /// No description provided for @studentNumberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'University ID'**
+  String get studentNumberLabel;
+
+  /// No description provided for @completedHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed Hours'**
+  String get completedHours;
+
+  /// No description provided for @remainingHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining Hours'**
+  String get remainingHours;
+
+  /// No description provided for @currentPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Password'**
+  String get currentPasswordLabel;
+
+  /// No description provided for @passwordChangedSuccessMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Password changed successfully'**
+  String get passwordChangedSuccessMsg;
+
+  /// No description provided for @statusSuspended.
+  ///
+  /// In en, this message translates to:
+  /// **'Suspended'**
+  String get statusSuspended;
+
+  /// No description provided for @statusGraduated.
+  ///
+  /// In en, this message translates to:
+  /// **'Graduated'**
+  String get statusGraduated;
+
+  /// No description provided for @gradesAndResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Grades & Results'**
+  String get gradesAndResults;
+
+  /// No description provided for @academicIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Academic ID: {id}'**
+  String academicIdLabel(String id);
+
+  /// No description provided for @cumulativeGpa.
+  ///
+  /// In en, this message translates to:
+  /// **'Cumulative GPA'**
+  String get cumulativeGpa;
+
+  /// No description provided for @semesterGpa.
+  ///
+  /// In en, this message translates to:
+  /// **'Semester GPA'**
+  String get semesterGpa;
+
+  /// No description provided for @semesterHoursLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit Hours'**
+  String get semesterHoursLabel;
+
+  /// No description provided for @academicSemester.
+  ///
+  /// In en, this message translates to:
+  /// **'Academic Semester'**
+  String get academicSemester;
+
+  /// No description provided for @noSemestersRegistered.
+  ///
+  /// In en, this message translates to:
+  /// **'No registered semesters'**
+  String get noSemestersRegistered;
+
+  /// No description provided for @noGradesForSemester.
+  ///
+  /// In en, this message translates to:
+  /// **'No grades available for this semester'**
+  String get noGradesForSemester;
+
+  /// No description provided for @pleaseSelectSemester.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a semester to view grades'**
+  String get pleaseSelectSemester;
+
+  /// No description provided for @courseNameCol.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Name'**
+  String get courseNameCol;
+
+  /// No description provided for @courseworkCol.
+  ///
+  /// In en, this message translates to:
+  /// **'Coursework'**
+  String get courseworkCol;
+
+  /// No description provided for @midtermCol.
+  ///
+  /// In en, this message translates to:
+  /// **'Midterm'**
+  String get midtermCol;
+
+  /// No description provided for @finalExamCol.
+  ///
+  /// In en, this message translates to:
+  /// **'First Round'**
+  String get finalExamCol;
+
+  /// No description provided for @controlGradeCol.
+  ///
+  /// In en, this message translates to:
+  /// **'Control Grade'**
+  String get controlGradeCol;
+
+  /// No description provided for @mercyGradeCol.
+  ///
+  /// In en, this message translates to:
+  /// **'Mercy Grade'**
+  String get mercyGradeCol;
+
+  /// No description provided for @firstRoundStatusCol.
+  ///
+  /// In en, this message translates to:
+  /// **'First Round Status'**
+  String get firstRoundStatusCol;
+
+  /// No description provided for @retakeCol.
+  ///
+  /// In en, this message translates to:
+  /// **'Second Round'**
+  String get retakeCol;
+
+  /// No description provided for @retakeStatusCol.
+  ///
+  /// In en, this message translates to:
+  /// **'Second Round Status'**
+  String get retakeStatusCol;
+
+  /// No description provided for @retakeYearCol.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake Year'**
+  String get retakeYearCol;
+
+  /// No description provided for @gpaCol.
+  ///
+  /// In en, this message translates to:
+  /// **'GPA'**
+  String get gpaCol;
+
+  /// No description provided for @gradeCol.
+  ///
+  /// In en, this message translates to:
+  /// **'Grade'**
+  String get gradeCol;
+
+  /// No description provided for @passedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Passed'**
+  String get passedStatus;
+
+  /// No description provided for @failedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get failedStatus;
+
+  /// No description provided for @incompleteStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Incomplete'**
+  String get incompleteStatus;
+
+  /// No description provided for @surveyOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'Survey Opened'**
+  String get surveyOpened;
+
+  /// No description provided for @openSurvey.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Survey'**
+  String get openSurvey;
+
+  /// No description provided for @viewGrades.
+  ///
+  /// In en, this message translates to:
+  /// **'View Grades'**
+  String get viewGrades;
+
+  /// No description provided for @pleaseCompleteSurveyFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Please open and complete the survey first to view your grades'**
+  String get pleaseCompleteSurveyFirst;
+
+  /// No description provided for @surveyCompletedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Survey completed successfully — here are your grades'**
+  String get surveyCompletedSuccess;
+
+  /// No description provided for @failedToOpenSurveyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the survey link'**
+  String get failedToOpenSurveyLink;
+
+  /// No description provided for @errorLoadingGrades.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading grades. Please try again.'**
+  String get errorLoadingGrades;
+
+  /// No description provided for @surveysTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Surveys'**
+  String get surveysTitle;
+
+  /// No description provided for @noOptionalSurveys.
+  ///
+  /// In en, this message translates to:
+  /// **'No optional surveys available at this time'**
+  String get noOptionalSurveys;
+
+  /// No description provided for @noTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No Title'**
+  String get noTitle;
+
+  /// No description provided for @surveyViewed.
+  ///
+  /// In en, this message translates to:
+  /// **'Viewed'**
+  String get surveyViewed;
+
+  /// No description provided for @surveyNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get surveyNew;
+
+  /// No description provided for @openSurveyBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Survey'**
+  String get openSurveyBtn;
+
+  /// No description provided for @errorLoadingSurveys.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading surveys. Please try again.'**
+  String get errorLoadingSurveys;
+
+  /// No description provided for @failedToOpenLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the link. Please try again.'**
+  String get failedToOpenLink;
+
+  /// No description provided for @errorOpeningSurvey.
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred while opening the survey'**
+  String get errorOpeningSurvey;
+
+  /// No description provided for @surveyRecordedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Survey recorded successfully'**
+  String get surveyRecordedSuccess;
+
+  /// No description provided for @requestDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Details'**
+  String get requestDetails;
+
+  /// No description provided for @referenceNumberShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference Number'**
+  String get referenceNumberShort;
+
+  /// No description provided for @requestType.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Type'**
+  String get requestType;
+
+  /// No description provided for @requestStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Status'**
+  String get requestStatus;
+
+  /// No description provided for @paymentStatusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Status'**
+  String get paymentStatusLabel;
+
+  /// No description provided for @requestDetailsAndForm.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Details & Form'**
+  String get requestDetailsAndForm;
+
+  /// No description provided for @rejectionReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejection Reason'**
+  String get rejectionReason;
+
+  /// No description provided for @staffResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff / Committee Response'**
+  String get staffResponse;
+
+  /// No description provided for @attachedFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Attached Files ({count})'**
+  String attachedFiles(Object count);
+
+  /// No description provided for @failedToOpenAttachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the attachment'**
+  String get failedToOpenAttachment;
+
+  /// No description provided for @errorOpeningFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Error opening the file. Please try again.'**
+  String get errorOpeningFile;
+
+  /// No description provided for @payNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay Fees Now'**
+  String get payNow;
+
+  /// No description provided for @statusApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get statusApproved;
+
+  /// No description provided for @statusRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get statusRejected;
+
+  /// No description provided for @statusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Under Review'**
+  String get statusPending;
+
+  /// No description provided for @statusRatified.
+  ///
+  /// In en, this message translates to:
+  /// **'Financially Ratified'**
+  String get statusRatified;
+
+  /// No description provided for @statusUnderReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Under Review'**
+  String get statusUnderReview;
+
+  /// No description provided for @statusPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get statusPaid;
+
+  /// No description provided for @paymentPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get paymentPaid;
+
+  /// No description provided for @paymentPendingVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Verification'**
+  String get paymentPendingVerification;
+
+  /// No description provided for @paymentRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Rejected'**
+  String get paymentRejected;
+
+  /// No description provided for @paymentUnpaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpaid'**
+  String get paymentUnpaid;
+
+  /// No description provided for @submitNewRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit New Request'**
+  String get submitNewRequest;
+
+  /// No description provided for @myPreviousRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'My Previous Requests'**
+  String get myPreviousRequests;
+
+  /// No description provided for @studentServicesPortal.
+  ///
+  /// In en, this message translates to:
+  /// **'Student Services Portal'**
+  String get studentServicesPortal;
+
+  /// No description provided for @submitNewRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit New Request'**
+  String get submitNewRequestTitle;
+
+  /// No description provided for @officialFormsSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'Official Student Forms Management System'**
+  String get officialFormsSystem;
+
+  /// No description provided for @errorLoadingRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading requests. Please try again.'**
+  String get errorLoadingRequests;
+
+  /// No description provided for @failedToLoadRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load requests'**
+  String get failedToLoadRequests;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @noPreviousRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'No previous requests'**
+  String get noPreviousRequests;
+
+  /// No description provided for @noRequestsSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not submitted any requests yet.'**
+  String get noRequestsSubmitted;
+
+  /// No description provided for @serviceRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Service Request'**
+  String get serviceRequest;
+
+  /// No description provided for @submissionDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Submission Date'**
+  String get submissionDate;
+
+  /// No description provided for @lastUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Update'**
+  String get lastUpdate;
+
+  /// No description provided for @errorSubmission.
+  ///
+  /// In en, this message translates to:
+  /// **'Submission failed. Please try again.'**
+  String get errorSubmission;
+
+  /// No description provided for @errorLoadingAcademicData.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load academic data. Please try again.'**
+  String get errorLoadingAcademicData;
+
+  /// No description provided for @totalGradeCol.
+  ///
+  /// In en, this message translates to:
+  /// **'Final Grade'**
+  String get totalGradeCol;
+
+  /// No description provided for @announcementsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Announcements'**
+  String get announcementsTitle;
+
+  /// No description provided for @noAnnouncements.
+  ///
+  /// In en, this message translates to:
+  /// **'No announcements at this time'**
+  String get noAnnouncements;
+
+  /// No description provided for @couldNotLoadImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load image'**
+  String get couldNotLoadImage;
+
+  /// No description provided for @retryBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retryBtn;
+
+  /// No description provided for @requestDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Details'**
+  String get requestDetailsTitle;
+
+  /// No description provided for @submissionDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Submission Date:'**
+  String get submissionDateLabel;
+
+  /// No description provided for @lastUpdateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Update:'**
+  String get lastUpdateLabel;
+
+  /// No description provided for @requestDescriptionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Details & Form'**
+  String get requestDescriptionTitle;
+
+  /// No description provided for @attachedFilesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Attached Files ({count})'**
+  String attachedFilesCount(int count);
+
+  /// No description provided for @couldNotOpenAttachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open attachment: {path}'**
+  String couldNotOpenAttachment(String path);
+
+  /// No description provided for @errorOpeningFileMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Error opening file: {error}'**
+  String errorOpeningFileMsg(String error);
+
+  /// No description provided for @payFeesNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay Fees Now'**
+  String get payFeesNow;
+
+  /// No description provided for @requestTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Type'**
+  String get requestTypeLabel;
+
+  /// No description provided for @requestStatusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Status'**
+  String get requestStatusLabel;
+
+  /// No description provided for @rejectionReasonLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejection Reason'**
+  String get rejectionReasonLabel;
+
+  /// No description provided for @staffResponseLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff / Committee Response'**
+  String get staffResponseLabel;
 }
 
 class _AppLocalizationsDelegate

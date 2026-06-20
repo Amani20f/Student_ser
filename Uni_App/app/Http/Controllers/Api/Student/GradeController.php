@@ -65,7 +65,7 @@ class GradeController extends Controller
             );
             
             // Transform and Group by Semester Year/Term
-            $grouped = $grades->groupBy(fn($grade) => $grade->semester->year . ' ' . $grade->semester->term->value)
+            $grouped = $grades->groupBy(fn($grade) => $grade->semester->academic_year . ' ' . $grade->semester->term->value)
                 ->map(fn($semesterGrades) => GradeResource::collection($semesterGrades));
 
             return response()->json([

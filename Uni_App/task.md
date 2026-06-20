@@ -1,12 +1,12 @@
 # Database Restructuring Task List
 
-- [ ] **Identity & Profile (1:1 Logic)**
+- [x] **Identity & Profile (1:1 Logic)**
     - [x] Update `create_users_table` migration (username, role ENUM) <!-- id: 0 -->
     - [x] Update `create_students_table` migration (phone, strict FK) <!-- id: 1 -->
     - [x] Update `User` Model (fillable, casts, relationships) <!-- id: 2 -->
     - [x] Update `Student` Model (fillable, relationships) <!-- id: 3 -->
 
-- [ ] **Static Academic Hierarchy**
+- [x] **Static Academic Hierarchy**
     - [x] Update `create_colleges_table` migration <!-- id: 4 -->
     - [x] Update `create_departments_table` migration <!-- id: 5 -->
     - [x] Update `create_programs_table` migration <!-- id: 6 -->

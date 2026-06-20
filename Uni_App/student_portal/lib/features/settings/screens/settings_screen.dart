@@ -9,11 +9,12 @@ import 'package:university_app/l10n/app_localizations.dart';
 import '../../auth/screens/login_screen.dart';
 import '../../auth/cubit/auth_cubit.dart';
 import 'dart:io';
-import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
+import '../../../../core/utils/normalization.dart';
+
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -23,6 +24,39 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _isLoading = false;
+  bool _isFetchingProfile = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchFreshProfile();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _fetchFreshProfile();
+  }
+
+  Future<void> _fetchFreshProfile() async {
+    if (_isFetchingProfile) return;
+    _isFetchingProfile = true;
+    try {
+      final apiClient = context.read<ApiClient>();
+      final response = await apiClient.get(ApiConstants.updateProfile);
+      final data = response['data'];
+      if (mounted && data != null) {
+        context.read<AuthCubit>().updateUser(data);
+        debugPrint('[SettingsScreen] Profile refreshed — student status: ${data['student']?['status']}');
+      }
+    } catch (e) {
+      debugPrint('Error fetching fresh profile: $e');
+    } finally {
+      _isFetchingProfile = false;
+    }
+  }
 
   Future<void> _updateProfilePhoto(BuildContext context) async {
     try {
@@ -37,7 +71,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ApiConstants.updateProfile,
           fields: {
             '_method': 'PUT',
-            'phone': (context.read<AuthCubit>().state as Authenticated).user['student']['phone'] ?? ''
+            'phone':
+                (context.read<AuthCubit>().state as Authenticated)
+                    .user['student']['phone'] ??
+                '',
           },
           files: [
             await http.MultipartFile.fromPath('profile_photo', file.path),
@@ -47,41 +84,66 @@ class _SettingsScreenState extends State<SettingsScreen> {
         final data = responseData['data'];
         if (mounted) {
           context.read<AuthCubit>().updateUser(data);
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم تحديث الصورة بنجاح')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(AppLocalizations.of(context)!.photoUpdatedSuccess)),
+          );
         }
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.errorPhotoUpdate)));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _showEditPhoneDialog(BuildContext context, String currentPhone) async {
+  Future<void> _showEditPhoneDialog(
+    BuildContext context,
+    String currentPhone,
+  ) async {
     final controller = TextEditingController(text: currentPhone);
     final formKey = GlobalKey<FormState>();
 
     await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('تعديل رقم الهاتف'),
+        title: Text(AppLocalizations.of(context)!.editPhoneNumber),
         content: Form(
           key: formKey,
           child: TextFormField(
             controller: controller,
             keyboardType: TextInputType.phone,
-            decoration: const InputDecoration(
-              labelText: 'رقم الهاتف',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.phoneNumber,
+              border: const OutlineInputBorder(),
             ),
+            onChanged: (value) {
+              final normalized = normalizePhone(value);
+              if (normalized != value) {
+                controller.value = TextEditingValue(
+                  text: normalized,
+                  selection: TextSelection.collapsed(offset: normalized.length),
+                );
+              }
+            },
             validator: (val) {
-              if (val == null || val.trim().isEmpty) return 'الرجاء إدخال رقم الهاتف';
+              if (val == null || val.trim().isEmpty)
+                return 'الرجاء إدخال رقم الهاتف';
+              final normalized = normalizePhone(val);
+              if (!isValidPhoneNumber(normalized)) {
+                return 'رقم الهاتف غير صحيح (8 إلى 15 رقماً)';
+              }
               return null;
             },
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('إلغاء'),
+          ),
           ElevatedButton(
             onPressed: () async {
               if (formKey.currentState!.validate()) {
@@ -97,17 +159,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _updatePhone(BuildContext context, String newPhone) async {
+    final normalizedPhone = normalizePhone(newPhone);
     setState(() => _isLoading = true);
     try {
       final apiClient = context.read<ApiClient>();
-      final response = await apiClient.put(ApiConstants.updateProfile, body: {'phone': newPhone});
+      final response = await apiClient.put(
+        ApiConstants.updateProfile,
+        body: {'phone': normalizedPhone},
+      );
       final data = response['data'];
       if (mounted) {
         context.read<AuthCubit>().updateUser(data);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم تحديث رقم الهاتف بنجاح')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.phoneUpdatedSuccess)),
+        );
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('فشل التحديث: $e')));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.errorPhoneUpdate)));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -127,15 +198,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
         elevation: 0,
       ),
       body: GradientBackground(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 40),
-          child: Column(
+        child: RefreshIndicator(
+          onRefresh: _fetchFreshProfile,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 40),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children:
                 [
                       BlocBuilder<AuthCubit, AuthState>(
                         builder: (context, state) {
-                          if (state is! Authenticated) return const SizedBox.shrink();
+                          if (state is! Authenticated)
+                            return const SizedBox.shrink();
 
                           final user = state.user;
                           final student = user['student'] ?? {};
@@ -149,14 +224,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           final nationality = student['nationality'];
                           final profilePhoto = student['profile_photo_path'];
 
-                          final studentNumber = student['student_number']?.toString();
+                          final studentNumber = student['student_number']
+                              ?.toString();
                           final majorName = student['program']?['name'];
-                          final gpa = student['cumulative_gpa']?.toString();
-                          final creditHours = student['completed_credit_hours']?.toString();
+                          final rawGpa = student['cumulative_gpa'];
+                          final isAr = Localizations.localeOf(context).languageCode == 'ar';
+                          final gpa = rawGpa == null
+                              ? (isAr ? 'غير متوفر' : 'N/A')
+                              : double.parse(rawGpa.toString()).toStringAsFixed(2);
+                          final creditHours = student['completed_credit_hours']
+                              ?.toString();
+                          final remainingHours = student['remaining_credit_hours']
+                              ?.toString();
                           final status = student['status'];
 
-                          Widget? buildTile(IconData icon, String title, String? value, {Color? valueColor, Widget? trailing}) {
-                            if (value == null || value.trim().isEmpty) return null;
+                          Widget? buildTile(
+                            IconData icon,
+                            String title,
+                            String? value, {
+                            Color? valueColor,
+                            Widget? trailing,
+                          }) {
+                            if (value == null || value.trim().isEmpty)
+                              return null;
                             return _buildSettingsTile(
                               context,
                               icon: icon,
@@ -168,7 +258,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           }
 
                           List<Widget> joinTiles(List<Widget?> tiles) {
-                            final validTiles = tiles.whereType<Widget>().toList();
+                            final validTiles = tiles
+                                .whereType<Widget>()
+                                .toList();
                             if (validTiles.isEmpty) return [];
                             final result = <Widget>[];
                             for (int i = 0; i < validTiles.length; i++) {
@@ -195,71 +287,167 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                         backgroundColor: Colors.white,
                                         child: CircleAvatar(
                                           radius: 40,
-                                          backgroundImage: profilePhoto != null && profilePhoto.isNotEmpty ? NetworkImage(profilePhoto) : null,
-                                          child: profilePhoto == null || profilePhoto.isEmpty
-                                            ? Text(
-                                                (fullName != null && fullName.isNotEmpty) ? fullName[0] : 'U',
-                                                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                                              )
-                                            : null,
+                                          backgroundImage:
+                                              profilePhoto != null &&
+                                                  profilePhoto.isNotEmpty
+                                              ? NetworkImage(profilePhoto)
+                                              : null,
+                                          child:
+                                              profilePhoto == null ||
+                                                  profilePhoto.isEmpty
+                                              ? Text(
+                                                  (fullName != null &&
+                                                          fullName.isNotEmpty)
+                                                      ? fullName[0]
+                                                      : 'U',
+                                                  style: const TextStyle(
+                                                    fontSize: 32,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                )
+                                              : null,
                                         ),
                                       ),
                                     ),
                                   ),
-                                  if (_isLoading) const Center(child: CircularProgressIndicator()),
+                                  if (_isLoading)
+                                    const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
                                 ],
                               ),
                               const SizedBox(height: 8),
                               Center(
                                 child: TextButton.icon(
                                   onPressed: () => _updateProfilePhoto(context),
-                                  icon: const Icon(Icons.photo_library_rounded, size: 16),
-                                  label: const Text('اختيار من المعرض', style: TextStyle(fontSize: 12)),
+                                  icon: const Icon(
+                                    Icons.photo_library_rounded,
+                                    size: 16,
+                                  ),
+                                  label: Text(
+                                    AppLocalizations.of(context)!.pickFromGallery,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 16),
 
                               // Personal Info Section
-                              _buildSectionHeader(context, AppLocalizations.of(context)!.personalInfo),
+                              _buildSectionHeader(
+                                context,
+                                AppLocalizations.of(context)!.personalInfo,
+                              ),
                               _buildSettingsContainer(
                                 context,
                                 children: joinTiles([
-                                  buildTile(Icons.person_rounded, AppLocalizations.of(context)!.fullName, fullName),
-                                  buildTile(Icons.email_rounded, AppLocalizations.of(context)!.email, email),
                                   buildTile(
-                                    Icons.phone_rounded, 
-                                    'رقم الهاتف', 
+                                    Icons.person_rounded,
+                                    AppLocalizations.of(context)!.fullName,
+                                    fullName,
+                                  ),
+                                  buildTile(
+                                    Icons.email_rounded,
+                                    AppLocalizations.of(context)!.email,
+                                    email,
+                                  ),
+                                  buildTile(
+                                    Icons.phone_rounded,
+                                    AppLocalizations.of(context)!.phoneNumber,
                                     phone,
                                     trailing: IconButton(
-                                      icon: const Icon(Icons.edit, size: 20, color: Colors.blue),
-                                      onPressed: () => _showEditPhoneDialog(context, phone ?? ''),
+                                      icon: const Icon(
+                                        Icons.edit,
+                                        size: 20,
+                                        color: Colors.blue,
+                                      ),
+                                      onPressed: () => _showEditPhoneDialog(
+                                        context,
+                                        phone ?? '',
+                                      ),
                                       padding: EdgeInsets.zero,
                                       constraints: const BoxConstraints(),
                                     ),
                                   ),
-                                  buildTile(Icons.badge_rounded, AppLocalizations.of(context)!.nationalIdLabel, nationalId),
-                                  buildTile(Icons.calendar_today_rounded, 'تاريخ الميلاد', dob),
-                                  buildTile(Icons.person_outline_rounded, 'الجنس', gender == 'male' ? 'ذكر' : (gender == 'female' ? 'أنثى' : gender)),
-                                  buildTile(Icons.flag_rounded, 'الجنسية', nationality),
+                                  buildTile(
+                                    Icons.badge_rounded,
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.nationalIdLabel,
+                                    nationalId,
+                                  ),
+                                  buildTile(
+                                    Icons.calendar_today_rounded,
+                                    AppLocalizations.of(context)!.dateOfBirthLabel,
+                                    dob,
+                                  ),
+                                  buildTile(
+                                    Icons.person_outline_rounded,
+                                    AppLocalizations.of(context)!.genderLabel,
+                                    gender == 'male'
+                                        ? AppLocalizations.of(context)!.maleLabel
+                                        : (gender == 'female'
+                                              ? AppLocalizations.of(context)!.femaleLabel
+                                              : gender),
+                                  ),
+                                  buildTile(
+                                    Icons.flag_rounded,
+                                    AppLocalizations.of(context)!.nationalityLabel,
+                                    nationality,
+                                  ),
                                 ]),
                               ),
 
                               const SizedBox(height: 24),
 
                               // Academic Info Section
-                              _buildSectionHeader(context, AppLocalizations.of(context)!.academicInfo),
+                              _buildSectionHeader(
+                                context,
+                                AppLocalizations.of(context)!.academicInfo,
+                              ),
                               _buildSettingsContainer(
                                 context,
                                 children: joinTiles([
-                                  buildTile(Icons.numbers_rounded, 'الرقم الجامعي', studentNumber),
-                                  buildTile(Icons.school_rounded, AppLocalizations.of(context)!.majorLabel, majorName),
-                                  buildTile(Icons.star_rate_rounded, AppLocalizations.of(context)!.gpaLabel, gpa, valueColor: const Color(0xFFFBC02D)),
-                                  buildTile(Icons.access_time_rounded, 'الساعات المنجزة', creditHours),
+                                  buildTile(
+                                    Icons.numbers_rounded,
+                                    AppLocalizations.of(context)!.studentNumberLabel,
+                                    studentNumber,
+                                  ),
+                                  buildTile(
+                                    Icons.school_rounded,
+                                    AppLocalizations.of(context)!.majorLabel,
+                                    majorName,
+                                  ),
+                                  buildTile(
+                                    Icons.star_rate_rounded,
+                                    AppLocalizations.of(context)!.gpaLabel,
+                                    gpa,
+                                    valueColor: const Color(0xFFFBC02D),
+                                  ),
+                                  buildTile(
+                                    Icons.access_time_rounded,
+                                    AppLocalizations.of(context)!.completedHours,
+                                    creditHours,
+                                  ),
+                                  buildTile(
+                                    Icons.hourglass_empty_rounded,
+                                    AppLocalizations.of(context)!.remainingHours,
+                                    remainingHours,
+                                  ),
                                   buildTile(
                                     Icons.verified_user_rounded,
                                     AppLocalizations.of(context)!.statusLabel,
-                                    status == 'active' ? AppLocalizations.of(context)!.statusActive : status,
-                                    valueColor: status == 'active' ? Colors.green : Colors.red,
+                                    status?.toString().toLowerCase() == 'active'
+                                        ? AppLocalizations.of(context)!.statusActive
+                                        : (status?.toString().toLowerCase() == 'suspended'
+                                              ? AppLocalizations.of(context)!.statusSuspended
+                                              : (status?.toString().toLowerCase() == 'graduated'
+                                                    ? AppLocalizations.of(context)!.statusGraduated
+                                                    : status)),
+                                    valueColor: status?.toString().toLowerCase() == 'active'
+                                        ? Colors.green
+                                        : (status?.toString().toLowerCase() == 'suspended'
+                                              ? Colors.red
+                                              : Colors.blue),
                                   ),
                                 ]),
                               ),
@@ -388,8 +576,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSectionHeader(BuildContext context, String title) {
     return Padding(
@@ -462,20 +651,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           if (value != null)
-            Text(
-              value,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color:
-                    valueColor ??
-                    theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                fontSize: 14,
+            Flexible(
+              child: Text(
+                value,
+                textAlign: TextAlign.end,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color:
+                      valueColor ??
+                      theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  fontSize: 14,
+                ),
               ),
             ),
-          if (trailing != null) ...[
-            const SizedBox(width: 8),
-            trailing,
-          ],
+          if (trailing != null) ...[const SizedBox(width: 8), trailing],
         ],
       ),
     );
@@ -692,7 +883,6 @@ class _PasswordView extends StatefulWidget {
 }
 
 class _PasswordViewState extends State<_PasswordView> {
-  bool _isObscured = true;
   bool _isEditing = false;
   bool _isCurrentObscured = true;
   bool _isNewObscured = true;
@@ -730,19 +920,25 @@ class _PasswordViewState extends State<_PasswordView> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-    
+
     try {
       final apiClient = context.read<ApiClient>();
-      await apiClient.put('/change-password', body: {
-        'current_password': _currentPasswordController.text,
-        'new_password': _newPasswordController.text,
-        'new_password_confirmation': _confirmPasswordController.text,
-      });
+      await apiClient.put(
+        '/change-password',
+        body: {
+          'current_password': _currentPasswordController.text,
+          'new_password': _newPasswordController.text,
+          'new_password_confirmation': _confirmPasswordController.text,
+        },
+      );
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('تم تغيير كلمة المرور بنجاح', style: TextStyle(color: Colors.white)),
+          content: Text(
+            'تم تغيير كلمة المرور بنجاح',
+            style: TextStyle(color: Colors.white),
+          ),
           backgroundColor: Colors.green,
         ),
       );
@@ -762,7 +958,10 @@ class _PasswordViewState extends State<_PasswordView> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.toString().replaceAll('ApiException: ', ''), style: const TextStyle(color: Colors.white)),
+          content: Text(
+            e.toString().replaceAll('ApiException: ', ''),
+            style: const TextStyle(color: Colors.white),
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -795,31 +994,18 @@ class _PasswordViewState extends State<_PasswordView> {
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  _isObscured ? '••••••••' : 'MySecurePassword123',
+                  '••••••••',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                     fontSize: 14,
-                    letterSpacing: _isObscured ? 2 : 0,
+                    letterSpacing: 2,
                   ),
                 ),
               ),
-              IconButton(
-                icon: Icon(
-                  _isObscured
-                      ? Icons.visibility_rounded
-                      : Icons.visibility_off_rounded,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                ),
-                onPressed: () {
-                  setState(() {
-                    _isObscured = !_isObscured;
-                  });
-                },
-              ),
               if (!_globalIsLocked && !_isEditing)
                 IconButton(
-                  tooltip: null, // Removed per user request
+                  tooltip: null,
                   icon: Icon(Icons.edit_rounded, color: iconColor),
                   onPressed: _toggleEditing,
                 ),
@@ -843,20 +1029,31 @@ class _PasswordViewState extends State<_PasswordView> {
                           obscureText: _isCurrentObscured,
                           keyboardType: TextInputType.visiblePassword,
                           decoration: InputDecoration(
-                            labelText: 'كلمة المرور الحالية',
+                            labelText: AppLocalizations.of(context)!.currentPasswordLabel,
                             prefixIcon: const Icon(Icons.lock),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _isCurrentObscured ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                _isCurrentObscured
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.6),
                               ),
-                              onPressed: () => setState(() => _isCurrentObscured = !_isCurrentObscured),
+                              onPressed: () => setState(
+                                () => _isCurrentObscured = !_isCurrentObscured,
+                              ),
                             ),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             isDense: true,
                           ),
                           validator: (value) {
-                            if (value == null || value.isEmpty) return AppLocalizations.of(context)!.requiredField;
+                            if (value == null || value.isEmpty)
+                              return AppLocalizations.of(
+                                context,
+                              )!.requiredField;
                             return null;
                           },
                         ),
@@ -890,10 +1087,14 @@ class _PasswordViewState extends State<_PasswordView> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return AppLocalizations.of(context)!.requiredField;
+                              return AppLocalizations.of(
+                                context,
+                              )!.requiredField;
                             }
                             if (value.length < 8) {
-                              return AppLocalizations.of(context)!.passwordMinLength;
+                              return AppLocalizations.of(
+                                context,
+                              )!.passwordMinLength;
                             }
                             return null;
                           },
@@ -928,10 +1129,14 @@ class _PasswordViewState extends State<_PasswordView> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return AppLocalizations.of(context)!.requiredField;
+                              return AppLocalizations.of(
+                                context,
+                              )!.requiredField;
                             }
                             if (value != _newPasswordController.text) {
-                              return AppLocalizations.of(context)!.passwordsDoNotMatch;
+                              return AppLocalizations.of(
+                                context,
+                              )!.passwordsDoNotMatch;
                             }
                             return null;
                           },
@@ -952,8 +1157,14 @@ class _PasswordViewState extends State<_PasswordView> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              child: _isLoading 
-                                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
                                   : Text(l10n.save),
                             ),
                           ],

@@ -105,12 +105,22 @@ class _SurveyFormDialogState extends ConsumerState<SurveyFormDialog> {
       }
     }
 
+    final uniqueColleges = {for (var c in colleges) c.id: c}.values.toList();
+    final uniquePrograms = {for (var p in filteredPrograms) p.id: p}.values.toList();
+
+    // Ensure _targetCollegeId is valid
+    if (_targetCollegeId != null && !uniqueColleges.any((c) => c.id == _targetCollegeId)) {
+      _targetCollegeId = null;
+    }
+
+    // Ensure _targetProgramId is valid
+    if (_targetProgramId != null && !uniquePrograms.any((p) => p.id == _targetProgramId)) {
+      _targetProgramId = null;
+    }
+
     // Ensure _targetLevel is valid to avoid Dropdown assertion errors.
-    // If it's not valid, schedule a state update to reset it.
     if (_targetLevel != null && _targetLevel! > maxLevels) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() => _targetLevel = null);
-      });
+      _targetLevel = null;
     }
 
     return AlertDialog(
@@ -146,7 +156,7 @@ class _SurveyFormDialogState extends ConsumerState<SurveyFormDialog> {
                   decoration: const InputDecoration(labelText: 'الكلية المستهدفة (اختياري)', border: OutlineInputBorder()),
                   items: [
                     const DropdownMenuItem<int?>(value: null, child: Text('الكل (غير محدد)')),
-                    ...colleges.map((c) => DropdownMenuItem<int?>(value: c.id, child: Text(c.name))),
+                    ...uniqueColleges.map((c) => DropdownMenuItem<int?>(value: c.id, child: Text(c.name))),
                   ],
                   onChanged: (val) {
                     setState(() {
@@ -163,7 +173,7 @@ class _SurveyFormDialogState extends ConsumerState<SurveyFormDialog> {
                   decoration: const InputDecoration(labelText: 'التخصص المستهدف (اختياري)', border: OutlineInputBorder()),
                   items: [
                     const DropdownMenuItem<int?>(value: null, child: Text('الكل (غير محدد)')),
-                    ...filteredPrograms.map((p) => DropdownMenuItem<int?>(value: p.id, child: Text(p.name))),
+                    ...uniquePrograms.map((p) => DropdownMenuItem<int?>(value: p.id, child: Text(p.name))),
                   ],
                   onChanged: (val) {
                     setState(() {

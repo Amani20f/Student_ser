@@ -87,12 +87,12 @@ class AppealTestDataSeeder extends Seeder
             'appeal_id' => $appeal1->id,
         ]);
 
-        // ── SCENARIO 2: UNDER REVIEW (For Grade Control to see) ──
-        $this->command->info('Seeding Under Review Appeal...');
+        // ── SCENARIO 2: VERIFIED (For Grade Control to see) ──
+        $this->command->info('Seeding Verified Appeal...');
         $appeal2 = Appeal::create([
             'student_id' => $student->id,
             'semester_id' => $semester->id,
-            'status' => AppealStatusEnum::UNDER_REVIEW,
+            'status' => AppealStatusEnum::VERIFIED,
             'student_note' => 'عذر طبي لأداء الامتحان النهائي.',
         ]);
 

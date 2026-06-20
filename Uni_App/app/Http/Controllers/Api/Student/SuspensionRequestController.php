@@ -22,6 +22,9 @@ class SuspensionRequestController extends Controller
     {
         try {
             $student = $request->user()->student;
+            if ($student && $student->status === \App\Enums\StudentStatusEnum::SUSPENDED) {
+                return response()->json(['message' => 'عذراً، لا يمكنك تقديم هذا الطلب لأن حسابك موقوف أكاديمياً.'], 403);
+            }
             $requestType = RequestType::where('slug', 'suspension_of_enrollment')->first();
 
             if (!$requestType || !$requestType->is_active) {

@@ -49,7 +49,13 @@ class NotificationService
         ]);
 
         // Get users with the role
-        $users = User::where('role', $role)->get();
+        if ($role === 'all') {
+            $users = User::all();
+        } elseif ($role === 'all_staff') {
+            $users = User::where('role', '!=', 'student')->get();
+        } else {
+            $users = User::where('role', $role)->get();
+        }
         $userIds = $users->pluck('id')->toArray();
 
         // Attach to the users
@@ -146,7 +152,13 @@ class NotificationService
             'notification_type' => 'message',
         ]);
 
-        $users = User::where('role', $role)->get();
+        if ($role === 'all') {
+            $users = User::all();
+        } elseif ($role === 'all_staff') {
+            $users = User::where('role', '!=', 'student')->get();
+        } else {
+            $users = User::where('role', $role)->get();
+        }
         $userIds = $users->pluck('id')->toArray();
 
         if (!empty($userIds)) {

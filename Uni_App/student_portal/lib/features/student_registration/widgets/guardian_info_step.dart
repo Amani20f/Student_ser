@@ -4,6 +4,7 @@ import 'package:university_app/core/widgets/modern_text_field.dart';
 import 'package:university_app/features/student_registration/cubit/registration_cubit.dart';
 import 'package:university_app/l10n/app_localizations.dart';
 import 'package:university_app/features/student_registration/widgets/step_container.dart';
+import 'package:university_app/core/utils/normalization.dart';
 
 class GuardianInfoStep extends StatefulWidget {
   final GlobalKey<FormState> formKey;
@@ -101,12 +102,22 @@ class _GuardianInfoStepState extends State<GuardianInfoStep> {
                   prefixIcon: Icons.phone_android_rounded,
                   controller: _mobileController,
                   keyboardType: TextInputType.phone,
-                  onChanged: (value) => cubit.updateData(
-                    state.data.copyWith(guardianMobile: value),
-                  ),
+                  onChanged: (value) {
+                    final normalized = normalizePhone(value);
+                    if (normalized != value) {
+                      _mobileController.value = TextEditingValue(
+                        text: normalized,
+                        selection: TextSelection.collapsed(offset: normalized.length),
+                      );
+                    }
+                    cubit.updateData(
+                      state.data.copyWith(guardianMobile: normalized),
+                    );
+                  },
                   validator: (value) {
                     if (value == null || value.isEmpty) return l10n.requiredField;
-                    if (!RegExp(r'^\+?[0-9]{8,15}$').hasMatch(value)) return l10n.invalidMobileNumber;
+                    final normalized = normalizePhone(value);
+                    if (!isValidPhoneNumber(normalized)) return l10n.invalidMobileNumber;
                     return null;
                   },
                 ),

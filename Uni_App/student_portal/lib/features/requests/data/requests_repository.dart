@@ -127,11 +127,6 @@ class RequestsRepository {
       );
     }
 
-    print('=====================================');
-    print('REPOSITORY FINAL FIELDS SENT TO LARAVEL:');
-    print(fields);
-    print('Files sent: ${files.map((f) => f.field).toList()}');
-    print('=====================================');
 
     return await _apiClient.postMultipart(
       ApiConstants.serviceRequests,
@@ -244,11 +239,13 @@ class RequestsRepository {
     required String purpose,
     required String refNumber,
     required File receiptFile,
+    String? paymentCategory,
   }) async {
     final fields = <String, String>{
       'amount': amount.toString(),
       'purpose': purpose,
       'ref_number': refNumber,
+      if (paymentCategory != null) 'payment_category': paymentCategory,
     };
 
     final files = [

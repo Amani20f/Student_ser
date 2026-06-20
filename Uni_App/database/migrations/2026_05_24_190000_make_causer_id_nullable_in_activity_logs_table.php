@@ -12,8 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Use DB statement to drop NOT NULL constraint on causer_id
-        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') { \Illuminate\Support\Facades\DB::statement('ALTER TABLE activity_logs ALTER COLUMN causer_id DROP NOT NULL'); }
+        Schema::table('activity_logs', function (Blueprint $table) {
+            $table->unsignedBigInteger('causer_id')->nullable()->change();
+        });
     }
 
     /**
@@ -21,7 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Re-apply NOT NULL constraint
-        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') { \Illuminate\Support\Facades\DB::statement('ALTER TABLE activity_logs ALTER COLUMN causer_id SET NOT NULL'); }
+        Schema::table('activity_logs', function (Blueprint $table) {
+            $table->unsignedBigInteger('causer_id')->nullable(false)->change();
+        });
     }
 };

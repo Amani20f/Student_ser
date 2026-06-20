@@ -683,4 +683,380 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get paymentReceiptLabel => 'سند الرسوم';
+
+  @override
+  String get navSurveys => 'الاستبيانات';
+
+  @override
+  String studentIdWithNumber(Object id) {
+    return 'الرقم الجامعي: $id';
+  }
+
+  @override
+  String get relatedRequestNotFound => 'الطلب المرتبط غير موجود أو تم حذفه.';
+
+  @override
+  String get errorLoadingRequestDetails =>
+      'خطأ أثناء تحميل تفاصيل الطلب. يرجى المحاولة لاحقاً.';
+
+  @override
+  String get errorGeneric => 'حدث خطأ غير متوقع. يرجى المحاولة لاحقاً.';
+
+  @override
+  String get errorClearNotifications =>
+      'فشل مسح الإشعارات. يرجى المحاولة لاحقاً.';
+
+  @override
+  String get errorPhotoUpdate => 'فشل تحديث الصورة. يرجى المحاولة لاحقاً.';
+
+  @override
+  String get errorPhoneUpdate => 'فشل تحديث رقم الهاتف. يرجى المحاولة لاحقاً.';
+
+  @override
+  String get photoUpdatedSuccess => 'تم تحديث الصورة بنجاح';
+
+  @override
+  String get phoneUpdatedSuccess => 'تم تحديث رقم الهاتف بنجاح';
+
+  @override
+  String get editPhoneNumber => 'تعديل رقم الهاتف';
+
+  @override
+  String get pickFromGallery => 'اختيار من المعرض';
+
+  @override
+  String get dateOfBirthLabel => 'تاريخ الميلاد';
+
+  @override
+  String get genderLabel => 'الجنس';
+
+  @override
+  String get maleLabel => 'ذكر';
+
+  @override
+  String get femaleLabel => 'أنثى';
+
+  @override
+  String get nationalityLabel => 'الجنسية';
+
+  @override
+  String get studentNumberLabel => 'الرقم الجامعي';
+
+  @override
+  String get completedHours => 'الساعات المنجزة';
+
+  @override
+  String get remainingHours => 'الساعات المتبقية';
+
+  @override
+  String get currentPasswordLabel => 'كلمة المرور الحالية';
+
+  @override
+  String get passwordChangedSuccessMsg => 'تم تغيير كلمة المرور بنجاح';
+
+  @override
+  String get statusSuspended => 'موقوف';
+
+  @override
+  String get statusGraduated => 'خريج';
+
+  @override
+  String get gradesAndResults => 'الدرجات والنتائج';
+
+  @override
+  String academicIdLabel(String id) {
+    return 'الرقم الأكاديمي: $id';
+  }
+
+  @override
+  String get cumulativeGpa => 'المعدل التراكمي';
+
+  @override
+  String get semesterGpa => 'المعدل الفصلي';
+
+  @override
+  String get semesterHoursLabel => 'ساعات معتمدة';
+
+  @override
+  String get academicSemester => 'الفصل الدراسي الأكاديمي';
+
+  @override
+  String get noSemestersRegistered => 'لا توجد فصول دراسية مسجلة';
+
+  @override
+  String get noGradesForSemester => 'لا توجد درجات متوفرة لهذا الفصل';
+
+  @override
+  String get pleaseSelectSemester => 'يرجى اختيار الفصل الدراسي لعرض الدرجات';
+
+  @override
+  String get courseNameCol => 'اسم المقرر';
+
+  @override
+  String get courseworkCol => 'الأعمال الفصلية';
+
+  @override
+  String get midtermCol => 'امتحان نصفي';
+
+  @override
+  String get finalExamCol => 'الدور الأول';
+
+  @override
+  String get controlGradeCol => 'درجة الكنترول';
+
+  @override
+  String get mercyGradeCol => 'درجة الرأفة';
+
+  @override
+  String get firstRoundStatusCol => 'حالة دور أول';
+
+  @override
+  String get retakeCol => 'الدور الثاني';
+
+  @override
+  String get retakeStatusCol => 'حالة الدور الثاني';
+
+  @override
+  String get retakeYearCol => 'سنة الإعادة';
+
+  @override
+  String get gpaCol => 'المعدل';
+
+  @override
+  String get gradeCol => 'التقدير';
+
+  @override
+  String get passedStatus => 'ناجح';
+
+  @override
+  String get failedStatus => 'راسب';
+
+  @override
+  String get incompleteStatus => 'غير مكتمل';
+
+  @override
+  String get surveyOpened => 'تم فتح الاستبيان';
+
+  @override
+  String get openSurvey => 'فتح الاستبيان';
+
+  @override
+  String get viewGrades => 'عرض الدرجات';
+
+  @override
+  String get pleaseCompleteSurveyFirst =>
+      'يرجى فتح الاستبيان وتعبئته أولاً لتفعيل زر عرض الدرجات';
+
+  @override
+  String get surveyCompletedSuccess => 'تم تعبئة الاستبيان بنجاح — هذه درجاتك';
+
+  @override
+  String get failedToOpenSurveyLink => 'تعذر فتح رابط الاستبيان';
+
+  @override
+  String get errorLoadingGrades =>
+      'خطأ في تحميل الدرجات. يرجى المحاولة لاحقاً.';
+
+  @override
+  String get surveysTitle => 'الاستبيانات';
+
+  @override
+  String get noOptionalSurveys => 'لا توجد استبيانات اختيارية في الوقت الحالي';
+
+  @override
+  String get noTitle => 'بدون عنوان';
+
+  @override
+  String get surveyViewed => 'تم الاطلاع';
+
+  @override
+  String get surveyNew => 'جديد';
+
+  @override
+  String get openSurveyBtn => 'فتح الاستبيان';
+
+  @override
+  String get errorLoadingSurveys =>
+      'خطأ في تحميل الاستبيانات. يرجى المحاولة لاحقاً.';
+
+  @override
+  String get failedToOpenLink => 'تعذر فتح الرابط. الرجاء المحاولة مرة أخرى.';
+
+  @override
+  String get errorOpeningSurvey => 'حدث خطأ أثناء فتح الاستبيان';
+
+  @override
+  String get surveyRecordedSuccess => 'تم تسجيل الاستبيان بنجاح';
+
+  @override
+  String get requestDetails => 'تفاصيل الطلب';
+
+  @override
+  String get referenceNumberShort => 'الرقم المرجعي';
+
+  @override
+  String get requestType => 'نوع الطلب';
+
+  @override
+  String get requestStatus => 'حالة الطلب';
+
+  @override
+  String get paymentStatusLabel => 'حالة السداد';
+
+  @override
+  String get requestDetailsAndForm => 'تفاصيل ونموذج الطلب';
+
+  @override
+  String get rejectionReason => 'سبب الرفض';
+
+  @override
+  String get staffResponse => 'رد الموظف / اللجنة';
+
+  @override
+  String attachedFiles(Object count) {
+    return 'المرفقات المرفقة ($count)';
+  }
+
+  @override
+  String get failedToOpenAttachment => 'تعذر فتح المرفق';
+
+  @override
+  String get errorOpeningFile => 'خطأ أثناء فتح الملف. يرجى المحاولة لاحقاً.';
+
+  @override
+  String get payNow => 'سداد الرسوم الآن';
+
+  @override
+  String get statusApproved => 'مقبول';
+
+  @override
+  String get statusRejected => 'مرفوض';
+
+  @override
+  String get statusPending => 'قيد المراجعة';
+
+  @override
+  String get statusRatified => 'معتمد مالياً';
+
+  @override
+  String get statusUnderReview => 'تحت الدراسة';
+
+  @override
+  String get statusPaid => 'مدفوع';
+
+  @override
+  String get paymentPaid => 'مدفوع';
+
+  @override
+  String get paymentPendingVerification => 'قيد التحقق';
+
+  @override
+  String get paymentRejected => 'مرفوض الدفع';
+
+  @override
+  String get paymentUnpaid => 'غير مدفوع';
+
+  @override
+  String get submitNewRequest => 'تقديم طلب جديد';
+
+  @override
+  String get myPreviousRequests => 'طلباتي السابقة';
+
+  @override
+  String get studentServicesPortal => 'بوابة الخدمات الطلابية';
+
+  @override
+  String get submitNewRequestTitle => 'تقديم طلب جديد';
+
+  @override
+  String get officialFormsSystem => 'نظام إدارة النماذج الرسمية للطلاب';
+
+  @override
+  String get errorLoadingRequests =>
+      'حدث خطأ أثناء تحميل الطلبات. يرجى المحاولة لاحقاً.';
+
+  @override
+  String get failedToLoadRequests => 'فشل تحميل الطلبات';
+
+  @override
+  String get retry => 'إعادة المحاولة';
+
+  @override
+  String get noPreviousRequests => 'لا توجد طلبات سابقة';
+
+  @override
+  String get noRequestsSubmitted => 'لم تقم بتقديم أي طلبات حتى الآن.';
+
+  @override
+  String get serviceRequest => 'طلب خدمة';
+
+  @override
+  String get submissionDate => 'تاريخ التقديم';
+
+  @override
+  String get lastUpdate => 'آخر تحديث';
+
+  @override
+  String get errorSubmission => 'فشل الإرسال. يرجى المحاولة لاحقاً.';
+
+  @override
+  String get errorLoadingAcademicData =>
+      'فشل تحميل البيانات الأكاديمية. يرجى المحاولة لاحقاً.';
+
+  @override
+  String get totalGradeCol => 'الدرجة النهائية';
+
+  @override
+  String get announcementsTitle => 'الإعلانات';
+
+  @override
+  String get noAnnouncements => 'لا توجد إعلانات حالياً';
+
+  @override
+  String get couldNotLoadImage => 'تعذر تحميل الصورة';
+
+  @override
+  String get retryBtn => 'إعادة المحاولة';
+
+  @override
+  String get requestDetailsTitle => 'تفاصيل الطلب';
+
+  @override
+  String get submissionDateLabel => 'تاريخ التقديم:';
+
+  @override
+  String get lastUpdateLabel => 'آخر تحديث:';
+
+  @override
+  String get requestDescriptionTitle => 'تفاصيل الطلب والنموذج';
+
+  @override
+  String attachedFilesCount(int count) {
+    return 'الملفات المرفقة ($count)';
+  }
+
+  @override
+  String couldNotOpenAttachment(String path) {
+    return 'تعذر فتح المرفق: $path';
+  }
+
+  @override
+  String errorOpeningFileMsg(String error) {
+    return 'خطأ أثناء فتح الملف: $error';
+  }
+
+  @override
+  String get payFeesNow => 'سداد الرسوم الآن';
+
+  @override
+  String get requestTypeLabel => 'نوع الطلب';
+
+  @override
+  String get requestStatusLabel => 'حالة الطلب';
+
+  @override
+  String get rejectionReasonLabel => 'سبب الرفض';
+
+  @override
+  String get staffResponseLabel => 'رد الموظف / اللجنة';
 }

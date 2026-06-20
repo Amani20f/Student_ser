@@ -8,6 +8,10 @@ class StoreAppealRequest extends FormRequest
 {
     public function authorize(): bool
     {
+        $student = $this->user()?->student;
+        if ($student && $student->status === \App\Enums\StudentStatusEnum::SUSPENDED) {
+            return false;
+        }
         return true;
     }
 
@@ -34,7 +38,7 @@ class StoreAppealRequest extends FormRequest
                         ->exists();
 
                     if ($exists) {
-                        $fail("An appeal for this course in the selected semester already exists.");
+                        $fail("A grievance for this course in the selected semester already exists.");
                     }
                 },
             ],

@@ -88,7 +88,23 @@ class StudySchedulesPage extends ConsumerWidget {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, st) => Center(child: Text('${l10n.error}: $err')),
+              error: (err, st) {
+                final errStr = err.toString();
+                final isAr = Localizations.localeOf(context).languageCode == 'ar';
+                if (errStr.contains('right roles') || errStr.contains('right permissions') || errStr.contains('403') || errStr.contains('unauthorized')) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Text(
+                        isAr ? 'ليس لديك صلاحية الوصول إلى هذه الصفحة' : 'You do not have permission to access this page',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  );
+                }
+                return Center(child: Text('${l10n.error}: $err'));
+              },
             ),
           ),
         ],
@@ -140,19 +156,6 @@ class StudySchedulesPage extends ConsumerWidget {
             ),
             loading: () => const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
             error: (_, __) => const Text('Error loading semesters'),
-          ),
-
-          // Level Filter
-          DropdownButton<int>(
-            value: filters['level'] == -1 ? null : filters['level'],
-            hint: Text(l10n.allLevels ),
-            items: [
-              DropdownMenuItem(value: -1, child: Text(l10n.allLevels )),
-              ...List.generate(8, (index) => index + 1).map((lvl) => DropdownMenuItem(value: lvl, child: Text('${l10n.level} $lvl'))),
-            ],
-            onChanged: (val) {
-              ref.read(studyScheduleFiltersProvider.notifier).update((state) => {...state, 'level': val ?? -1});
-            },
           ),
         ],
       ),
@@ -244,7 +247,6 @@ class StudySchedulesPage extends ConsumerWidget {
     final isEdit = schedule != null;
     
     int? selectedProgram = schedule?.programId;
-    int? selectedSemester = schedule?.semesterId;
     int? selectedLevel = schedule?.level;
     final notesCtrl = TextEditingController(text: schedule?.notes);
     
@@ -256,7 +258,6 @@ class StudySchedulesPage extends ConsumerWidget {
         return StatefulBuilder(
           builder: (context, setState) {
             final programsAsync = ref.watch(publicProgramsProvider);
-            final semestersAsync = ref.watch(dynamicSemestersProvider);
 
             return AlertDialog(
               title: Text(isEdit ? (l10n.editSchedule ) : (l10n.addStudySchedule )),

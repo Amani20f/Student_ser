@@ -18,6 +18,22 @@ final publicProgramsProvider = FutureProvider.autoDispose<List<ProgramModel>>((r
   return data.map((e) => ProgramModel.fromJson(e)).toList();
 });
 
+/// Staff-accessible programs provider for grade_control role
+/// Tries /staff/programs first, falls back to public /programs
+final staffProgramsProvider = FutureProvider.autoDispose<List<ProgramModel>>((ref) async {
+  final apiClient = ref.watch(apiClientProvider);
+  try {
+    final response = await apiClient.get(ApiConstants.staffPrograms);
+    final List data = response['data'] ?? [];
+    return data.map((e) => ProgramModel.fromJson(e)).toList();
+  } catch (_) {
+    // Fallback to public programs endpoint
+    final response = await apiClient.get('/programs');
+    final List data = response['data'] ?? [];
+    return data.map((e) => ProgramModel.fromJson(e)).toList();
+  }
+});
+
 class ProgramsNotifier extends StateNotifier<AsyncValue<void>> {
   final ApiClient apiClient;
   final Ref ref;

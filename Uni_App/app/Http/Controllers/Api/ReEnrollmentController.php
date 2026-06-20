@@ -33,11 +33,20 @@ class ReEnrollmentController extends Controller
                 ], 404);
             }
 
+            $attachments = [];
+            if ($request->hasFile('suspension_form')) {
+                $attachments['suspension_form'] = $request->file('suspension_form')->store('requests', 'public');
+            }
+            if ($request->hasFile('university_id')) {
+                $attachments['university_id'] = $request->file('university_id')->store('requests', 'public');
+            }
+
+            $data = $request->only(['request_type_id', 'description']);
+            $data['attachment'] = $attachments;
+
             $reEnrollmentRequest = $this->reEnrollmentService->submitReEnrollment(
-                data: $request->only(['request_type_id', 'description']),
-                student: $student,
-                suspensionForm: $request->file('suspension_form'),
-                universityId: $request->file('university_id')
+                data: $data,
+                student: $student
             );
 
             return response()->json([

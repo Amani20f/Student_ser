@@ -371,13 +371,13 @@ abstract class AppLocalizations {
   /// No description provided for @firstColumn.
   ///
   /// In en, this message translates to:
-  /// **'First'**
+  /// **'Coursework'**
   String get firstColumn;
 
   /// No description provided for @secondColumn.
   ///
   /// In en, this message translates to:
-  /// **'Second'**
+  /// **'Second Round'**
   String get secondColumn;
 
   /// No description provided for @midtermColumn.
@@ -389,13 +389,13 @@ abstract class AppLocalizations {
   /// No description provided for @finalColumn.
   ///
   /// In en, this message translates to:
-  /// **'Final'**
+  /// **'First Round'**
   String get finalColumn;
 
   /// No description provided for @totalColumn.
   ///
   /// In en, this message translates to:
-  /// **'Total'**
+  /// **'Final Grade'**
   String get totalColumn;
 
   /// No description provided for @gpaColumn.
@@ -878,22 +878,52 @@ abstract class AppLocalizations {
   /// **'New Password'**
   String get newPassword;
 
+  /// No description provided for @currentPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Password'**
+  String get currentPassword;
+
+  /// No description provided for @confirmNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm New Password'**
+  String get confirmNewPassword;
+
+  /// No description provided for @passwordMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'New passwords do not match'**
+  String get passwordMismatch;
+
+  /// No description provided for @currentPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password is required'**
+  String get currentPasswordRequired;
+
+  /// No description provided for @newPasswordLengthError.
+  ///
+  /// In en, this message translates to:
+  /// **'New password must be at least 8 characters'**
+  String get newPasswordLengthError;
+
   /// No description provided for @gradeAppeals.
   ///
   /// In en, this message translates to:
-  /// **'Grade Appeals'**
+  /// **'Grade Grievances'**
   String get gradeAppeals;
 
   /// No description provided for @appealDetails.
   ///
   /// In en, this message translates to:
-  /// **'Appeal Details'**
+  /// **'Grievance Details'**
   String get appealDetails;
 
   /// No description provided for @underReviewAppeals.
   ///
   /// In en, this message translates to:
-  /// **'Under Review Appeals'**
+  /// **'Under Review Grievances'**
   String get underReviewAppeals;
 
   /// No description provided for @studentNote.
@@ -923,49 +953,49 @@ abstract class AppLocalizations {
   /// No description provided for @approveAppeal.
   ///
   /// In en, this message translates to:
-  /// **'Approve Appeal'**
+  /// **'Approve Grievance'**
   String get approveAppeal;
 
   /// No description provided for @rejectAppeal.
   ///
   /// In en, this message translates to:
-  /// **'Reject Appeal'**
+  /// **'Reject Grievance'**
   String get rejectAppeal;
 
   /// No description provided for @appealApproved.
   ///
   /// In en, this message translates to:
-  /// **'Appeal approved successfully'**
+  /// **'Grievance approved successfully'**
   String get appealApproved;
 
   /// No description provided for @appealRejected.
   ///
   /// In en, this message translates to:
-  /// **'Appeal rejected successfully'**
+  /// **'Grievance rejected successfully'**
   String get appealRejected;
 
   /// No description provided for @failedToLoadAppeals.
   ///
   /// In en, this message translates to:
-  /// **'Failed to load appeals'**
+  /// **'Failed to load grievances'**
   String get failedToLoadAppeals;
 
   /// No description provided for @noAppealsUnderReview.
   ///
   /// In en, this message translates to:
-  /// **'No appeals are currently under review'**
+  /// **'No grievances are currently under review'**
   String get noAppealsUnderReview;
 
   /// No description provided for @confirmApproveAppeal.
   ///
   /// In en, this message translates to:
-  /// **'Are you sure you want to approve this appeal and update the student\'s grades?'**
+  /// **'Are you sure you want to approve this grievance and update the student\'s grades?'**
   String get confirmApproveAppeal;
 
   /// No description provided for @confirmRejectAppeal.
   ///
   /// In en, this message translates to:
-  /// **'Are you sure you want to reject this appeal?'**
+  /// **'Are you sure you want to reject this grievance?'**
   String get confirmRejectAppeal;
 
   /// No description provided for @confirmApprovePayment.
@@ -1313,7 +1343,7 @@ abstract class AppLocalizations {
   /// No description provided for @gradeAppeal.
   ///
   /// In en, this message translates to:
-  /// **'Grade Appeal'**
+  /// **'Grade Grievance'**
   String get gradeAppeal;
 
   /// No description provided for @specializationLabel.

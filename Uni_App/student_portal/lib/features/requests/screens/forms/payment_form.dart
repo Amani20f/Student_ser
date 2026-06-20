@@ -79,16 +79,19 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
           displayName: 'تظلم — 10 دولار',
           amount: '10',
           requestId: '1',
+          serviceType: 'appeal',
         ),
         PaymentItem(
           displayName: 'إيقاف قيد — 10 دولار',
           amount: '10',
           requestId: '2',
+          serviceType: 'stop_enrollment',
         ),
         PaymentItem(
           displayName: 'إعادة قيد — 10 دولار',
           amount: '10',
           requestId: '3',
+          serviceType: 're_enrollment',
         ),
         PaymentItem(
           displayName: 'رسوم البطاقة الجامعية — 5 دولار',
@@ -176,6 +179,7 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
         purpose: _paymentTypeController.text.trim(),
         refNumber: _refNumberController.text.trim(),
         receiptFile: receiptFile,
+        paymentCategory: _selectedPaymentItem?.serviceType,
       );
 
       if (mounted) {
@@ -198,8 +202,9 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final errorMsg = e.toString().replaceAll('ApiException:', '').replaceAll('Exception:', '').trim();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('فشل الإرسال: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -271,7 +276,16 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
                   label: 'الرقم المرجعي للطلب (REF-XXXXXX)',
                   controller: _refNumberController,
                   hint: 'أدخل الرقم المرجعي الموجود في رسالة التأكيد',
-                  validator: (val) => val == null || val.trim().isEmpty ? 'مطلوب' : null,
+                  validator: (val) {
+                    final isRequired = _selectedPaymentItem != null &&
+                        (_selectedPaymentItem!.serviceType == 'appeal' ||
+                         _selectedPaymentItem!.serviceType == 'stop_enrollment' ||
+                         _selectedPaymentItem!.serviceType == 're_enrollment');
+                    if (isRequired && (val == null || val.trim().isEmpty)) {
+                      return 'مطلوب';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 16),
                 LabeledTextField(

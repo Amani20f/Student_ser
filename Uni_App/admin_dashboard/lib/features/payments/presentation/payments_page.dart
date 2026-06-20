@@ -11,6 +11,7 @@ import '../../../core/models/filter_definition.dart';
 import '../../../core/widgets/filter_bar.dart';
 import '../../../core/utils/status_helper.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../programs/providers/programs_provider.dart';
 
 class PaymentsPage extends ConsumerWidget {
   const PaymentsPage({super.key});
@@ -90,6 +91,22 @@ class PaymentsPage extends ConsumerWidget {
                 }
 
                 if (payments.isEmpty) {
+                  final isAr = Localizations.localeOf(context).languageCode == 'ar';
+                  final statusVal = filters['status'] as String? ?? '';
+                  String emptyMessage;
+                  
+                  if (statusVal == 'pending') {
+                    emptyMessage = isAr ? 'لا توجد عمليات دفع قيد الانتظار' : 'No pending payments';
+                  } else if (statusVal == 'verified') {
+                    emptyMessage = isAr ? 'لا توجد عمليات دفع معتمدة' : 'No verified payments';
+                  } else if (statusVal == 'approved') {
+                    emptyMessage = isAr ? 'لا توجد عمليات دفع مقبولة' : 'No approved payments';
+                  } else if (statusVal == 'rejected') {
+                    emptyMessage = isAr ? 'لا توجد عمليات دفع مرفوضة' : 'No rejected payments';
+                  } else {
+                    emptyMessage = isAr ? 'لم يتم العثور على عمليات دفع' : 'No payments found';
+                  }
+
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -98,7 +115,7 @@ class PaymentsPage extends ConsumerWidget {
                             color: cs.primary, size: 64),
                         const SizedBox(height: 16),
                         Text(
-                          l10n.noPendingPayments,
+                          emptyMessage,
                           style: tt.titleMedium?.copyWith(
                             color: cs.onSurface.withAlpha(140),
                           ),
@@ -166,6 +183,12 @@ class PaymentsPage extends ConsumerWidget {
 
   Widget _buildFilterBar(
       BuildContext context, WidgetRef ref, ColorScheme cs, TextTheme tt, AppLocalizations l10n) {
+    final programsAsync = ref.watch(publicProgramsProvider);
+    final programOptions = programsAsync.maybeWhen(
+      data: (programs) => programs.map((p) => FilterValue(label: p.name, value: p.id)).toList(),
+      orElse: () => <FilterValue>[],
+    );
+
     return FilterBar(
       filters: [
         FilterDefinition(
@@ -179,16 +202,12 @@ class PaymentsPage extends ConsumerWidget {
             FilterValue(label: StatusHelper.localize(context, 'rejected'), value: 'rejected'),
           ],
         ),
-        const FilterDefinition(
+        FilterDefinition(
           id: 'program_id',
           label: 'Specialization',
           type: FilterType.dropdown,
           icon: Icons.school_outlined,
-          options: [
-            FilterValue(label: 'Computer Science', value: 1),
-            FilterValue(label: 'Electrical Engineering', value: 2),
-            FilterValue(label: 'Business Administration', value: 3),
-          ],
+          options: programOptions,
         ),
         const FilterDefinition(
           id: 'current_level',
@@ -311,22 +330,23 @@ class PaymentsPage extends ConsumerWidget {
   }
 
   void _confirmApproval(
-      BuildContext context, WidgetRef ref, PaymentModel payment) {
-    final l10n = AppLocalizations.of(context)!;
+      BuildContext pageContext, WidgetRef ref, PaymentModel payment) {
+    final l10n = AppLocalizations.of(pageContext)!;
+    final pageMessenger = ScaffoldMessenger.of(pageContext);
 
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
+      context: pageContext,
+      builder: (dialogContext) => AlertDialog(
         title: Text(l10n.verify),
         content: Text(l10n.confirmApprovePayment),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: Text(l10n.cancel)),
           FilledButton(
             onPressed: () async {
-              Navigator.pop(context);
-              await _processPayment(context, ref, payment, 'approve');
+              Navigator.pop(dialogContext);
+              await _processPayment(pageContext, pageMessenger, ref, payment, 'approve');
             },
             child: Text(l10n.approve),
           ),
@@ -336,13 +356,14 @@ class PaymentsPage extends ConsumerWidget {
   }
 
   void _showRejectDialog(
-      BuildContext context, WidgetRef ref, PaymentModel payment) {
-    final l10n = AppLocalizations.of(context)!;
+      BuildContext pageContext, WidgetRef ref, PaymentModel payment) {
+    final l10n = AppLocalizations.of(pageContext)!;
+    final pageMessenger = ScaffoldMessenger.of(pageContext);
     final controller = TextEditingController();
 
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
+      context: pageContext,
+      builder: (dialogContext) => AlertDialog(
         title: Text(l10n.rejectPayment),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -362,15 +383,15 @@ class PaymentsPage extends ConsumerWidget {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: Text(l10n.cancel)),
           FilledButton(
             style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.error),
+                backgroundColor: Theme.of(pageContext).colorScheme.error),
             onPressed: () async {
               if (controller.text.isEmpty) return;
-              Navigator.pop(context);
-              await _processPayment(context, ref, payment, 'reject',
+              Navigator.pop(dialogContext);
+              await _processPayment(pageContext, pageMessenger, ref, payment, 'reject',
                   notes: controller.text);
             },
             child: Text(l10n.reject),
@@ -381,9 +402,9 @@ class PaymentsPage extends ConsumerWidget {
   }
 
   Future<void> _processPayment(
-      BuildContext context, WidgetRef ref, PaymentModel payment, String action,
+      BuildContext pageContext, ScaffoldMessengerState pageMessenger, WidgetRef ref, PaymentModel payment, String action,
       {String? notes}) async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(pageContext)!;
     final repo = ref.read(paymentRepositoryProvider);
 
     try {
@@ -393,20 +414,20 @@ class PaymentsPage extends ConsumerWidget {
         await repo.rejectPayment(payment.id, notes!);
       }
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      if (pageContext.mounted) {
+        pageMessenger.showSnackBar(
           SnackBar(
             content: Text(action == 'approve'
-                ? l10n.paymentVerifiedSuccess
-                : l10n.paymentRejected),
+                ? 'تم اعتماد عملية الدفع بنجاح.'
+                : 'تم رفض عملية الدفع.'),
             backgroundColor: action == 'approve' ? Colors.green : Colors.orange,
           ),
         );
         ref.invalidate(allPaymentsProvider);
       }
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      if (pageContext.mounted) {
+        pageMessenger.showSnackBar(
           SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }

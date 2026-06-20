@@ -29,14 +29,21 @@ class UserResource extends JsonResource
                     'student_number' => $this->student->student_number,
                     'phone' => $this->student->phone,
                     'current_level' => (int) $this->student->current_level,
-                    'status' => $this->student->status,
+                    'status' => $this->student->status instanceof \App\Enums\StudentStatusEnum ? $this->student->status->value : (string)$this->student->status,
                     'national_id' => $this->student->national_id,
                     'gender' => $this->student->gender,
                     'nationality' => $this->student->nationality,
                     'date_of_birth' => $this->student->date_of_birth?->toDateString(),
                     'profile_photo_path' => $this->student->profile_photo_path,
-                    'cumulative_gpa' => (float) $this->student->cumulative_gpa,
+                    'cumulative_gpa' => $this->student->grades()->count() === 0 ? null : (float) $this->student->cumulative_gpa,
                     'completed_credit_hours' => (int) $this->student->completed_credit_hours,
+                    'remaining_credit_hours' => (int) max(0, ($this->student->program ? $this->student->program->courses()->sum('credit_hours') : 0) - (int) $this->student->completed_credit_hours),
+                    'approved_suspensions_count' => (int) $this->student->requests()
+                        ->whereHas('requestType', function ($q) {
+                            $q->whereIn('slug', ['suspension_of_enrollment', 'tagyl-dras']);
+                        })
+                        ->where('status', \App\Enums\RequestStatusEnum::APPROVED->value)
+                        ->count(),
                     'program' => $this->student->program ? [
                         'id' => $this->student->program->id,
                         'name' => $this->student->program->name,

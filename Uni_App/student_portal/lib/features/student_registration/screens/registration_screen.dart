@@ -43,6 +43,8 @@ class _RegistrationViewState extends State<RegistrationView> {
     _scrollController = ScrollController();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // تصفير الحالة دائماً عند فتح شاشة التسجيل من جديد
+      context.read<RegistrationCubit>().resetState();
       _showRegistrationWarningDialog();
     });
   }

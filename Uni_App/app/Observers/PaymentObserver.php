@@ -34,11 +34,20 @@ class PaymentObserver
         // Special attention to status changes (fraud detection)
         $changes = $payment->getChanges();
         
+        $action = 'updated';
+        if ($payment->wasChanged('status')) {
+            if ($payment->status === \App\Enums\PaymentStatusEnum::VERIFIED) {
+                $action = 'payment_verified';
+            } elseif ($payment->status === \App\Enums\PaymentStatusEnum::REJECTED) {
+                $action = 'payment_rejected';
+            }
+        }
+
         $this->activityLogRepository->create([
             'causer_id' => auth()->id(),
             'model_type' => Payment::class,
             'subject_id' => $payment->id,
-            'action' => 'updated',
+            'action' => $action,
             'old_values' => $payment->getOriginal(),
             'new_values' => $changes,
         ]);

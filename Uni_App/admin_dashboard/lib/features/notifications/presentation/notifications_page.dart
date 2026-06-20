@@ -299,10 +299,17 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
         DropdownMenuItem(value: 'accountant', child: Text(l10n.roleAccountant)),
         DropdownMenuItem(value: 'grade_control', child: Text(l10n.roleGradeControl)),
       ];
-    } else if (userRole == 'accountant' || userRole == 'grade_control') {
+    } else if (userRole == 'accountant') {
       dropdownItems = [
         DropdownMenuItem(value: 'admin', child: Text(l10n.roleAdmin)),
         DropdownMenuItem(value: 'student_affairs', child: Text(l10n.roleStaffAffairs)),
+        DropdownMenuItem(value: 'grade_control', child: Text(l10n.roleGradeControl)),
+      ];
+    } else if (userRole == 'grade_control') {
+      dropdownItems = [
+        DropdownMenuItem(value: 'admin', child: Text(l10n.roleAdmin)),
+        DropdownMenuItem(value: 'student_affairs', child: Text(l10n.roleStaffAffairs)),
+        DropdownMenuItem(value: 'accountant', child: Text(l10n.roleAccountant)),
       ];
     }
 
@@ -313,9 +320,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
     }
 
     if (!dropdownItems.any((item) => item.value == _targetRole)) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() => _targetRole = dropdownItems.first.value!);
-      });
+      _targetRole = dropdownItems.first.value!;
     }
 
     final usersAsync = ref.watch(staffUsersListProvider);

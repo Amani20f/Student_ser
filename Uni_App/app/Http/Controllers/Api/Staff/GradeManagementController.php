@@ -22,6 +22,9 @@ class GradeManagementController extends Controller
     public function indexBySemester(Request $request): JsonResponse
     {
         $grades = Grade::with(['student.user', 'course', 'semester'])
+            ->whereHas('course.program', function ($query) {
+                $query->where('is_available', true);
+            })
             ->filter(new GradeFilter($request))
             ->get();
 
@@ -70,6 +73,9 @@ class GradeManagementController extends Controller
         $request->merge(['program_id' => $programId]);
         
         $grades = Grade::with(['student.user', 'course', 'semester'])
+            ->whereHas('course.program', function ($query) {
+                $query->where('is_available', true);
+            })
             ->filter(new GradeFilter($request))
             ->get();
 

@@ -38,6 +38,9 @@ class _AnnouncementFormDialogState extends ConsumerState<AnnouncementFormDialog>
     _contentController = TextEditingController(text: widget.announcement?.content ?? '');
     if (widget.announcement != null) {
       _targetAudience = widget.announcement!.targetAudience;
+      if (_targetAudience == 'staff') {
+        _targetAudience = 'all_students';
+      }
       _targetProgramId = widget.announcement!.targetProgramId;
       _targetCollegeId = widget.announcement!.targetCollegeId;
       _isActive = widget.announcement!.isActive;
@@ -47,6 +50,7 @@ class _AnnouncementFormDialogState extends ConsumerState<AnnouncementFormDialog>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
     final programsState = ref.watch(publicProgramsProvider);
     final programs = programsState.value ?? [];
 
@@ -71,19 +75,18 @@ class _AnnouncementFormDialogState extends ConsumerState<AnnouncementFormDialog>
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _contentController,
-                  decoration: const InputDecoration(labelText: 'المحتوى', border: OutlineInputBorder()),
+                  decoration: InputDecoration(labelText: isAr ? 'المحتوى' : 'Content', border: const OutlineInputBorder()),
                   maxLines: 5,
-                  validator: (value) => value == null || value.isEmpty ? 'مطلوب' : null,
+                  validator: (value) => value == null || value.isEmpty ? (isAr ? 'مطلوب' : 'Required') : null,
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   initialValue: _targetAudience,
-                  decoration: const InputDecoration(labelText: 'الفئة المستهدفة', border: OutlineInputBorder()),
-                  items: const [
-                    DropdownMenuItem(value: 'all_students', child: Text('جميع الطلاب')),
-                    DropdownMenuItem(value: 'specific_college', child: Text('كلية محددة')),
-                    DropdownMenuItem(value: 'specific_program', child: Text('تخصص محدد')),
-                    DropdownMenuItem(value: 'staff', child: Text('الموظفين/أعضاء هيئة التدريس')),
+                  decoration: InputDecoration(labelText: isAr ? 'الفئة المستهدفة' : 'Target Audience', border: const OutlineInputBorder()),
+                  items: [
+                    DropdownMenuItem(value: 'all_students', child: Text(isAr ? 'جميع الطلاب' : 'All Students')),
+                    DropdownMenuItem(value: 'specific_college', child: Text(isAr ? 'كلية محددة' : 'Specific College')),
+                    DropdownMenuItem(value: 'specific_program', child: Text(isAr ? 'تخصص محدد' : 'Specific Program')),
                   ],
                   onChanged: (val) {
                     setState(() {
@@ -97,20 +100,20 @@ class _AnnouncementFormDialogState extends ConsumerState<AnnouncementFormDialog>
                   const SizedBox(height: 16),
                   DropdownButtonFormField<int>(
                     initialValue: _targetProgramId,
-                    decoration: const InputDecoration(labelText: 'البرنامج المستهدف', border: OutlineInputBorder()),
+                    decoration: InputDecoration(labelText: isAr ? 'البرنامج المستهدف' : 'Target Program', border: const OutlineInputBorder()),
                     items: programs.map((p) => DropdownMenuItem(value: p.id, child: Text(p.name))).toList(),
                     onChanged: (val) => setState(() => _targetProgramId = val),
-                    validator: (value) => value == null ? 'مطلوب' : null,
+                    validator: (value) => value == null ? (isAr ? 'مطلوب' : 'Required') : null,
                   ),
                 ],
                 if (_targetAudience == 'specific_college') ...[
                   const SizedBox(height: 16),
                   DropdownButtonFormField<int>(
                     initialValue: _targetCollegeId,
-                    decoration: const InputDecoration(labelText: 'الكلية المستهدفة', border: OutlineInputBorder()),
+                    decoration: InputDecoration(labelText: isAr ? 'الكلية المستهدفة' : 'Target College', border: const OutlineInputBorder()),
                     items: colleges.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
                     onChanged: (val) => setState(() => _targetCollegeId = val),
-                    validator: (value) => value == null ? 'مطلوب' : null,
+                    validator: (value) => value == null ? (isAr ? 'مطلوب' : 'Required') : null,
                   ),
                 ],
                 const SizedBox(height: 16),
@@ -124,17 +127,17 @@ class _AnnouncementFormDialogState extends ConsumerState<AnnouncementFormDialog>
                 OutlinedButton.icon(
                   onPressed: _pickImage,
                   icon: const Icon(Icons.image),
-                  label: Text(_imageBytes != null ? 'تغيير الصورة' : 'إرفاق صورة (اختياري)'),
+                  label: Text(_imageBytes != null ? (isAr ? 'تغيير الصورة' : 'Change Image') : (isAr ? 'إرفاق صورة (اختياري)' : 'Attach Image (Optional)')),
                 ),
                 const SizedBox(height: 16),
                 SwitchListTile(
-                  title: const Text('مفعل'),
+                  title: Text(isAr ? 'مفعل' : 'Active'),
                   value: _isActive,
                   onChanged: (val) => setState(() => _isActive = val),
                 ),
                 SwitchListTile(
-                  title: const Text('إرسال إشعار للمستهدفين فوراً'),
-                  subtitle: const Text('سيتم تنبيه الفئة المستهدفة في نظام الإشعارات'),
+                  title: Text(isAr ? 'إرسال إشعار للمستهدفين فوراً' : 'Send Notification Instantly'),
+                  subtitle: Text(isAr ? 'سيتم تنبيه الفئة المستهدفة في نظام الإشعارات' : 'Targeted audience will be notified instantly'),
                   value: _sendNotification,
                   onChanged: (val) => setState(() => _sendNotification = val),
                 ),

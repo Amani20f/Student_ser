@@ -139,5 +139,13 @@ class Request extends Model
     {
         return $this->hasOne(ReEnrollmentDetail::class, 'request_id');
     }
+
+    /**
+     * Get the payment associated with the request.
+     */
+    public function payment(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Payment::class, 'request_id');
+    }
 }
 

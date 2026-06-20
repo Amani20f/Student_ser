@@ -7,6 +7,7 @@ import 'package:university_app/core/network/api_client.dart';
 import 'package:university_app/core/widgets/gradient_background.dart';
 import 'package:university_app/features/requests/widgets/form_inputs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:university_app/core/utils/normalization.dart';
 
 class StudentRegistrationScreen extends StatefulWidget {
   const StudentRegistrationScreen({super.key});
@@ -337,12 +338,26 @@ class _StudentRegistrationScreenState extends State<StudentRegistrationScreen> {
                 title: 'بيانات التواصل والتخصص',
                 icon: Icons.school_outlined,
                 children: [
-                  LabeledTextField(
-                    label: 'رقم الجوال',
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-                    validator: (v) => v!.isEmpty ? 'مطلوب' : null,
-                  ),
+                   LabeledTextField(
+                     label: 'رقم الجوال',
+                     controller: _phoneController,
+                     keyboardType: TextInputType.phone,
+                     onChanged: (value) {
+                       final normalized = normalizePhone(value);
+                       if (normalized != value) {
+                         _phoneController.value = TextEditingValue(
+                           text: normalized,
+                           selection: TextSelection.collapsed(offset: normalized.length),
+                         );
+                       }
+                     },
+                     validator: (v) {
+                       if (v == null || v.isEmpty) return 'مطلوب';
+                       final normalized = normalizePhone(v);
+                       if (!isValidPhoneNumber(normalized)) return 'رقم الجوال غير صحيح (8 إلى 15 رقماً)';
+                       return null;
+                     },
+                   ),
                   const SizedBox(height: 16),
                   LabeledTextField(
                     label: 'البريد الإلكتروني',

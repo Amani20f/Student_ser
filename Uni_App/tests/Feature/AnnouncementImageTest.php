@@ -23,7 +23,7 @@ class AnnouncementImageTest extends TestCase
         $headers = ['Authorization' => 'Bearer ' . $token, 'Accept' => 'application/json'];
 
         // 1. Create without image
-        $response1 = $this->postJson('/api/admin/announcements', [
+        $response1 = $this->postJson('/api/staff/announcements', [
             'title' => 'No Image',
             'content' => 'Content without image',
             'target_audience' => 'all_students'
@@ -34,7 +34,7 @@ class AnnouncementImageTest extends TestCase
 
         // 2. Create with image
         $file1 = UploadedFile::fake()->image('test1.jpg');
-        $response2 = $this->post('/api/admin/announcements', [
+        $response2 = $this->post('/api/staff/announcements', [
             'title' => 'With Image',
             'content' => 'Content with image',
             'target_audience' => 'all_students',
@@ -46,7 +46,7 @@ class AnnouncementImageTest extends TestCase
         Storage::disk('public')->assertExists($imagePath2);
 
         // 3. Update without image
-        $response3 = $this->post('/api/admin/announcements/' . $id1, [
+        $response3 = $this->post('/api/staff/announcements/' . $id1, [
             '_method' => 'PUT',
             'title' => 'No Image Updated',
             'content' => 'Content without image updated',
@@ -56,7 +56,7 @@ class AnnouncementImageTest extends TestCase
 
         // 4. Update replacing image
         $file2 = UploadedFile::fake()->image('test2.jpg');
-        $response4 = $this->post('/api/admin/announcements/' . $id2, [
+        $response4 = $this->post('/api/staff/announcements/' . $id2, [
             '_method' => 'PUT',
             'title' => 'With Image Updated',
             'content' => 'Content with image updated',
@@ -69,7 +69,7 @@ class AnnouncementImageTest extends TestCase
         Storage::disk('public')->assertExists($imagePath4); // New image exists
 
         // 5. Delete with image
-        $response5 = $this->delete('/api/admin/announcements/' . $id2, [], $headers);
+        $response5 = $this->delete('/api/staff/announcements/' . $id2, [], $headers);
         $response5->assertStatus(204);
         Storage::disk('public')->assertMissing($imagePath4); // Image deleted on destroy
         

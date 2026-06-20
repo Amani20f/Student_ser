@@ -14,14 +14,33 @@ final allGradesProvider = FutureProvider<List<GradeModel>>((ref) async {
   final filters = ref.watch(gradeFiltersProvider);
   final repository = ref.watch(gradeRepositoryProvider);
 
-  final hasActiveFilter = filters.values
-      .any((value) => value != null && value.toString().isNotEmpty);
+  // Only show grades if at least one meaningful filter is selected
+  final hasActiveFilter = filters.values.any((value) =>
+      value != null &&
+      value.toString().isNotEmpty &&
+      value != '__all__' &&
+      value != '___all___');
+
   if (!hasActiveFilter) {
     return <GradeModel>[];
   }
 
-  final cleanFilters = Map<String, dynamic>.from(filters);
-  cleanFilters.removeWhere((key, value) => value == '___all___' || value == -1);
+  // Clean filters: remove __all__ values and convert IDs to strings for query params
+  final cleanFilters = <String, dynamic>{};
+  filters.forEach((key, value) {
+    if (value == null || value == '__all__' || value == '___all___' || value.toString().isEmpty) {
+      return; // skip
+    }
+    // Numeric ID fields
+    if (key == 'semester_id' || key == 'course_id' || key == 'program_id') {
+      final num = int.tryParse(value.toString());
+      if (num != null) cleanFilters[key] = num;
+    } else {
+      cleanFilters[key] = value;
+    }
+  });
+
+  if (cleanFilters.isEmpty) return <GradeModel>[];
 
   return repository.getAllGrades(filters: cleanFilters);
 });

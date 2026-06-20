@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:university_app/core/theme/app_theme.dart';
 import 'package:university_app/features/requests/widgets/form_inputs.dart';
+import 'package:university_app/l10n/app_localizations.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/constants/api_constants.dart';
 import 'package:university_app/features/auth/cubit/auth_cubit.dart';
@@ -18,6 +19,7 @@ class GradesScreen extends StatefulWidget {
 class _GradesScreenState extends State<GradesScreen> {
   String? _selectedSemester;
   bool _isLoading = true;
+  bool _hasError = false;
   bool _surveyOpened = false;
   Map<String, List<dynamic>> _semesterGrades = {};
   Map<String, dynamic>? _surveyData;
@@ -25,7 +27,9 @@ class _GradesScreenState extends State<GradesScreen> {
   @override
   void initState() {
     super.initState();
-    _loadGrades();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadGrades();
+    });
   }
 
   void _loadGrades() async {
@@ -33,10 +37,22 @@ class _GradesScreenState extends State<GradesScreen> {
       if (mounted) {
         setState(() {
           _isLoading = true;
+          _hasError = false;
         });
       }
       final response = await context.read<ApiClient>().get(ApiConstants.grades);
       
+      if (response == null) {
+        if (mounted) {
+          setState(() {
+            _semesterGrades = {};
+            _surveyData = null;
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+
       if (response['requires_survey'] == true) {
         if (mounted) {
           setState(() {
@@ -47,7 +63,18 @@ class _GradesScreenState extends State<GradesScreen> {
         return;
       }
 
-      final data = response['data'] as Map<String, dynamic>;
+      final data = response['data'];
+      if (data == null || data is! Map<String, dynamic>) {
+        if (mounted) {
+          setState(() {
+            _semesterGrades = {};
+            _surveyData = null;
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+
       final semesterGrades = data.map((key, value) {
         return MapEntry(key, List<dynamic>.from(value));
       });
@@ -57,6 +84,8 @@ class _GradesScreenState extends State<GradesScreen> {
           _surveyData = null;
           if (semesterGrades.isNotEmpty) {
             _selectedSemester = semesterGrades.keys.first;
+          } else {
+            _selectedSemester = null;
           }
           _isLoading = false;
         });
@@ -65,12 +94,14 @@ class _GradesScreenState extends State<GradesScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+          _hasError = true;
         });
       }
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('خطأ في تحميل الدرجات: ${e.toString().replaceAll('Exception:', '').replaceAll('ApiException:', '').trim()}'),
+            content: Text(l10n.errorLoadingGrades),
             backgroundColor: Colors.red,
           ),
         );
@@ -117,6 +148,58 @@ class _GradesScreenState extends State<GradesScreen> {
     return totalHours;
   }
 
+  Widget _buildErrorState() {
+    final l10n = AppLocalizations.of(context)!;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline_rounded, size: 80, color: Colors.red[300]),
+            const SizedBox(height: 16),
+            Text(
+              l10n.errorLoadingGrades,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.almarai(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: _loadGrades,
+              icon: const Icon(Icons.refresh_rounded),
+              label: Text(l10n.retry),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    final l10n = AppLocalizations.of(context)!;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.grading_rounded, size: 80, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              l10n.noPreviousRequests, // Using existing key as fallback
+              textAlign: TextAlign.center,
+              style: GoogleFonts.almarai(fontSize: 16, color: Colors.grey[600]),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthCubit>().state;
@@ -127,10 +210,15 @@ class _GradesScreenState extends State<GradesScreen> {
       student = user['student'] ?? {};
     }
 
-    final name = user['name'] ?? 'طالب';
+    final name = user['name'] ?? '';
     final studentId = student['student_number'] ?? '';
-    final cumulativeGpa = (student['cumulative_gpa'] ?? '0.0').toString();
+    final rawGpa = student['cumulative_gpa'];
+    final cumulativeGpa = rawGpa == null
+        ? 'N/A'
+        : double.parse(rawGpa.toString()).toStringAsFixed(2);
     final completedCreditHours = (student['completed_credit_hours'] ?? '0').toString();
+    final remainingCreditHours = (student['remaining_credit_hours'] ?? '0').toString();
+    final statusVal = student['status']?.toString().toLowerCase() ?? 'active';
 
     final semestersList = _semesterGrades.keys.toList();
     final isReady = _selectedSemester != null;
@@ -142,17 +230,22 @@ class _GradesScreenState extends State<GradesScreen> {
     final semesterHours = _calculateSemesterHours(displayedGrades);
 
     final isMobile = MediaQuery.of(context).size.width < 600;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('الدرجات والنتائج'),
+        title: Text(l10n.gradesAndResults),
         centerTitle: true,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _surveyData != null
-              ? _buildSurveyLock()
-              : SingleChildScrollView(
+          : _hasError
+              ? _buildErrorState()
+              : _surveyData != null
+                  ? _buildSurveyLock()
+                  : _semesterGrades.isEmpty
+                      ? _buildEmptyState()
+                      : SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,7 +267,7 @@ class _GradesScreenState extends State<GradesScreen> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'الرقم الأكاديمي: $studentId',
+                                studentId.isNotEmpty ? l10n.academicIdLabel(studentId) : '',
                                 style: GoogleFonts.almarai(
                                   fontSize: 13,
                                   color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
@@ -185,13 +278,24 @@ class _GradesScreenState extends State<GradesScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                              color: (statusVal == 'active'
+                                      ? Colors.green
+                                      : (statusVal == 'suspended' ? Colors.red : Colors.blue))
+                                  .withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
-                              'نشط',
+                              statusVal == 'active'
+                                  ? l10n.statusActive
+                                  : (statusVal == 'suspended'
+                                      ? l10n.statusSuspended
+                                      : (statusVal == 'graduated'
+                                          ? l10n.statusGraduated
+                                          : statusVal)),
                               style: GoogleFonts.almarai(
-                                color: Theme.of(context).colorScheme.primary,
+                                color: statusVal == 'active'
+                                    ? Colors.green
+                                    : (statusVal == 'suspended' ? Colors.red : Colors.blue),
                                 fontWeight: FontWeight.bold,
                                 fontSize: 12,
                               ),
@@ -206,7 +310,7 @@ class _GradesScreenState extends State<GradesScreen> {
                         children: [
                           Expanded(
                             child: _buildMetricCard(
-                              title: 'المعدل التراكمي',
+                              title: l10n.cumulativeGpa,
                               value: cumulativeGpa,
                               icon: Icons.auto_graph_rounded,
                               color: Theme.of(context).colorScheme.primary,
@@ -215,7 +319,7 @@ class _GradesScreenState extends State<GradesScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _buildMetricCard(
-                              title: 'المعدل الفصلي',
+                              title: l10n.semesterGpa,
                               value: semesterGpa > 0 ? semesterGpa.toStringAsFixed(2) : '-',
                               icon: Icons.trending_up_rounded,
                               color: AppTheme.goldAccent,
@@ -228,7 +332,7 @@ class _GradesScreenState extends State<GradesScreen> {
                         children: [
                           Expanded(
                             child: _buildMetricCard(
-                              title: 'الساعات المكتملة',
+                              title: l10n.completedHours,
                               value: completedCreditHours,
                               icon: Icons.school_rounded,
                               color: Colors.teal,
@@ -237,11 +341,28 @@ class _GradesScreenState extends State<GradesScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _buildMetricCard(
-                              title: 'ساعات الفصل',
+                              title: l10n.remainingHours,
+                              value: remainingCreditHours,
+                              icon: Icons.hourglass_empty_rounded,
+                              color: Colors.deepOrange,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildMetricCard(
+                              title: l10n.semesterHoursLabel,
                               value: semesterHours > 0 ? '$semesterHours' : '-',
                               icon: Icons.menu_book_rounded,
                               color: Colors.indigo,
                             ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: const SizedBox.shrink(),
                           ),
                         ],
                       ),
@@ -250,18 +371,18 @@ class _GradesScreenState extends State<GradesScreen> {
                       // Semester Dropdown Filter
                       if (semestersList.isNotEmpty)
                         DropdownField(
-                          label: 'الفصل الدراسي الأكاديمي',
+                          label: l10n.academicSemester,
                           items: semestersList,
                           value: _selectedSemester,
                           onChanged: (val) => setState(() => _selectedSemester = val),
                         )
                       else
-                        const Center(
+                        Center(
                           child: Padding(
-                            padding: EdgeInsets.all(16.0),
+                            padding: const EdgeInsets.all(16.0),
                             child: Text(
-                              'لا توجد فصول دراسية مسجلة',
-                              style: TextStyle(color: Colors.grey),
+                              l10n.noSemestersRegistered,
+                              style: const TextStyle(color: Colors.grey),
                             ),
                           ),
                         ),
@@ -270,10 +391,10 @@ class _GradesScreenState extends State<GradesScreen> {
                       // Grades display (Table or Cards depending on device size)
                       if (isReady) ...[
                         if (displayedGrades.isEmpty)
-                          const Center(
+                          Center(
                             child: Padding(
-                              padding: EdgeInsets.all(32.0),
-                              child: Text('لا توجد درجات متوفرة لهذا الفصل'),
+                              padding: const EdgeInsets.all(32.0),
+                              child: Text(l10n.noGradesForSemester),
                             ),
                           )
                         else if (isMobile)
@@ -292,19 +413,19 @@ class _GradesScreenState extends State<GradesScreen> {
                                   headingRowColor: WidgetStateProperty.all(
                                     Theme.of(context).colorScheme.surface,
                                   ),
-                                  columns: const [
-                                    DataColumn(label: Text('اسم المقرر', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('الأعمال الدراسية', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('امتحان نصفي', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('امتحان نهائي', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('درجة الكنترول', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('درجة الرأفة', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('حالة دور أول', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('دور الإعادة', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('حالة الإعادة', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('سنة الإعادة', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('المعدل', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('التقدير', style: TextStyle(fontWeight: FontWeight.bold))),
+                                  columns: [
+                                    DataColumn(label: Text(l10n.courseNameCol, style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    DataColumn(label: Text(l10n.courseworkCol, style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    DataColumn(label: Text(l10n.midtermCol, style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    DataColumn(label: Text(l10n.finalExamCol, style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    DataColumn(label: Text(l10n.controlGradeCol, style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    DataColumn(label: Text(l10n.mercyGradeCol, style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    DataColumn(label: Text(l10n.firstRoundStatusCol, style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    DataColumn(label: Text(l10n.retakeCol, style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    DataColumn(label: Text(l10n.retakeStatusCol, style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    DataColumn(label: Text(l10n.retakeYearCol, style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    DataColumn(label: Text(l10n.gpaCol, style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    DataColumn(label: Text(l10n.gradeCol, style: const TextStyle(fontWeight: FontWeight.bold))),
                                   ],
                                   rows: displayedGrades.map((course) {
                                     final courseMap = course as Map<String, dynamic>;
@@ -317,11 +438,11 @@ class _GradesScreenState extends State<GradesScreen> {
                                     final totalVal = num.tryParse(courseMap['total']?.toString() ?? '0') ?? 0;
                                     
                                     final rawStatus = courseMap['status']?.toString() ?? 'passed';
-                                    String statusText = 'راسب';
+                                    String statusText = l10n.failedStatus;
                                     if (rawStatus == 'passed') {
-                                      statusText = 'ناجح';
+                                      statusText = l10n.passedStatus;
                                     } else if (rawStatus == 'incomplete') {
-                                      statusText = 'غير مكتمل';
+                                      statusText = l10n.incompleteStatus;
                                     }
                                     
                                     final gpaVal = num.tryParse(courseMap['gpa']?.toString() ?? '0') ?? 0.0;
@@ -352,12 +473,12 @@ class _GradesScreenState extends State<GradesScreen> {
                             ),
                           ),
                       ] else
-                        const Center(
+                        Center(
                           child: Padding(
-                            padding: EdgeInsets.all(32.0),
+                            padding: const EdgeInsets.all(32.0),
                             child: Text(
-                              'يرجى اختيار الفصل الدراسي لعرض الدرجات',
-                              style: TextStyle(color: Colors.grey, fontSize: 16),
+                              l10n.pleaseSelectSemester,
+                              style: const TextStyle(color: Colors.grey, fontSize: 16),
                             ),
                           ),
                         ),
@@ -431,6 +552,7 @@ class _GradesScreenState extends State<GradesScreen> {
   }
 
   Widget _buildGradesCardsList(List<dynamic> grades) {
+    final l10n = AppLocalizations.of(context)!;
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -450,11 +572,11 @@ class _GradesScreenState extends State<GradesScreen> {
         final totalVal = num.tryParse(courseMap['total']?.toString() ?? '0') ?? 0;
         
         final rawStatus = courseMap['status']?.toString() ?? 'passed';
-        String statusText = 'راسب';
+        String statusText = l10n.failedStatus;
         if (rawStatus == 'passed') {
-          statusText = 'ناجح';
+          statusText = l10n.passedStatus;
         } else if (rawStatus == 'incomplete') {
-          statusText = 'غير مكتمل';
+          statusText = l10n.incompleteStatus;
         }
         
         final gpaVal = num.tryParse(courseMap['gpa']?.toString() ?? '0') ?? 0.0;
@@ -500,7 +622,7 @@ class _GradesScreenState extends State<GradesScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '$courseCode | $creditHours ساعات معتمدة',
+                          '$courseCode | $creditHours ${l10n.semesterHoursLabel}',
                           style: GoogleFonts.almarai(
                             fontSize: 11,
                             color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
@@ -516,10 +638,10 @@ class _GradesScreenState extends State<GradesScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildCardScoreItem('أعمال السنة', courseworkVal.toString()),
-                  _buildCardScoreItem('نصفي', midtermVal.toString()),
-                  _buildCardScoreItem('نهائي', finalVal.toString()),
-                  _buildCardScoreItem('المجموع', totalVal.toString(), isHighlight: true),
+                  _buildCardScoreItem(l10n.courseworkCol, courseworkVal.toString()),
+                  _buildCardScoreItem(l10n.midtermCol, midtermVal.toString()),
+                  _buildCardScoreItem(l10n.finalExamCol, finalVal.toString()),
+                  _buildCardScoreItem(l10n.totalGradeCol, totalVal.toString(), isHighlight: true),
                 ],
               ),
               const Divider(height: 24),
@@ -529,7 +651,7 @@ class _GradesScreenState extends State<GradesScreen> {
                   Row(
                     children: [
                       Text(
-                        'المعدل للمادة: ',
+                        '${l10n.gpaCol}: ',
                         style: GoogleFonts.almarai(
                           fontSize: 12,
                           color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
@@ -581,7 +703,8 @@ class _GradesScreenState extends State<GradesScreen> {
   }
 
   Widget _buildSurveyLock() {
-    final surveyTitle = _surveyData?['title'] ?? 'استبيان';
+    final l10n = AppLocalizations.of(context)!;
+    final surveyTitle = _surveyData?['title'] ?? l10n.openSurvey;
     final surveyUrl = _surveyData?['google_form_url'] ?? '';
     final surveyId = _surveyData?['id'];
 
@@ -602,7 +725,7 @@ class _GradesScreenState extends State<GradesScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                'الدرجات والنتائج محجوبة',
+                l10n.gradesAndResults,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.almarai(
                   fontSize: 22,
@@ -612,7 +735,7 @@ class _GradesScreenState extends State<GradesScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'يرجى تعبئة الاستبيان التالي لتتمكن من الاطلاع على درجاتك ونتائجك الأكاديمية.',
+                l10n.pleaseCompleteSurveyFirst,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.almarai(
                   fontSize: 14,
@@ -674,7 +797,7 @@ class _GradesScreenState extends State<GradesScreen> {
               ElevatedButton.icon(
                 icon: Icon(_surveyOpened ? Icons.check_rounded : Icons.open_in_new_rounded),
                 label: Text(
-                  _surveyOpened ? 'تم فتح الاستبيان' : 'فتح الاستبيان',
+                  _surveyOpened ? l10n.surveyOpened : l10n.openSurvey,
                   style: GoogleFonts.almarai(fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -706,14 +829,14 @@ class _GradesScreenState extends State<GradesScreen> {
                     } else {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('تعذر فتح رابط الاستبيان')),
+                          SnackBar(content: Text(l10n.failedToOpenSurveyLink)),
                         );
                       }
                     }
                   } catch (e) {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('تعذر فتح الرابط: $surveyUrl')),
+                        SnackBar(content: Text(l10n.failedToOpenSurveyLink)),
                       );
                     }
                   }
@@ -725,7 +848,7 @@ class _GradesScreenState extends State<GradesScreen> {
               ElevatedButton.icon(
                 icon: const Icon(Icons.grading_rounded),
                 label: Text(
-                  'عرض الدرجات',
+                  l10n.viewGrades,
                   style: GoogleFonts.almarai(fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -748,7 +871,7 @@ class _GradesScreenState extends State<GradesScreen> {
               if (!_surveyOpened) ...[
                 const SizedBox(height: 12),
                 Text(
-                  'يرجى فتح الاستبيان وتعبئته أولاً لتفعيل زر عرض الدرجات',
+                  l10n.pleaseCompleteSurveyFirst,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.almarai(
                     fontSize: 12,
@@ -764,8 +887,9 @@ class _GradesScreenState extends State<GradesScreen> {
   }
 
   Widget _statusChip(String status) {
-    final isPass = status == 'ناجح';
-    final isPending = status == 'غير مكتمل';
+    final l10n = AppLocalizations.of(context)!;
+    final isPass = status == l10n.passedStatus;
+    final isPending = status == l10n.incompleteStatus;
     Color chipColor = Colors.red;
     if (isPass) {
       chipColor = Colors.green;

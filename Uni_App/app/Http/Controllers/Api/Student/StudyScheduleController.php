@@ -23,6 +23,13 @@ class StudyScheduleController extends Controller
             return response()->json(['message' => 'No active semester found.'], 404);
         }
 
+        \Illuminate\Support\Facades\Log::info('StudySchedule Query Debug', [
+            'student_id' => $student->id,
+            'program_id' => $student->program_id,
+            'current_level' => $student->current_level,
+            'active_semester_id' => $activeSemester->id,
+        ]);
+
         $schedule = StudySchedule::with('program')
             ->where('program_id', $student->program_id)
             ->where('semester_id', $activeSemester->id)
@@ -30,6 +37,11 @@ class StudyScheduleController extends Controller
             ->first();
 
         if (!$schedule) {
+            \Illuminate\Support\Facades\Log::info('StudySchedule Query Failed to find schedule', [
+                'program_id' => $student->program_id,
+                'semester_id' => $activeSemester->id,
+                'level' => $student->current_level
+            ]);
             return response()->json(['message' => 'Study schedule not found for your program, current level, and active semester.'], 404);
         }
 

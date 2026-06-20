@@ -84,6 +84,16 @@ class StudentApplicationController extends Controller
                 }
             }
             
+            // Normalize Arabic digits in phone_number
+            if ($request->has('phone_number')) {
+                $phone = $request->input('phone_number');
+                $arabic = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+                $english = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+                $normalized = str_replace($arabic, $english, $phone);
+                $normalized = preg_replace('/[^\d+]/', '', $normalized);
+                $request->merge(['phone_number' => $normalized]);
+            }
+
             $request->merge([
                 'first_choice_program_id' => $desired,
                 'second_choice_program_id' => isset($otherPrograms[0]) ? $otherPrograms[0] : null,
@@ -97,7 +107,7 @@ class StudentApplicationController extends Controller
             'date_of_birth'          => 'required|date|before:today',
             'gender'                 => 'required|in:male,female',
             'nationality'            => 'required|string|max:100',
-            'phone_number'           => 'required|string|max:20',
+            'phone_number'           => 'required|string|min:8|max:15',
             'email_address'          => 'required|email|max:255|unique:student_applications,email_address',
             'address'                => 'nullable|string|max:500',
             'desired_program_id'     => 'required|exists:programs,id',

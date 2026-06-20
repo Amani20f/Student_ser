@@ -91,14 +91,19 @@ class ModernBottomNavBar extends StatelessWidget {
                         ),
                         if (isSelected) ...[
                           const SizedBox(width: 6),
-                          Text(
-                            item.label,
-                            style: TextStyle(
-                              color: isDark
-                                  ? const Color(0xFF64FFDA)
-                                  : Theme.of(context).primaryColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 70),
+                            child: Text(
+                              item.label,
+                              style: TextStyle(
+                                color: isDark
+                                    ? const Color(0xFF64FFDA)
+                                    : Theme.of(context).primaryColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],

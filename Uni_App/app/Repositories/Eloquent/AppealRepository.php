@@ -34,6 +34,14 @@ class AppealRepository implements AppealRepositoryInterface
 
         if (!empty($filters['status'])) {
             $query->where('status', $filters['status']);
+        } elseif (!empty($filters['statuses'])) {
+            $query->whereIn('status', $filters['statuses']);
+        }
+
+        if (!empty($filters['program_id'])) {
+            $query->whereHas('student', function ($q) use ($filters) {
+                $q->where('program_id', $filters['program_id']);
+            });
         }
 
         return $query->get();

@@ -74,7 +74,7 @@ class FilterBar extends ConsumerWidget {
         );
       case FilterType.dropdown:
         final selectedValue = currentValues[filter.id];
-        final bool isSelected = selectedValue != null && selectedValue != '';
+        final bool isSelected = selectedValue != null && selectedValue != '' && selectedValue != '__all__' && selectedValue != '___all___';
 
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -91,21 +91,36 @@ class FilterBar extends ConsumerWidget {
                 const SizedBox(width: 8),
               ],
               DropdownButtonHideUnderline(
-                child: DropdownButton<dynamic>(
-                  value: isSelected ? currentValues[filter.id] : null,
-                  hint: Text(filter.label, style: tt.bodyMedium?.copyWith(color: cs.onSurface.withAlpha(180))),
-                  dropdownColor: cs.surface,
-                  style: tt.bodyMedium?.copyWith(color: isSelected ? cs.primary : cs.onSurface),
-                  items: [
-                    DropdownMenuItem(value: '___all___', child: Text(Localizations.localeOf(context).languageCode == 'ar' ? 'الكل' : 'All')),
-                    ...(filter.options ?? []).map((o) => DropdownMenuItem(
-                          value: o.value,
-                          child: Text(o.label),
-                        )),
-                  ],
-                  onChanged: (v) {
-                    onFilterChanged(filter.id, v);
-                  },
+                child: Builder(
+                  builder: (context) {
+                    final allowedValues = [
+                      '__all__',
+                      '___all___',
+                      null,
+                      ...(filter.options ?? []).map((o) => o.value),
+                    ];
+                    final rawValue = isSelected ? currentValues[filter.id] : null;
+                    final safeValue = allowedValues.contains(rawValue) ? (rawValue == '___all___' ? '__all__' : rawValue) : '__all__';
+
+                    return DropdownButton<dynamic>(
+                      value: safeValue,
+                      hint: Text(filter.label, style: tt.bodyMedium?.copyWith(color: cs.onSurface.withAlpha(180))),
+                      dropdownColor: cs.surface,
+                      style: tt.bodyMedium?.copyWith(color: isSelected && safeValue != '__all__' ? cs.primary : cs.onSurface),
+                      items: [
+                        DropdownMenuItem(value: '__all__', child: Text(Localizations.localeOf(context).languageCode == 'ar' ? 'الكل' : 'All')),
+                        ...(filter.options ?? [])
+                            .where((o) => o.value != '__all__' && o.value != '___all___')
+                            .map((o) => DropdownMenuItem(
+                              value: o.value,
+                              child: Text(o.label),
+                            )),
+                      ],
+                      onChanged: (v) {
+                        onFilterChanged(filter.id, v);
+                      },
+                    );
+                  }
                 ),
               ),
             ],

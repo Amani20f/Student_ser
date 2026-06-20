@@ -60,6 +60,12 @@ class AppealController extends Controller
     public function store(StoreAppealRequest $request): JsonResponse
     {
         try {
+            $student = auth()->user()->student;
+            if ($student && $student->status === \App\Enums\StudentStatusEnum::SUSPENDED) {
+                return response()->json([
+                    'error' => 'عذراً، لا يمكنك تقديم تظلم لأن حسابك موقوف أكاديمياً.'
+                ], 403);
+            }
             $data = $request->validated();
             
             if (empty($data['semester_id'])) {
@@ -85,7 +91,7 @@ class AppealController extends Controller
             );
 
             return response()->json([
-                'message' => 'Appeal submitted successfully. Please proceed to payment.',
+                'message' => 'Grievance submitted successfully. Please proceed to payment.',
                 'data' => new AppealResource($appeal->load('items'))
             ], 201);
         } catch (\Exception $e) {

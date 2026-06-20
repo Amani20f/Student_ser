@@ -18,17 +18,47 @@ final unifiedRequestsListProvider = FutureProvider<List<UnifiedRequestModel>>((r
   final repository = ref.watch(unifiedRequestRepositoryProvider);
   final filters = ref.watch(unifiedFiltersProvider);
   
+  // Fetch all requests without passing status query parameter to the backend, so we can map and filter client-side
   final allList = await repository.getUnifiedRequests(
     search: filters['search'] as String?,
-    status: filters['status'] as String?,
   );
 
   final selectedType = filters['request_type'] as String?;
-  if (selectedType == null || selectedType == 'all') {
-    return allList;
+  final selectedStatus = filters['status'] as String?;
+
+  // 1. Map non-academic statuses to their academic equivalents
+  final mappedList = allList.map((req) {
+    final statusLower = req.status.toLowerCase();
+    String newStatus = req.status;
+    if (statusLower == 'verified' || statusLower == 'paid' || statusLower == 'ratified') {
+      newStatus = 'pending';
+    } else if (statusLower == 'completed') {
+      newStatus = 'approved';
+    }
+    return UnifiedRequestModel(
+      id: req.id,
+      studentName: req.studentName,
+      submittedDate: req.submittedDate,
+      status: newStatus,
+      requestType: req.requestType,
+      requestTypeEn: req.requestTypeEn,
+      originalType: req.originalType,
+      details: req.details,
+    );
+  }).toList();
+
+  // 2. Filter by status on client side (using mapped status)
+  var filteredList = mappedList;
+  if (selectedStatus != null && selectedStatus.isNotEmpty) {
+    filteredList = filteredList.where((req) => req.status.toLowerCase() == selectedStatus.toLowerCase()).toList();
   }
 
-  return allList.where((req) {
+  // 3. Filter by request type
+  if (selectedType == null || selectedType == 'all') {
+    return filteredList;
+  }
+
+  return filteredList.where((req) {
     if (selectedType == 'student_application') {
       return req.originalType == 'student_application';
     } else if (selectedType == 'appeal') {

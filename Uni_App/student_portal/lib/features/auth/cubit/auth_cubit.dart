@@ -39,8 +39,6 @@ class AuthCubit extends Cubit<AuthState> {
     if (token != null && userJson != null) {
       try {
         final user = jsonDecode(userJson) as Map<String, dynamic>;
-        print("=== AUTH_CUBIT checkAuthStatus user['student']['program']['college'] ===");
-        print(user['student']?['program']?['college']);
         emit(Authenticated(user));
       } catch (_) {
         emit(Unauthenticated());
@@ -73,8 +71,6 @@ class AuthCubit extends Cubit<AuthState> {
       await _prefs.setString('auth_token', token);
       await _prefs.setString('cached_user', jsonEncode(user));
 
-      print("=== AUTH_CUBIT login user['student']['program']['college'] ===");
-      print(user['student']?['program']?['college']);
 
       emit(Authenticated(user));
     } catch (e) {

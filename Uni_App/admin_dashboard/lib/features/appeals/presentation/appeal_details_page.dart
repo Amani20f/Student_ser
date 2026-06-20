@@ -38,7 +38,12 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
     super.dispose();
   }
 
-  void _initializeControllers(List<AppealItemModel> items) {
+  bool _initialized = false;
+
+  void _initializeControllers(List<AppealItemModel> items, String? committeeReport) {
+    if (_initialized) return;
+    _initialized = true;
+    _committeeReportController.text = committeeReport ?? '';
     for (var item in items) {
       if (!_courseworkControllers.containsKey(item.id)) {
         _courseworkControllers[item.id] = TextEditingController(
@@ -92,8 +97,8 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(decision == 'approved'
-                ? 'Appeal approved successfully.'
-                : 'Appeal rejected.'),
+                ? 'تم اعتماد الطلب بنجاح.'
+                : 'تم رفض الطلب بنجاح.'),
             backgroundColor: decision == 'approved' ? Colors.green : Colors.orange,
           ),
         );
@@ -124,7 +129,7 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text('Error: $error')),
         data: (appeal) {
-          _initializeControllers(appeal.items);
+          _initializeControllers(appeal.items, appeal.committeeReport);
 
           if (isAdmin) {
             return _buildAdminAuditView(appeal, cs, tt);
@@ -429,6 +434,8 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
   // ==========================================
 
   Widget _buildGradeControlView(AppealModel appeal, ColorScheme cs, TextTheme tt) {
+    final isVerified = appeal.status == 'verified';
+
     return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: 40),
       child: Column(
@@ -438,11 +445,35 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
           const SizedBox(height: 24),
           _buildStudentNote(appeal, cs, tt),
           const SizedBox(height: 24),
-          ...appeal.items.map((item) => _buildItemCard(item, cs, tt)),
+          ...appeal.items.map((item) => _buildItemCard(item, cs, tt, isVerified)),
           const SizedBox(height: 32),
-          _buildCommitteeReportSection(cs, tt),
+          _buildCommitteeReportSection(cs, tt, isVerified),
           const SizedBox(height: 40),
-          _buildActionButtons(cs),
+          if (isVerified)
+            _buildActionButtons(cs)
+          else ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHighest.withAlpha(80),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: cs.outlineVariant.withAlpha(50)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline_rounded, color: cs.primary),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'This grievance is already processed (Status: ${StatusHelper.localize(context, appeal.status)}) and cannot be modified.',
+                      style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     ).animate().fadeIn(duration: 500.ms);
@@ -536,7 +567,7 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
     );
   }
 
-  Widget _buildItemCard(AppealItemModel item, ColorScheme cs, TextTheme tt) {
+  Widget _buildItemCard(AppealItemModel item, ColorScheme cs, TextTheme tt, bool isVerified) {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
@@ -575,18 +606,24 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
                   ),
                 ),
                 const SizedBox(width: 48),
-                // AFTER (EDITABLE)
+                // AFTER (EDITABLE or READ ONLY)
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('AFTER (Proposed Changes)', style: tt.labelLarge?.copyWith(color: cs.primary, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 16),
-                      _buildEditableField('Coursework', _courseworkControllers[item.id]!, cs),
+                      isVerified
+                          ? _buildEditableField('Coursework', _courseworkControllers[item.id]!, cs)
+                          : _buildReadOnlyField('Coursework', item.after.coursework, cs),
                       const SizedBox(height: 12),
-                      _buildEditableField('Final Exam', _finalScoreControllers[item.id]!, cs),
+                      isVerified
+                          ? _buildEditableField('Final Exam', _finalScoreControllers[item.id]!, cs)
+                          : _buildReadOnlyField('Final Exam', item.after.finalScore, cs),
                       const SizedBox(height: 12),
-                      _buildEditableField('Total Score', _totalControllers[item.id]!, cs, isTotal: true),
+                      isVerified
+                          ? _buildEditableField('Total Score', _totalControllers[item.id]!, cs, isTotal: true)
+                          : _buildReadOnlyField('Total Score', item.after.total, cs, isTotal: true),
                     ],
                   ),
                 ),
@@ -648,7 +685,7 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
     );
   }
 
-  Widget _buildCommitteeReportSection(ColorScheme cs, TextTheme tt) {
+  Widget _buildCommitteeReportSection(ColorScheme cs, TextTheme tt, bool isVerified) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -657,8 +694,9 @@ class _AppealDetailsPageState extends ConsumerState<AppealDetailsPage> {
         TextFormField(
           controller: _committeeReportController,
           maxLines: 4,
+          enabled: isVerified,
           decoration: InputDecoration(
-            hintText: 'Enter final review committee report or internal notes...',
+            hintText: isVerified ? 'Enter final review committee report or internal notes...' : 'No committee report entered.',
             filled: true,
             fillColor: cs.surface,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),

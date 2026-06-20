@@ -50,4 +50,20 @@ class AuthRepository {
 
   /// Check if the user is logged in.
   bool get isLoggedIn => getStoredToken() != null;
+
+  /// Change password for the currently authenticated user.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    await _apiClient.put(
+      '/change-password',
+      body: {
+        'current_password': currentPassword,
+        'new_password': newPassword,
+        'new_password_confirmation': confirmPassword,
+      },
+    );
+  }
 }

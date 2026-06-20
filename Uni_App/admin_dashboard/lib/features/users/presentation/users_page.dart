@@ -61,33 +61,6 @@ class UsersPage extends ConsumerWidget {
               ],
             ),
             FilterDefinition(
-              id: 'program_id',
-              label: l10n.specializationLabel,
-              type: FilterType.dropdown,
-              icon: Icons.school_outlined,
-              options: [
-                FilterValue(label: l10n.computerScience, value: 1),
-                FilterValue(label: l10n.electricalEngineering, value: 2),
-                FilterValue(label: l10n.businessAdministration, value: 3),
-              ],
-            ),
-            FilterDefinition(
-              id: 'current_level',
-              label: l10n.academicLevelLabel,
-              type: FilterType.dropdown,
-              icon: Icons.layers_outlined,
-              options: [
-                FilterValue(label: l10n.levelNumber(1), value: 1),
-                FilterValue(label: l10n.levelNumber(2), value: 2),
-                FilterValue(label: l10n.levelNumber(3), value: 3),
-                FilterValue(label: l10n.levelNumber(4), value: 4),
-                FilterValue(label: l10n.levelNumber(5), value: 5),
-                FilterValue(label: l10n.levelNumber(6), value: 6),
-                FilterValue(label: l10n.levelNumber(7), value: 7),
-                FilterValue(label: l10n.levelNumber(8), value: 8),
-              ],
-            ),
-            FilterDefinition(
               id: 'search',
               label: l10n.searchNameCardPlaceholder,
               type: FilterType.text,

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/admissions_provider.dart';
 import '../data/application_model.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class ApplicationDetailsDialog extends ConsumerStatefulWidget {
   final int applicationId;
@@ -71,7 +72,7 @@ class _ApplicationDetailsDialogState extends ConsumerState<ApplicationDetailsDia
                 if (!mounted) return;
                 
                 messenger.showSnackBar(
-                  SnackBar(content: Text(res['message'] ?? 'Approved successfully'))
+                  const SnackBar(content: Text('تم اعتماد الطلب بنجاح.'))
                 );
                 
                 // Close the Application Details dialog
@@ -139,7 +140,7 @@ class _ApplicationDetailsDialogState extends ConsumerState<ApplicationDetailsDia
                 final repo = ref.read(admissionsRepositoryProvider);
                 await repo.rejectApplication(app.id, _rejectionController.text.trim());
                 if (!mounted) return;
-                messenger.showSnackBar(const SnackBar(content: Text('Application rejected successfully.')));
+                messenger.showSnackBar(const SnackBar(content: Text('تم رفض الطلب بنجاح.')));
                 Navigator.pop(context); // Close main dialog
                 ref.invalidate(applicationsListProvider);
               } catch (e) {
@@ -152,6 +153,59 @@ class _ApplicationDetailsDialogState extends ConsumerState<ApplicationDetailsDia
               }
             },
             child: const Text('Reject'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _verifyPayment(ApplicationModel app) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Confirm Payment Verification'),
+        content: const Text('Are you sure you want to verify the payment for this application?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+            onPressed: () async {
+              Navigator.pop(dialogContext); // Close confirm dialog
+              
+              setState(() {
+                _isProcessing = true;
+              });
+
+              final messenger = ScaffoldMessenger.of(context);
+
+              try {
+                final repo = ref.read(admissionsRepositoryProvider);
+                await repo.verifyPayment(app.id);
+                
+                if (!mounted) return;
+                
+                messenger.showSnackBar(
+                  const SnackBar(content: Text('تم التحقق من الدفع بنجاح.'))
+                );
+                
+                // Close the Application Details dialog
+                Navigator.pop(context); 
+                
+                // Refresh applications list
+                ref.invalidate(applicationsListProvider);
+              } catch (e) {
+                if (mounted) {
+                  setState(() {
+                    _isProcessing = false;
+                  });
+                  messenger.showSnackBar(SnackBar(content: Text('Error: $e')));
+                }
+              }
+            },
+            child: const Text('Confirm Verify'),
           ),
         ],
       ),
@@ -197,7 +251,7 @@ class _ApplicationDetailsDialogState extends ConsumerState<ApplicationDetailsDia
                       const SizedBox(height: 16),
                       
                       _buildSectionHeader('Academic Preferences', tt, cs),
-                      if (app.status == 'pending' || app.status == 'submitted') ...[
+                      if (app.status == 'pending' || app.status == 'submitted' || app.status == 'payment_verified') ...[
                         Padding(
                           padding: const EdgeInsets.only(bottom: 12.0),
                           child: Text(
@@ -309,36 +363,86 @@ class _ApplicationDetailsDialogState extends ConsumerState<ApplicationDetailsDia
                   ),
                 ),
                 const Divider(),
-                if (app.status == 'pending' || app.status == 'submitted')
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      OutlinedButton(
-                        onPressed: _isProcessing ? null : () => _rejectApplication(app),
-                        style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
-                        child: const Text('Reject'),
-                      ),
-                      const SizedBox(width: 16),
-                      ElevatedButton(
-                        onPressed: _isProcessing ? null : () => _approveApplication(app, currentSelected),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
-                        child: _isProcessing
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                              )
-                            : const Text('Approve & Create Account'),
-                      ),
-                    ],
-                  )
-                else
-                  Center(
-                    child: Text(
-                      'Application is already ${app.status?.toUpperCase()}',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: cs.primary),
-                    ),
-                  ),
+                () {
+                  final primaryRole = ref.watch(authProvider).primaryRole;
+                  final isAccountant = primaryRole == 'accountant';
+
+                  if (isAccountant) {
+                    if (app.status == 'pending' || app.status == 'submitted') {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          OutlinedButton(
+                            onPressed: _isProcessing ? null : () => _rejectApplication(app),
+                            style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+                            child: const Text('Reject'),
+                          ),
+                          const SizedBox(width: 16),
+                          ElevatedButton(
+                            onPressed: _isProcessing ? null : () => _verifyPayment(app),
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                            child: _isProcessing
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  )
+                                : const Text('Verify Payment'),
+                          ),
+                        ],
+                      );
+                    } else {
+                      return Center(
+                        child: Text(
+                          'Application is already ${app.status?.toUpperCase()}',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: cs.primary),
+                        ),
+                      );
+                    }
+                  } else {
+                    // Admin or Student Affairs
+                    if (app.status == 'payment_verified') {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          OutlinedButton(
+                            onPressed: _isProcessing ? null : () => _rejectApplication(app),
+                            style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+                            child: const Text('Reject'),
+                          ),
+                          const SizedBox(width: 16),
+                          ElevatedButton(
+                            onPressed: _isProcessing ? null : () => _approveApplication(app, currentSelected),
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                            child: _isProcessing
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  )
+                                : const Text('Approve & Create Account'),
+                          ),
+                        ],
+                      );
+                    } else if (app.status == 'pending' || app.status == 'submitted') {
+                      return Center(
+                        child: Text(
+                          Localizations.localeOf(context).languageCode == 'ar'
+                              ? 'بانتظار موافقة المحاسب على الدفع'
+                              : 'Waiting for Accountant payment verification',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange[800]),
+                        ),
+                      );
+                    } else {
+                      return Center(
+                        child: Text(
+                          'Application is already ${app.status?.toUpperCase()}',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: cs.primary),
+                        ),
+                      );
+                    }
+                  }
+                }(),
               ],
             );
           },

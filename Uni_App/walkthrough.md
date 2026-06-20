@@ -58,3 +58,15 @@ The database has been populated with virtual data to facilitate testing:
 - `ActivityLog` successfully captured all seeding events using the updated high-performance JSONB structure.
 - `Observers` fixed to correctly handle the new schema during automatic logging.
 
+## Pre-Presentation Details Dialog Fix (2026-06-18)
+
+### Implemented Fixes
+1. **Backend Null-Safety**:
+   - Updated `UnifiedRequestController.php` to use the null-safe operator (`?->`) when accessing relationships (`student`, `user`, and `program`) in response mappings. This prevents `ErrorException: Attempt to read property "user" on null` if a request has orphaned/missing students or programs.
+   - Updated `AppealResource.php` to use the null-safe operator (`?->`) for all nested relationships (`student`, `user`, `program`, `semester`, `accountant`, `reviewer`). Standardized the retrieval of program names using `$this->student?->program?->name` (which exists in the database) instead of the invalid attribute `program_name`.
+2. **Frontend Type-Safety**:
+   - Refactored `requests_page.dart` in the `admin_dashboard` project. Replaced unsafe type casts like `(details['attachment'] as Map)` and `(details['form_data'] as Map)` with robust type check utilities (`is Map`, `is List`, `is String`). This ensures that the details dialog will not crash if these JSON values are encoded differently or are empty.
+   - Hot restarted both Admin Dashboard and Student Portal to apply modifications.
+   - Verified that the backend PHPUnit test suite passed with 58/58 tests.
+
+

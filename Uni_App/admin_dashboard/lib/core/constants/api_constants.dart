@@ -49,6 +49,10 @@ class ApiConstants {
   static const String staffGrades = '/staff/grades';
   static String staffGradeUpdate(int id) => '/staff/grades/$id';
 
+  // ─── Staff — Courses & Programs (for grade_control filtering) ────────────
+  static const String staffCourses = '/staff/courses';
+  static const String staffPrograms = '/staff/programs';
+
   // ─── Staff — Grade Appeals ────────────────────────────────────────────────
   static const String staffAppeals = '/staff/appeals';
   static const String staffAppealsUnderReview = '/staff/appeals/under-review';

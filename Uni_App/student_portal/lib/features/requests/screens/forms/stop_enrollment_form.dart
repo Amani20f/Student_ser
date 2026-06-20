@@ -72,7 +72,7 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
   bool _loadingSemesters = true;
   String? _semesterLoadError;
 
-  List<PlatformFile> _uploadedFiles = [];
+  final List<PlatformFile> _uploadedFiles = [];
   bool _isSubmitting = false;
 
   String? _selectedCollege;
@@ -130,13 +130,17 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
       } catch (_) {
         price = 10.0;
       }
-      
+
       if (mounted) {
         setState(() {
           _semesters = data
-              .map((e) => _SuspensionSemesterOption.fromJson(Map<String, dynamic>.from(e as Map)))
+              .map(
+                (e) => _SuspensionSemesterOption.fromJson(
+                  Map<String, dynamic>.from(e as Map),
+                ),
+              )
               .toList();
-          
+
           try {
             _selectedSemester = _semesters.firstWhere((s) => s.isCurrent);
           } catch (e) {
@@ -144,7 +148,7 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
               _selectedSemester = _semesters.first; // Fallback
             }
           }
-          
+
           _requestPrice = price ?? 10.0;
           _loadingSemesters = false;
         });
@@ -235,13 +239,6 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
           .map((f) => File(f.path!))
           .toList();
 
-      print('=====================================');
-      print('FLUTTER FORM SUBMISSION DATA:');
-      print('requestTypeId: 2');
-      print('semesterId: ${_selectedSemester!.id}');
-      print('reason: ${_reasonController.text.trim()}');
-      print('attachments count: ${attachmentFiles.length}');
-      print('=====================================');
 
       final response = await repo.submitStopEnrollment(
         requestTypeId: 2, // slug: suspension_of_enrollment
@@ -266,7 +263,10 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
                 const Text('تم استلام طلبك بنجاح وهو قيد المراجعة.'),
                 const SizedBox(height: 8),
                 if (refNumber.isNotEmpty)
-                  Text('رقمك المرجعي: $refNumber', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    'رقمك المرجعي: $refNumber',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
               ],
             ),
             actions: [
@@ -299,11 +299,13 @@ class _StopEnrollmentScreenState extends State<StopEnrollmentScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final errorMsg = e
+            .toString()
+            .replaceAll('ApiException:', '')
+            .replaceAll('Exception:', '')
+            .trim();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('فشل الإرسال: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
         );
       }
     } finally {

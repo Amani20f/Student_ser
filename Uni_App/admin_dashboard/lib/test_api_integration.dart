@@ -11,7 +11,7 @@ Future<void> main() async {
   );
 
   if (loginResponse.statusCode != 200) {
-    print('Login Failed: ' + loginResponse.statusCode.toString() + ' - ' + loginResponse.body);
+    print('Login Failed: ${loginResponse.statusCode} - ${loginResponse.body}');
     return;
   }
 
@@ -28,26 +28,26 @@ Future<void> main() async {
     },
   );
 
-  print('### Response Status: ' + appsResponse.statusCode.toString());
+  print('### Response Status: ${appsResponse.statusCode}');
   
   if (appsResponse.statusCode == 200) {
     final responseData = jsonDecode(appsResponse.body);
     
-    print('1- Response JSON الكامل: ' + appsResponse.body.substring(0, 150) + '... (truncated)');
+    print('1- Response JSON الكامل: ${appsResponse.body.substring(0, 150)}... (truncated)');
     
     final dataList = responseData['data'] as List<dynamic>;
-    print('2- عدد العناصر (response["data"].length): ' + dataList.length.toString());
+    print('2- عدد العناصر (response["data"].length): ${dataList.length}');
     
     try {
       final parsedList = dataList.map((e) => ApplicationModel.fromJson(e as Map<String, dynamic>)).toList();
-      print('3- عدد العناصر بعد ApplicationModel.fromJson: ' + parsedList.length.toString());
-      print('4- عدد العناصر داخل AdmissionsProvider قبل return: ' + parsedList.length.toString());
-      print('5- عدد العناصر داخل AdmissionsPage بعد ref.watch: ' + parsedList.length.toString());
-      print('6- قيمة apps.length قبل ListView مباشرة: ' + parsedList.length.toString());
+      print('3- عدد العناصر بعد ApplicationModel.fromJson: ${parsedList.length}');
+      print('4- عدد العناصر داخل AdmissionsProvider قبل return: ${parsedList.length}');
+      print('5- عدد العناصر داخل AdmissionsPage بعد ref.watch: ${parsedList.length}');
+      print('6- قيمة apps.length قبل ListView مباشرة: ${parsedList.length}');
     } catch (e, stack) {
-      print('### Parsing Error: ' + e.toString() + '\n' + stack.toString());
+      print('### Parsing Error: $e\n$stack');
     }
   } else {
-    print('### API Error: ' + appsResponse.body);
+    print('### API Error: ${appsResponse.body}');
   }
 }

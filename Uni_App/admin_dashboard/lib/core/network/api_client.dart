@@ -32,6 +32,15 @@ class ApiClient {
     return _handleResponse(response);
   }
 
+  Future<http.Response> getRaw(String path, {Map<String, String>? queryParams}) async {
+    final response = await http.get(_uri(path, queryParams), headers: _headers);
+    if (response.statusCode == 401) throw const UnauthorizedException();
+    if (response.statusCode >= 400) {
+      throw ApiException(response.statusCode, 'Request failed');
+    }
+    return response;
+  }
+
   Future<dynamic> post(String path, {Map<String, dynamic>? body}) async {
     final response = await http.post(
       _uri(path),

@@ -21,7 +21,7 @@ class GradeImportController extends Controller
     public function preview(Request $request): JsonResponse
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv|max:5120',
+            'file' => 'required|file|mimes:xlsx,xls,csv,txt|max:5120',
         ]);
 
         $path = $request->file('file')->store('temp/imports');
@@ -33,13 +33,10 @@ class GradeImportController extends Controller
             'headers' => $previewData['headers'],
             'sample_data' => $previewData['sample'],
             'db_fields' => [
-                ['key' => 'student_number', 'label' => 'Student ID / Number (Required)'],
-                ['key' => 'course_code', 'label' => 'Course Code (Required)'],
-                ['key' => 'semester_id', 'label' => 'Semester ID (Required)'],
-                ['key' => 'first', 'label' => 'First Exam (0-20)'],
-                ['key' => 'second', 'label' => 'Second Exam (0-20)'],
-                ['key' => 'midterm', 'label' => 'Midterm Exam (0-20)'],
-                ['key' => 'final', 'label' => 'Final Exam (0-40)'],
+                ['key' => 'student_number', 'label' => 'Student ID'],
+                ['key' => 'coursework', 'label' => 'Coursework'],
+                ['key' => 'midterm', 'label' => 'Midterm'],
+                ['key' => 'final', 'label' => 'Final'],
             ]
         ]);
     }
@@ -51,7 +48,10 @@ class GradeImportController extends Controller
     {
         $request->validate([
             'temp_path' => 'required|string',
-            'mapping' => 'required|array', // e.g., ["student_number" => "A", "first" => "C"]
+            'mapping' => 'required|array',
+            'semester_id' => 'required|integer',
+            'program_id' => 'required|integer',
+            'course_id' => 'required|integer',
         ]);
 
         if (!Storage::exists($request->temp_path)) {
@@ -60,7 +60,9 @@ class GradeImportController extends Controller
 
         $results = $this->gradeImportService->processImport(
             $request->temp_path,
-            $request->mapping
+            $request->mapping,
+            $request->semester_id,
+            $request->course_id
         );
 
         // Clean up temp file
@@ -75,5 +77,66 @@ class GradeImportController extends Controller
                 'errors' => $results['errors']
             ]
         ]);
+    }
+
+    /**
+     * Validate the spreadsheet mapping before importing.
+     */
+    public function validate(Request $request): JsonResponse
+    {
+        $request->validate([
+            'temp_path' => 'required|string',
+            'mapping' => 'required|array',
+            'semester_id' => 'required|integer',
+            'program_id' => 'required|integer',
+            'course_id' => 'required|integer',
+        ]);
+
+        if (!Storage::exists($request->temp_path)) {
+            return response()->json(['message' => 'Temporary file not found or expired.'], 422);
+        }
+
+        $results = $this->gradeImportService->validateImport(
+            $request->temp_path,
+            $request->mapping,
+            $request->semester_id,
+            $request->course_id
+        );
+        
+        return response()->json($results);
+    }
+
+    /**
+     * Download a sample CSV template for grade imports.
+     */
+    public function template(): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        $headers = [
+            'Student ID',
+            'Coursework',
+            'Midterm',
+            'Final',
+        ];
+
+        $students = \App\Models\Student::limit(5)->get();
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'grade_import_template');
+        $handle = fopen($tempFile, 'w');
+        
+        fputs($handle, chr(0xEF) . chr(0xBB) . chr(0xBF)); // BOM for UTF-8
+        fputcsv($handle, $headers);
+        
+        foreach ($students as $student) {
+            fputcsv($handle, [
+                $student->student_number,
+                rand(10, 40),
+                rand(10, 20),
+                rand(20, 40),
+            ]);
+        }
+
+        fclose($handle);
+
+        return response()->download($tempFile, 'grades_sample.csv')->deleteFileAfterSend(true);
     }
 }

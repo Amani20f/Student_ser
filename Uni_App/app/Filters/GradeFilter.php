@@ -16,7 +16,7 @@ class GradeFilter extends QueryFilter
 
     public function program_id($value)
     {
-        $this->builder->whereHas('student', function ($query) use ($value) {
+        $this->builder->whereHas('course', function ($query) use ($value) {
             $query->where('program_id', $value);
         });
     }

@@ -34,11 +34,27 @@ class ProfileController extends Controller
         $validated = $request->validated();
 
         DB::transaction(function () use ($user, $validated, $request) {
-            // Update Student fields (phone and profile_photo)
+            // Update User fields (name, email)
+            $userData = [];
+            if (isset($validated['name'])) {
+                $userData['name'] = $validated['name'];
+            }
+            if (isset($validated['email'])) {
+                $userData['email'] = $validated['email'];
+            }
+            if (!empty($userData)) {
+                $user->update($userData);
+            }
+
+            // Update Student fields (phone, national_id, and profile_photo)
             if ($user->student) {
                 $studentData = [
                     'phone' => $validated['phone'] ?? $user->student->phone,
                 ];
+
+                if (isset($validated['national_id'])) {
+                    $studentData['national_id'] = $validated['national_id'];
+                }
 
                 if ($request->hasFile('profile_photo')) {
                     $path = $request->file('profile_photo')->store('profiles', 'public');

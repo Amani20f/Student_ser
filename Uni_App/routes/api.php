@@ -48,6 +48,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::put('/change-password', [AuthController::class, 'changePassword']);
+    Route::get('/courses', [\App\Http\Controllers\Api\Admin\CourseController::class, 'index'])->middleware('role:admin|grade_control|student_affairs|student');
 
     // Password Reset
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->withoutMiddleware('auth:sanctum');
@@ -68,11 +69,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/programs/{program}/restore', [\App\Http\Controllers\Api\Admin\ProgramController::class, 'restore']);
 
         // Course Management
-        Route::apiResource('courses', \App\Http\Controllers\Api\Admin\CourseController::class);
+        Route::apiResource('courses', \App\Http\Controllers\Api\Admin\CourseController::class)->except(['index']);
         Route::post('/courses/{course}/restore', [\App\Http\Controllers\Api\Admin\CourseController::class, 'restore']);
 
         // Semester Management
-        Route::apiResource('semesters', \App\Http\Controllers\Api\Admin\SemesterController::class);
+        Route::get('/semesters', [\App\Http\Controllers\Api\Admin\SemesterController::class, 'index'])->withoutMiddleware('role:admin')->middleware('role:admin|grade_control|student_affairs');
+        Route::apiResource('semesters', \App\Http\Controllers\Api\Admin\SemesterController::class)->except(['index']);
 
         // Student Management (read-only)
         Route::apiResource('students', \App\Http\Controllers\Api\Admin\StudentManagementController::class)->only(['index', 'destroy']);
@@ -98,12 +100,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:admin|student_affairs')->prefix('admin')->group(function () {
         // Student Application Management
         Route::get('/applications', [StudentApplicationManagementController::class, 'index']);
-        Route::get('/applications/{id}', [StudentApplicationManagementController::class, 'show']);
         Route::post('/applications/{id}/approve', [StudentApplicationManagementController::class, 'approve']);
-        Route::post('/applications/{id}/reject', [StudentApplicationManagementController::class, 'reject']);
-        Route::get('/unified-requests', [\App\Http\Controllers\Api\Admin\UnifiedRequestController::class, 'index']);
     });
 
+    Route::middleware('role:admin|student_affairs|accountant')->prefix('admin')->group(function () {
+        Route::get('/applications/{id}', [StudentApplicationManagementController::class, 'show']);
+        Route::post('/applications/{id}/reject', [StudentApplicationManagementController::class, 'reject']);
+    });
+
+    Route::middleware('role:admin|student_affairs|accountant')->prefix('admin')->group(function () {
+        Route::get('/unified-requests', [\App\Http\Controllers\Api\Admin\UnifiedRequestController::class, 'index']);
+    });
     /**
      * Student Endpoints
      */
@@ -146,6 +153,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Notifications
         Route::get('/notifications', [\App\Http\Controllers\Api\Student\NotificationController::class, 'index']);
         Route::put('/notifications/{id}/read', [\App\Http\Controllers\Api\Student\NotificationController::class, 'markAsRead']);
+        Route::delete('/notifications', [\App\Http\Controllers\Api\Student\NotificationController::class, 'clearAll']);
 
         // Announcements
         Route::get('/announcements', [StudentAnnouncementController::class, 'index']);
@@ -187,6 +195,8 @@ Route::middleware('auth:sanctum')->group(function () {
         });
         Route::middleware('role:accountant')->group(function () {
             Route::put('/appeals/{id}/verify-payment', [\App\Http\Controllers\Api\Staff\AppealManagementController::class, 'verifyPayment']);
+            // Verify Application Payment
+            Route::put('/applications/{id}/verify-payment', [\App\Http\Controllers\Api\Admin\StudentApplicationManagementController::class, 'verifyPayment']);
         });
 
         // Appeal Management — Grade Control
@@ -207,12 +217,29 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::middleware('role:grade_control|admin')->group(function () {
             Route::get('/grades', [GradeManagementController::class, 'indexBySemester']);
             Route::get('/programs/{programId}/grades', [GradeManagementController::class, 'indexByProgram']);
+            // Allow grade_control to read courses and programs for filtering (active only)
+            Route::get('/courses', function () {
+                $courses = \App\Models\Course::whereHas('program', function ($query) {
+                    $query->where('is_available', true);
+                })
+                ->select('id', 'program_id', 'course_code', 'course_name', 'credit_hours', 'semester_level', 'order_index')
+                ->get();
+                return response()->json(['data' => $courses]);
+            });
+            Route::get('/programs', function () {
+                $programs = \App\Models\Program::where('is_available', true)
+                    ->select('id', 'name', 'code', 'department_id', 'duration_years', 'degree_type')
+                    ->get();
+                return response()->json(['data' => $programs]);
+            });
         });
-        Route::middleware('role:grade_control')->group(function () {
+        Route::middleware('role:grade_control|admin')->group(function () {
             Route::put('/grades/{id}', [GradeManagementController::class, 'update']);
             // Excel Import
             Route::post('/grades/import/preview', [GradeImportController::class, 'preview']);
+            Route::post('/grades/import/validate', [GradeImportController::class, 'validate']);
             Route::post('/grades/import/store', [GradeImportController::class, 'store']);
+            Route::get('/grades/import/template', [GradeImportController::class, 'template']);
         });
 
         // Payment Management — read access for admin, write only for accountant
@@ -224,9 +251,12 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('/payments/{id}/reject', [StaffPaymentController::class, 'reject']);
         });
 
-        // Service Request Management — read access for admin, write only for student_affairs
-        Route::middleware('role:student_affairs|admin')->group(function () {
+        // Service Request Management — read access for admin, accountant, student_affairs
+        Route::middleware('role:student_affairs|accountant|admin')->group(function () {
             Route::get('/requests', [App\Http\Controllers\Api\Staff\RequestController::class, 'index']);
+        });
+
+        Route::middleware('role:student_affairs|admin')->group(function () {
             Route::get('/re-enrollment/{id}', [\App\Http\Controllers\Api\ReEnrollmentController::class, 'show']);
 
             // Surveys
@@ -237,7 +267,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::apiResource('announcements', AdminAnnouncementController::class);
             Route::patch('/announcements/{announcement}/toggle', [AdminAnnouncementController::class, 'toggle']);
         });
-        Route::middleware('role:student_affairs')->group(function () {
+        Route::middleware('role:student_affairs|accountant')->group(function () {
             Route::patch('/requests/{id}/status', [App\Http\Controllers\Api\Staff\RequestController::class, 'updateStatus']);
             Route::post('/requests/{id}/ratify', [App\Http\Controllers\Api\Staff\RequestController::class, 'ratify']);
 

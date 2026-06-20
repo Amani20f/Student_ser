@@ -7,10 +7,13 @@ class AppealRepository {
 
   AppealRepository(this._apiClient);
 
-  Future<List<AppealModel>> getAppeals({String? status}) async {
+  Future<List<AppealModel>> getAppeals({String? status, int? programId}) async {
     final queryParams = <String, String>{};
     if (status != null && status != 'all') {
       queryParams['status'] = status;
+    }
+    if (programId != null) {
+      queryParams['program_id'] = programId.toString();
     }
 
     final response = await _apiClient.get(

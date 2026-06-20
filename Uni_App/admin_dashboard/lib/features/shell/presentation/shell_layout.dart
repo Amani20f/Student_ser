@@ -270,15 +270,18 @@ class ShellLayout extends ConsumerWidget {
                           color: cs.primary,
                         ),
                       if (currentPath != '/dashboard') const SizedBox(width: 8),
-                      Text(
-                        _getPageTitle(context, currentPath),
-                        style: tt.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 22,
-                          color: cs.onSurface,
+                      Expanded(
+                        child: Text(
+                          _getPageTitle(context, currentPath),
+                          overflow: TextOverflow.ellipsis,
+                          style: tt.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                            color: cs.onSurface,
+                          ),
                         ),
                       ),
-                      const Spacer(),
+                      const SizedBox(width: 8),
                       // Language toggle
                       Tooltip(
                         message: ref.watch(localeProvider).languageCode == 'en' ? 'Switch to Arabic' : 'Switch to English',
@@ -322,16 +325,7 @@ class ShellLayout extends ConsumerWidget {
                         tooltip: AppLocalizations.of(context)!.toggleTheme,
                       ),
                       const SizedBox(width: 8),
-                      // Notifications
-                      IconButton(
-                        onPressed: () => context.go('/notifications'),
-                        icon: Icon(
-                          Icons.notifications_outlined,
-                          color: cs.onSurface.withAlpha(160),
-                        ),
-                        tooltip: AppLocalizations.of(context)!.notifications,
-                      ),
-                      const SizedBox(width: 12),
+
                       // User badge
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -368,7 +362,16 @@ class ShellLayout extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 4),
+                      IconButton(
+                        onPressed: () => _showChangePasswordDialog(context, ref),
+                        icon: Icon(
+                          Icons.lock_reset_rounded,
+                          color: cs.onSurface.withAlpha(140),
+                        ),
+                        tooltip: AppLocalizations.of(context)!.changePassword,
+                      ),
+                      const SizedBox(width: 4),
                       IconButton(
                         onPressed: () => _showLogoutDialog(context, ref),
                         icon: Icon(
@@ -434,6 +437,7 @@ class ShellLayout extends ConsumerWidget {
 
     addGroup('Academic Operations', 'العمليات الأكاديمية', [
       _NavItem('/grades', l10n.grades, Icons.grade_rounded),
+      _NavItem('/grades/import', isAr ? 'استيراد الدرجات' : 'Grade Import', Icons.upload_file_rounded),
       _NavItem('/appeals', l10n.gradeAppeals, Icons.grading_rounded),
     ]);
 
@@ -469,6 +473,8 @@ class ShellLayout extends ConsumerWidget {
         return l10n.paymentVerification;
       case '/grades':
         return l10n.gradeManagement;
+      case '/grades/import':
+        return Localizations.localeOf(context).languageCode == 'ar' ? 'استيراد الدرجات من إكسل' : 'Import Grades from Excel';
       case '/logs':
         return l10n.activityLogs;
       case '/notifications':
@@ -485,6 +491,194 @@ class ShellLayout extends ConsumerWidget {
         if (path.startsWith('/appeals/')) return l10n.appealDetails;
         return l10n.appTitle;
     }
+  }
+
+  void _showChangePasswordDialog(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    final formKey = GlobalKey<FormState>();
+    final currentCtrl = TextEditingController();
+    final newCtrl = TextEditingController();
+    final confirmCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        bool isLoading = false;
+        bool showCurrent = false;
+        bool showNew = false;
+        bool showConfirm = false;
+        String? errorMessage;
+
+        return StatefulBuilder(
+          builder: (ctx, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              title: Row(
+                children: [
+                  Icon(Icons.lock_reset_rounded, color: cs.primary, size: 24),
+                  const SizedBox(width: 10),
+                  Text(
+                    l10n.changePassword,
+                    style: tt.titleMedium?.copyWith(
+                      color: cs.onSurface,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: 400,
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (errorMessage != null) ...
+                        [
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: cs.errorContainer,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              errorMessage!,
+                              style: tt.bodySmall?.copyWith(
+                                color: cs.onErrorContainer,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      TextFormField(
+                        controller: currentCtrl,
+                        obscureText: !showCurrent,
+                        decoration: InputDecoration(
+                          labelText: l10n.currentPassword,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          suffixIcon: IconButton(
+                            icon: Icon(showCurrent ? Icons.visibility_off : Icons.visibility),
+                            onPressed: () => setState(() => showCurrent = !showCurrent),
+                          ),
+                        ),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return l10n.currentPasswordRequired;
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: newCtrl,
+                        obscureText: !showNew,
+                        decoration: InputDecoration(
+                          labelText: l10n.newPassword,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          suffixIcon: IconButton(
+                            icon: Icon(showNew ? Icons.visibility_off : Icons.visibility),
+                            onPressed: () => setState(() => showNew = !showNew),
+                          ),
+                        ),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return l10n.passwordRequired;
+                          if (v.length < 8) return l10n.newPasswordLengthError;
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: confirmCtrl,
+                        obscureText: !showConfirm,
+                        decoration: InputDecoration(
+                          labelText: l10n.confirmNewPassword,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          suffixIcon: IconButton(
+                            icon: Icon(showConfirm ? Icons.visibility_off : Icons.visibility),
+                            onPressed: () => setState(() => showConfirm = !showConfirm),
+                          ),
+                        ),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return l10n.passwordRequired;
+                          if (v != newCtrl.text) return l10n.passwordMismatch;
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading ? null : () => Navigator.pop(dialogContext),
+                  child: Text(l10n.cancel),
+                ),
+                ElevatedButton(
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          setState(() {
+                            isLoading = true;
+                            errorMessage = null;
+                          });
+                          try {
+                            await ref.read(authRepositoryProvider).changePassword(
+                              currentPassword: currentCtrl.text,
+                              newPassword: newCtrl.text,
+                              confirmPassword: confirmCtrl.text,
+                            );
+                            if (dialogContext.mounted) {
+                              Navigator.pop(dialogContext);
+                            }
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(l10n.passwordUpdatedSuccess),
+                                  backgroundColor: Colors.green.shade700,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            setState(() {
+                              isLoading = false;
+                              errorMessage = e.toString().replaceFirst('Exception: ', '');
+                            });
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: cs.primary,
+                    foregroundColor: cs.onPrimary,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                  child: isLoading
+                      ? SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: cs.onPrimary,
+                          ),
+                        )
+                      : Text(l10n.save),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ).whenComplete(() {
+      currentCtrl.dispose();
+      newCtrl.dispose();
+      confirmCtrl.dispose();
+    });
   }
 
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {

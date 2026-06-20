@@ -92,21 +92,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Padding(
                                     padding: EdgeInsets.symmetric(
                                       vertical: constraints.maxHeight > 750
-                                          ? 20
-                                          : 10,
+                                          ? 16
+                                          : 8,
                                     ),
                                     child: Image.asset(
                                       'assets/images/logo.png',
                                       height: constraints.maxHeight > 750
-                                          ? 200
-                                          : 140,
+                                          ? 180
+                                          : 130,
                                       fit: BoxFit.contain,
                                     ),
                                   ),
                                   SizedBox(
                                     height: constraints.maxHeight > 750
-                                        ? 40
-                                        : 16,
+                                        ? 24
+                                        : 12,
                                   ),
 
                                   // Email Field
@@ -124,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       return null;
                                     },
                                   ),
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: 12),
 
                                   // Password Field
                                   ModernTextField(
@@ -145,29 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       return null;
                                     },
                                   ),
-                                  const SizedBox(height: 12),
-
-                                  // Forgot Password Link
-                                  Align(
-                                    alignment: Alignment.centerRight,
-                                    child: TextButton(
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) =>
-                                                const ForgotPasswordScreen(),
-                                          ),
-                                        );
-                                      },
-                                      child: Text(
-                                        AppLocalizations.of(
-                                          context,
-                                        )!.forgotPassword,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 24),
+                                  const SizedBox(height: 20),
 
                                   // Login Button
                                   BlocBuilder<AuthCubit, AuthState>(
@@ -195,7 +173,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           shadowColor: theme.colorScheme.primary
                                               .withValues(alpha: 0.4),
                                           padding: const EdgeInsets.symmetric(
-                                            vertical: 20,
+                                            vertical: 18,
                                           ),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(
@@ -229,20 +207,36 @@ class _LoginScreenState extends State<LoginScreen> {
                                       );
                                     },
                                   ),
-                                  const SizedBox(height: 24),
+                                  const SizedBox(height: 20),
 
                                   // Links
                                   Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text(
-                                        AppLocalizations.of(
-                                          context,
-                                        )!.dontHaveAccount,
-                                        style: Theme.of(
-                                          context,
-                                        ).textTheme.bodyMedium,
+                                      // 1. Forgot Password
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  const ForgotPasswordScreen(),
+                                            ),
+                                          );
+                                        },
+                                        child: Text(
+                                          AppLocalizations.of(
+                                            context,
+                                          )!.forgotPassword,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
+                                          ),
+                                        ),
                                       ),
+                                      const SizedBox(height: 4),
+
+                                      // 2. New Student Registration
                                       TextButton(
                                         onPressed: () {
                                           Navigator.push(
@@ -263,10 +257,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                           )!.newStudentRegistration,
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 16,
+                                            fontSize: 15,
                                           ),
                                         ),
                                       ),
+                                      const SizedBox(height: 4),
+
+                                      // 3. Check Application Status
                                       TextButton(
                                         onPressed: () {
                                           showGeneralDialog(
@@ -289,12 +286,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                           )!.verifyReferenceRequest,
                                           style: GoogleFonts.outfit(
                                             color: const Color(0xFFFF9800),
-                                            fontSize: 14,
+                                            fontSize: 15,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(height: 8),
+                                      const SizedBox(height: 4),
+
+                                      // 4. Need Help / Technical Support
                                       TextButton(
                                         onPressed: () {
                                           showGeneralDialog(
@@ -333,7 +332,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                       .colorScheme
                                                       .onSurface
                                                       .withValues(alpha: 0.7),
-                                                  fontSize: 14,
+                                                  fontSize: 15,
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                               ),
@@ -343,7 +342,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 20),
                                 ]
                                 .animate(interval: 50.ms)
                                 .fadeIn(duration: 350.ms, curve: Curves.easeOut)

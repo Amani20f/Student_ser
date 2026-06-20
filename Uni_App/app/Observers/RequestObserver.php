@@ -20,7 +20,7 @@ class RequestObserver
             'causer_id' => auth()->id(),
             'model_type' => Request::class,
             'subject_id' => $request->id,
-            'action' => 'created',
+            'action' => 'request_created',
             'old_values' => null,
             'new_values' => $request->toArray(),
         ]);
@@ -31,22 +31,29 @@ class RequestObserver
      */
     public function updated(Request $request): void
     {
+        $action = 'updated';
+        if ($request->wasChanged('status')) {
+            if ($request->status === \App\Enums\RequestStatusEnum::APPROVED) {
+                $action = 'request_approved';
+            } elseif ($request->status === \App\Enums\RequestStatusEnum::REJECTED) {
+                $action = 'request_rejected';
+            }
+        }
+
         // Log the update
         $this->activityLogRepository->create([
             'causer_id' => auth()->id(),
             'model_type' => Request::class,
             'subject_id' => $request->id,
-            'action' => 'updated',
+            'action' => $action,
             'old_values' => $request->getOriginal(),
             'new_values' => $request->getChanges(),
         ]);
 
         // Check if status changed to APPROVED
         if ($request->wasChanged('status') && $request->status === \App\Enums\RequestStatusEnum::APPROVED) {
-            // Load request type to check slug
             $requestType = $request->requestType;
-            
-            if ($requestType && $requestType->slug === 're_enrollment') {
+            if ($requestType && ($requestType->slug === 're_enrollment' || $requestType->slug === 're-enrollment')) {
                 $student = $request->student;
                 
                 if ($student && $student->status === \App\Enums\StudentStatusEnum::SUSPENDED) {
@@ -61,7 +68,7 @@ class RequestObserver
                         'new_status' => 'active',
                     ]);
                 }
-            } elseif ($requestType && $requestType->slug === 'suspension_of_enrollment') {
+            } elseif ($requestType && ($requestType->slug === 'suspension_of_enrollment' || $requestType->slug === 'tagyl-dras')) {
                 $student = $request->student;
                 
                 if ($student && $student->status === \App\Enums\StudentStatusEnum::ACTIVE) {
@@ -76,7 +83,7 @@ class RequestObserver
                         'new_status' => 'suspended',
                     ]);
                 }
-            } elseif ($requestType && $requestType->slug === 'absence_excuse') {
+            } elseif ($requestType && ($requestType->slug === 'absence_excuse' || $requestType->slug === 'aathr-ghyab')) {
                  // Log approval for absence excuse (Student status remains ACTIVE)
                  \Illuminate\Support\Facades\Log::info('Absence excuse approved', [
                      'student_id' => $request->student_id,

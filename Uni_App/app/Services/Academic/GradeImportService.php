@@ -34,7 +34,7 @@ class GradeImportService
     /**
      * Process the full import using the mapping.
      */
-    public function processImport(string $path, array $mapping): array
+    public function processImport(string $path, array $mapping, int $semesterId, int $courseId): array
     {
         $rows = Excel::toArray([], $path)[0] ?? [];
         $headerRow = array_shift($rows); // Remove headers
@@ -42,9 +42,10 @@ class GradeImportService
         $stats = ['total' => count($rows), 'success' => 0, 'failed' => 0, 'errors' => []];
 
         foreach ($rows as $index => $row) {
+            $grade = null;
             try {
-                DB::transaction(function () use ($row, $mapping, $headerRow, &$stats) {
-                    $data = [];
+                DB::transaction(function () use ($row, $mapping, $headerRow, $semesterId, $courseId, &$stats, &$grade) {
+                    $data = ['semester_id' => $semesterId, 'course_id' => $courseId];
                     foreach ($mapping as $dbField => $userValue) {
                         // Support both index (0, 1, 2...) and Header String ("Student ID")
                         $columnIndex = is_numeric($userValue) 
@@ -59,12 +60,97 @@ class GradeImportService
                     }
 
                     $grade = $this->importRow($data);
-                    Mail::to($grade->student->user->email)->send(new GradeUpdated($grade));
                     $stats['success']++;
                 });
+
+                // Send email OUTSIDE transaction so a mail failure doesn't rollback the saved grade
+                if ($grade) {
+                    try {
+                        Mail::to($grade->student->user->email)->send(new GradeUpdated($grade));
+                    } catch (\Exception $mailEx) {
+                        // Log mail failure but don't fail the import
+                        \Illuminate\Support\Facades\Log::warning("Grade import mail failed for grade {$grade->id}: " . $mailEx->getMessage());
+                    }
+                }
             } catch (\Exception $e) {
                 $stats['failed']++;
                 $stats['errors'][] = "Row " . ($index + 2) . ": " . $e->getMessage();
+            }
+        }
+
+        return $stats;
+    }
+
+    /**
+     * Validate the import mapping before committing.
+     */
+    public function validateImport(string $path, array $mapping, int $semesterId, int $courseId): array
+    {
+        $rows = Excel::toArray([], $path)[0] ?? [];
+        $headerRow = array_shift($rows); // Remove headers
+
+        $stats = [
+            'total' => count($rows),
+            'valid_count' => 0,
+            'invalid_count' => 0,
+            'will_update_count' => 0,
+            'errors' => [],
+            'preview_rows' => []
+        ];
+
+        foreach ($rows as $index => $row) {
+            try {
+                DB::transaction(function () use ($row, $mapping, $headerRow, $semesterId, $courseId, &$stats) {
+                    $data = ['semester_id' => $semesterId, 'course_id' => $courseId];
+                    foreach ($mapping as $dbField => $userValue) {
+                        $columnIndex = is_numeric($userValue) 
+                            ? (int)$userValue 
+                            : array_search($userValue, $headerRow);
+
+                        if ($columnIndex === false) {
+                            throw new \Exception("Mapping failed: Column [{$userValue}] not found in spreadsheet.");
+                        }
+
+                        $data[$dbField] = $row[$columnIndex] ?? null;
+                    }
+
+                    // Check if student exists
+                    $student = Student::with('user')->where('student_number', $data['student_number'])->first();
+                    if (!$student) throw new \Exception("Student [{$data['student_number']}] not found.");
+
+                    // Check if exists in DB to see if it will update
+                    $exists = Grade::where([
+                        'student_id' => $student->id,
+                        'course_id' => $courseId,
+                        'semester_id' => $semesterId,
+                    ])->exists();
+
+                    if ($exists) {
+                        $stats['will_update_count']++;
+                    }
+                    $stats['valid_count']++;
+                    
+                    $coursework = floatval($data['coursework'] ?? 0);
+                    $midterm = floatval($data['midterm'] ?? 0);
+                    $final = floatval($data['final'] ?? 0);
+                    
+                    $stats['preview_rows'][] = [
+                        'student_number' => $student->student_number,
+                        'student_name' => $student->user->name ?? 'Unknown',
+                        'coursework' => $coursework,
+                        'midterm' => $midterm,
+                        'final' => $final,
+                        'total' => $coursework + $midterm + $final
+                    ];
+                    
+                    // Throw exception to rollback transaction
+                    throw new \Exception("ROLLBACK");
+                });
+            } catch (\Exception $e) {
+                if ($e->getMessage() !== 'ROLLBACK') {
+                    $stats['invalid_count']++;
+                    $stats['errors'][] = "Row " . ($index + 2) . ": " . $e->getMessage();
+                }
             }
         }
 
@@ -76,15 +162,12 @@ class GradeImportService
      */
    private function importRow(array $data): Grade
 {
-    $student = Student::where('student_number', $data['student_number'])->first();
+    $student = Student::with('user')->where('student_number', $data['student_number'])->first();
     if (!$student) throw new \Exception("Student [{$data['student_number']}] not found.");
 
-    $course = Course::where('course_code', $data['course_code'])->first();
-    if (!$course) throw new \Exception("Course [{$data['course_code']}] not found.");
-
     $scoreData = [
-        'first' => floatval($data['first'] ?? 0),
-        'second' => floatval($data['second'] ?? 0),
+        'first' => floatval($data['coursework'] ?? 0),
+        'second' => 0,
         'midterm' => floatval($data['midterm'] ?? 0),
         'final' => floatval($data['final'] ?? 0),
     ];
@@ -94,7 +177,7 @@ class GradeImportService
     return Grade::updateOrCreate(
         [
             'student_id' => $student->id,
-            'course_id' => $course->id,
+            'course_id' => $data['course_id'],
             'semester_id' => $data['semester_id'],
         ],
         array_merge($scoreData, [

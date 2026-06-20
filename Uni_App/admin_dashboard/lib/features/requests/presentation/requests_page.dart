@@ -41,6 +41,8 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
   }
 
   Widget _buildFilters(ColorScheme cs, TextTheme tt, AppLocalizations l10n) {
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+
     return Container(
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.only(bottom: 16),
@@ -62,6 +64,7 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12),
               ),
+              onChanged: (_) => _applyFilters(),
               onSubmitted: (_) => _applyFilters(),
             ),
           ),
@@ -77,15 +80,11 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
               ),
               initialValue: _selectedStatus,
               items: [
-                const DropdownMenuItem(value: '', child: Text('الكل')),
+                DropdownMenuItem(value: '', child: Text(isAr ? 'الكل' : 'All')),
                 DropdownMenuItem(value: 'pending', child: Text(StatusHelper.localize(context, 'pending'))),
+                DropdownMenuItem(value: 'under_review', child: Text(StatusHelper.localize(context, 'under_review'))),
                 DropdownMenuItem(value: 'approved', child: Text(StatusHelper.localize(context, 'approved'))),
                 DropdownMenuItem(value: 'rejected', child: Text(StatusHelper.localize(context, 'rejected'))),
-                DropdownMenuItem(value: 'ratified', child: Text(StatusHelper.localize(context, 'ratified'))),
-                DropdownMenuItem(value: 'paid', child: Text(StatusHelper.localize(context, 'paid'))),
-                DropdownMenuItem(value: 'under_review', child: Text(StatusHelper.localize(context, 'under_review'))),
-                DropdownMenuItem(value: 'verified', child: Text(StatusHelper.localize(context, 'verified'))),
-                DropdownMenuItem(value: 'completed', child: Text(StatusHelper.localize(context, 'completed'))),
               ],
               onChanged: (val) {
                 setState(() => _selectedStatus = val ?? '');
@@ -104,31 +103,19 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12),
               ),
               initialValue: _selectedType,
-              items: const [
-                DropdownMenuItem(value: 'all', child: Text('الكل')),
-                DropdownMenuItem(value: 'student_application', child: Text('طلب قبول')),
-                DropdownMenuItem(value: 'appeal', child: Text('تظلم درجة')),
-                DropdownMenuItem(value: 'payment', child: Text('طلب دفع مالي')),
-                DropdownMenuItem(value: 'absence_excuse', child: Text('عذر غياب')),
-                DropdownMenuItem(value: 'suspension_of_enrollment', child: Text('تأجيل دراسة')),
-                DropdownMenuItem(value: 're_enrollment', child: Text('إعادة قيد')),
-                DropdownMenuItem(value: 'other_request', child: Text('طلب خدمات عامة')),
+              items: [
+                DropdownMenuItem(value: 'all', child: Text(isAr ? 'الكل' : 'All')),
+                DropdownMenuItem(value: 'student_application', child: Text(isAr ? 'طلب قبول' : 'Admission Application')),
+                DropdownMenuItem(value: 'appeal', child: Text(isAr ? 'تظلم درجة' : 'Grade Grievance')),
+                DropdownMenuItem(value: 'payment', child: Text(isAr ? 'طلب دفع مالي' : 'Payment Verification')),
+                DropdownMenuItem(value: 'absence_excuse', child: Text(isAr ? 'عذر غياب' : 'Absence Excuse')),
+                DropdownMenuItem(value: 'suspension_of_enrollment', child: Text(isAr ? 'تأجيل دراسة' : 'Stop Enrollment')),
+                DropdownMenuItem(value: 're_enrollment', child: Text(isAr ? 'إعادة قيد' : 'Re-enrollment')),
               ],
               onChanged: (val) {
                 setState(() => _selectedType = val ?? 'all');
                 _applyFilters();
               },
-            ),
-          ),
-          const SizedBox(width: 12),
-
-          ElevatedButton.icon(
-            onPressed: _applyFilters,
-            icon: const Icon(Icons.filter_list),
-            label: const Text('تصفية'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ],
@@ -153,22 +140,23 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
   }
 
   void _showPaymentDetailsDialog(UnifiedRequestModel item) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
+    final pageContext = context;
+    final pageMessenger = ScaffoldMessenger.of(pageContext);
+    final cs = Theme.of(pageContext).colorScheme;
+    final tt = Theme.of(pageContext).textTheme;
     final details = item.details;
     final isPending = item.status == 'pending';
     final isAdmin = ref.read(authProvider).primaryRole == 'admin';
 
     showDialog(
-      context: context,
+      context: pageContext,
       builder: (dialogContext) {
         final notesController = TextEditingController();
         bool isSubmitting = false;
 
         return StatefulBuilder(
-          builder: (context, setState) {
+          builder: (dialogContext2, setState) {
             Future<void> processPayment(String action) async {
-              final messenger = ScaffoldMessenger.of(context);
               setState(() => isSubmitting = true);
               try {
                 final repo = ref.read(paymentRepositoryProvider);
@@ -176,7 +164,7 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
                   await repo.verifyPayment(item.id);
                 } else {
                   if (notesController.text.trim().isEmpty) {
-                    messenger.showSnackBar(
+                    pageMessenger.showSnackBar(
                       SnackBar(content: const Text('ملاحظات الرفض مطلوبة'), backgroundColor: cs.error),
                     );
                     setState(() => isSubmitting = false);
@@ -185,10 +173,10 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
                   await repo.rejectPayment(item.id, notesController.text.trim());
                 }
 
-                if (mounted) {
-                  messenger.showSnackBar(
+                if (pageContext.mounted) {
+                  pageMessenger.showSnackBar(
                     SnackBar(
-                      content: Text(action == 'approve' ? 'تم تأكيد الدفع بنجاح' : 'تم رفض الدفع'),
+                      content: Text(action == 'approve' ? 'تم اعتماد عملية الدفع بنجاح.' : 'تم رفض عملية الدفع.'),
                       backgroundColor: action == 'approve' ? Colors.green : Colors.red,
                     ),
                   );
@@ -198,8 +186,8 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
                   }
                 }
               } catch (e) {
-                if (mounted) {
-                  messenger.showSnackBar(
+                if (pageContext.mounted) {
+                  pageMessenger.showSnackBar(
                     SnackBar(content: Text('خطأ: $e'), backgroundColor: cs.error),
                   );
                 }
@@ -259,7 +247,7 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
                             onPressed: () async {
                               final uri = Uri.parse(details['receipt_image'] as String);
                               if (await canLaunchUrl(uri)) {
-                                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
                               }
                             },
                             icon: const Icon(Icons.open_in_new),
@@ -313,24 +301,25 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
   }
 
   void _showServiceRequestDetailsDialog(UnifiedRequestModel item) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
+    final pageContext = context;
+    final pageMessenger = ScaffoldMessenger.of(pageContext);
+    final cs = Theme.of(pageContext).colorScheme;
+    final tt = Theme.of(pageContext).textTheme;
     final details = item.details;
     final isPending = item.status == 'pending' || item.status == 'ratified';
     final isAdmin = ref.read(authProvider).primaryRole == 'admin';
 
     showDialog(
-      context: context,
+      context: pageContext,
       builder: (dialogContext) {
         final notesController = TextEditingController();
         bool isSubmitting = false;
 
         return StatefulBuilder(
-          builder: (context, setState) {
+          builder: (dialogContext2, setState) {
             Future<void> processRequest(String actionStatus) async {
-              final messenger = ScaffoldMessenger.of(context);
               if (actionStatus == 'rejected' && notesController.text.trim().isEmpty) {
-                messenger.showSnackBar(
+                pageMessenger.showSnackBar(
                   SnackBar(content: const Text('ملاحظات الإدارة مطلوبة في حالة الرفض'), backgroundColor: cs.error),
                 );
                 return;
@@ -345,10 +334,21 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
                   notesController.text.trim(),
                 );
 
-                if (mounted) {
-                  messenger.showSnackBar(
+                if (pageContext.mounted) {
+                  String msg = '';
+                  final typeLower = (item.requestType).toLowerCase();
+                  if (typeLower.contains('عذر') || typeLower.contains('absence') || typeLower.contains('غياب')) {
+                    msg = actionStatus == 'approved' ? 'تم اعتماد عذر الغياب بنجاح.' : 'تم رفض عذر الغياب.';
+                  } else if (typeLower.contains('إيقاف') || typeLower.contains('تأجيل') || typeLower.contains('suspension') || typeLower.contains('dras')) {
+                    msg = actionStatus == 'approved' ? 'تم اعتماد طلب إيقاف القيد.' : 'تم رفض الطلب بنجاح.';
+                  } else if (typeLower.contains('إعادة') || typeLower.contains('re_enrollment') || typeLower.contains('قيد')) {
+                    msg = actionStatus == 'approved' ? 'تم اعتماد طلب إعادة القيد.' : 'تم رفض الطلب بنجاح.';
+                  } else {
+                    msg = actionStatus == 'approved' ? 'تم اعتماد الطلب بنجاح.' : 'تم رفض الطلب بنجاح.';
+                  }
+                  pageMessenger.showSnackBar(
                     SnackBar(
-                      content: Text(actionStatus == 'approved' ? 'تم قبول الطلب بنجاح' : 'تم رفض الطلب'),
+                      content: Text(msg),
                       backgroundColor: actionStatus == 'approved' ? Colors.green : Colors.red,
                     ),
                   );
@@ -358,8 +358,8 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
                   }
                 }
               } catch (e) {
-                if (mounted) {
-                  messenger.showSnackBar(
+                if (pageContext.mounted) {
+                  pageMessenger.showSnackBar(
                     SnackBar(content: Text('خطأ: $e'), backgroundColor: cs.error),
                   );
                 }
@@ -399,7 +399,7 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
                       const SizedBox(height: 16),
 
                       // Form Data Fields
-                      if (details['form_data'] != null && (details['form_data'] as Map).isNotEmpty) ...[
+                      if (details['form_data'] != null && details['form_data'] is Map && (details['form_data'] as Map).isNotEmpty) ...[
                         Text('بيانات الطلب الإضافية:', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
                         ...(details['form_data'] as Map).entries.map((entry) {
@@ -418,40 +418,69 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
                       ],
 
                       // Attachments
-                      if (details['attachment'] != null && (details['attachment'] as Map).isNotEmpty) ...[
-                        Text('المرفقات:', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: (details['attachment'] as Map).entries.map((entry) {
-                            final fileUrl = '${ApiConstants.baseUrl.replaceFirst('/api', '')}/storage/${entry.value}';
-                            return ActionChip(
-                              avatar: Icon(Icons.attach_file, size: 16, color: cs.primary),
-                              label: Text(entry.key.toString(), style: TextStyle(color: cs.primary)),
-                              backgroundColor: cs.primary.withAlpha(20),
-                              onPressed: () async {
-                                final uri = Uri.parse(fileUrl);
-                                if (await canLaunchUrl(uri)) {
-                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                }
-                              },
-                            );
-                          }).toList(),
-                        ),
-                        const SizedBox(height: 16),
+                      if (details['attachment'] != null) ...[
+                        () {
+                          final dynamic rawAttachment = details['attachment'];
+                          final Map<String, dynamic> attachmentMap = {};
+                          if (rawAttachment is Map) {
+                            rawAttachment.forEach((k, v) {
+                              attachmentMap[k.toString()] = v;
+                            });
+                          } else if (rawAttachment is List) {
+                            for (int i = 0; i < rawAttachment.length; i++) {
+                              attachmentMap['المرفق ${i + 1}'] = rawAttachment[i];
+                            }
+                          } else if (rawAttachment is String && rawAttachment.isNotEmpty) {
+                            attachmentMap['المرفق'] = rawAttachment;
+                          }
+
+                          if (attachmentMap.isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('المرفقات:', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: attachmentMap.entries.map((entry) {
+                                  final path = entry.value.toString();
+                                  final fileUrl = path.startsWith('http')
+                                      ? path
+                                      : '${ApiConstants.baseUrl.replaceFirst('/api', '')}/storage/$path';
+                                  return ActionChip(
+                                    avatar: Icon(Icons.attach_file, size: 16, color: cs.primary),
+                                    label: Text(entry.key, style: TextStyle(color: cs.primary)),
+                                    backgroundColor: cs.primary.withAlpha(20),
+                                    onPressed: () async {
+                                      final uri = Uri.parse(fileUrl);
+                                      if (await canLaunchUrl(uri)) {
+                                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                      }
+                                    },
+                                  );
+                                }).toList(),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                          );
+                        }(),
                       ],
 
                       // Absence Record
-                      if (details['absence_excuse'] != null) ...[
+                      if (details['absence_excuse'] != null && details['absence_excuse'] is Map) ...[
                         Text('سجلات الغياب والمقررات ذات العذر:', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
                         _buildInfoRow('السنة الأكاديمية', details['absence_excuse']['academic_year'] ?? '—'),
                         _buildInfoRow('الفصل الدراسي', details['absence_excuse']['semester'] ?? '—'),
                         _buildInfoRow('السبب الرئيس', details['absence_excuse']['reason'] ?? '—'),
                         const SizedBox(height: 8),
-                        if (details['absence_excuse']['items'] != null)
+                        if (details['absence_excuse']['items'] != null && details['absence_excuse']['items'] is List)
                           ...(details['absence_excuse']['items'] as List).map((excuseItem) {
+                            if (excuseItem is! Map) return const SizedBox.shrink();
                             return Container(
                               margin: const EdgeInsets.only(bottom: 8),
                               padding: const EdgeInsets.all(12),
@@ -547,6 +576,7 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -562,7 +592,7 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
                   Icon(Icons.error_outline, color: cs.error, size: 48),
                   const SizedBox(height: 16),
                   Text(
-                    'فشل تحميل الطلبات الموحدة: $error',
+                    isAr ? 'فشل تحميل الطلبات الموحدة: $error' : 'Failed to load unified requests: $error',
                     style: tt.bodyMedium?.copyWith(color: cs.onSurface.withAlpha(140)),
                   ),
                   const SizedBox(height: 12),
@@ -581,19 +611,40 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Text(
-                      'إجمالي الطلبات الموحدة: ${requests.length}',
+                      isAr ? 'إجمالي الطلبات: ${requests.length}' : 'Total Requests: ${requests.length}',
                       style: tt.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: cs.onSurface),
                     ),
                   ),
                   if (requests.isEmpty)
-                    const Expanded(
+                    Expanded(
                       child: Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.inbox_rounded, color: Colors.grey, size: 64),
-                            SizedBox(height: 16),
-                            Text('لا توجد طلبات مطابقة للمعايير المحددة.', textAlign: TextAlign.center),
+                            const Icon(Icons.inbox_rounded, color: Colors.grey, size: 64),
+                            const SizedBox(height: 16),
+                            Text(
+                              () {
+                                final statusVal = _selectedStatus;
+                                if (statusVal == 'pending') {
+                                  return isAr ? 'لا توجد طلبات قيد الانتظار' : 'No pending requests';
+                                } else if (statusVal == 'under_review') {
+                                  return isAr ? 'لا توجد طلبات تحت المراجعة' : 'No requests under review';
+                                } else if (statusVal == 'approved') {
+                                  return isAr ? 'لا توجد طلبات مقبولة' : 'No approved requests';
+                                } else if (statusVal == 'rejected') {
+                                  return isAr ? 'لا توجد طلبات مرفوضة' : 'No rejected requests';
+                                } else if (statusVal == 'verified') {
+                                  return isAr ? 'لا توجد طلبات معتمدة' : 'No verified requests';
+                                } else {
+                                  return isAr ? 'لم يتم العثور على طلبات' : 'No requests found';
+                                }
+                              }(),
+                              textAlign: TextAlign.center,
+                              style: tt.titleMedium?.copyWith(
+                                color: cs.onSurface.withAlpha(140),
+                              ),
+                            ),
                           ],
                         ),
                       ),

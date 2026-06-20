@@ -160,6 +160,11 @@ class StudentApplicationManagementController extends Controller
                 return response()->json(['success' => false, 'message' => 'هذا الطلب تم قبوله مسبقاً'], 422);
             }
 
+            if ($app->application_status !== 'payment_verified') {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'لا يمكن قبول الطلب قبل التحقق من الدفع من المحاسب.'], 422);
+            }
+
             // Check that approved_program_id is one of the student's choices
             if (!in_array((int)$approvedProgramId, [
                 (int)$app->first_choice_program_id,
@@ -188,6 +193,8 @@ class StudentApplicationManagementController extends Controller
                 'password' => Hash::make($app->national_id_number),
                 'role'     => 'student',
             ]);
+
+            $user->assignRole('student');
 
             // Create student record
             $student = Student::create([
@@ -258,6 +265,31 @@ class StudentApplicationManagementController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'تم رفض طلب التسجيل بنجاح',
+        ]);
+    }
+
+    /**
+     * PUT /api/admin/applications/{id}/verify-payment
+     * Verify payment for application (Accountant only)
+     */
+    public function verifyPayment(Request $request, int $id): JsonResponse
+    {
+        $app = StudentApplication::findOrFail($id);
+        
+        if ($app->application_status !== 'pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'لا يمكن التحقق من الدفع لأن حالة الطلب ليست قيد الانتظار.',
+            ], 400);
+        }
+
+        $app->update([
+            'application_status' => 'payment_verified',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم التحقق من الدفع بنجاح.',
         ]);
     }
 }

@@ -684,4 +684,382 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get paymentReceiptLabel => 'Payment Receipt';
+
+  @override
+  String get navSurveys => 'Surveys';
+
+  @override
+  String studentIdWithNumber(Object id) {
+    return 'University ID: $id';
+  }
+
+  @override
+  String get relatedRequestNotFound =>
+      'The related request was not found or has been deleted.';
+
+  @override
+  String get errorLoadingRequestDetails =>
+      'Error loading request details. Please try again.';
+
+  @override
+  String get errorGeneric =>
+      'An unexpected error occurred. Please try again later.';
+
+  @override
+  String get errorClearNotifications =>
+      'Failed to clear notifications. Please try again.';
+
+  @override
+  String get errorPhotoUpdate => 'Failed to update photo. Please try again.';
+
+  @override
+  String get errorPhoneUpdate =>
+      'Failed to update phone number. Please try again.';
+
+  @override
+  String get photoUpdatedSuccess => 'Photo updated successfully';
+
+  @override
+  String get phoneUpdatedSuccess => 'Phone number updated successfully';
+
+  @override
+  String get editPhoneNumber => 'Edit Phone Number';
+
+  @override
+  String get pickFromGallery => 'Pick from Gallery';
+
+  @override
+  String get dateOfBirthLabel => 'Date of Birth';
+
+  @override
+  String get genderLabel => 'Gender';
+
+  @override
+  String get maleLabel => 'Male';
+
+  @override
+  String get femaleLabel => 'Female';
+
+  @override
+  String get nationalityLabel => 'Nationality';
+
+  @override
+  String get studentNumberLabel => 'University ID';
+
+  @override
+  String get completedHours => 'Completed Hours';
+
+  @override
+  String get remainingHours => 'Remaining Hours';
+
+  @override
+  String get currentPasswordLabel => 'Current Password';
+
+  @override
+  String get passwordChangedSuccessMsg => 'Password changed successfully';
+
+  @override
+  String get statusSuspended => 'Suspended';
+
+  @override
+  String get statusGraduated => 'Graduated';
+
+  @override
+  String get gradesAndResults => 'Grades & Results';
+
+  @override
+  String academicIdLabel(String id) {
+    return 'Academic ID: $id';
+  }
+
+  @override
+  String get cumulativeGpa => 'Cumulative GPA';
+
+  @override
+  String get semesterGpa => 'Semester GPA';
+
+  @override
+  String get semesterHoursLabel => 'Credit Hours';
+
+  @override
+  String get academicSemester => 'Academic Semester';
+
+  @override
+  String get noSemestersRegistered => 'No registered semesters';
+
+  @override
+  String get noGradesForSemester => 'No grades available for this semester';
+
+  @override
+  String get pleaseSelectSemester => 'Please select a semester to view grades';
+
+  @override
+  String get courseNameCol => 'Course Name';
+
+  @override
+  String get courseworkCol => 'Coursework';
+
+  @override
+  String get midtermCol => 'Midterm';
+
+  @override
+  String get finalExamCol => 'First Round';
+
+  @override
+  String get controlGradeCol => 'Control Grade';
+
+  @override
+  String get mercyGradeCol => 'Mercy Grade';
+
+  @override
+  String get firstRoundStatusCol => 'First Round Status';
+
+  @override
+  String get retakeCol => 'Second Round';
+
+  @override
+  String get retakeStatusCol => 'Second Round Status';
+
+  @override
+  String get retakeYearCol => 'Retake Year';
+
+  @override
+  String get gpaCol => 'GPA';
+
+  @override
+  String get gradeCol => 'Grade';
+
+  @override
+  String get passedStatus => 'Passed';
+
+  @override
+  String get failedStatus => 'Failed';
+
+  @override
+  String get incompleteStatus => 'Incomplete';
+
+  @override
+  String get surveyOpened => 'Survey Opened';
+
+  @override
+  String get openSurvey => 'Open Survey';
+
+  @override
+  String get viewGrades => 'View Grades';
+
+  @override
+  String get pleaseCompleteSurveyFirst =>
+      'Please open and complete the survey first to view your grades';
+
+  @override
+  String get surveyCompletedSuccess =>
+      'Survey completed successfully — here are your grades';
+
+  @override
+  String get failedToOpenSurveyLink => 'Could not open the survey link';
+
+  @override
+  String get errorLoadingGrades => 'Error loading grades. Please try again.';
+
+  @override
+  String get surveysTitle => 'Surveys';
+
+  @override
+  String get noOptionalSurveys => 'No optional surveys available at this time';
+
+  @override
+  String get noTitle => 'No Title';
+
+  @override
+  String get surveyViewed => 'Viewed';
+
+  @override
+  String get surveyNew => 'New';
+
+  @override
+  String get openSurveyBtn => 'Open Survey';
+
+  @override
+  String get errorLoadingSurveys => 'Error loading surveys. Please try again.';
+
+  @override
+  String get failedToOpenLink => 'Could not open the link. Please try again.';
+
+  @override
+  String get errorOpeningSurvey => 'An error occurred while opening the survey';
+
+  @override
+  String get surveyRecordedSuccess => 'Survey recorded successfully';
+
+  @override
+  String get requestDetails => 'Request Details';
+
+  @override
+  String get referenceNumberShort => 'Reference Number';
+
+  @override
+  String get requestType => 'Request Type';
+
+  @override
+  String get requestStatus => 'Request Status';
+
+  @override
+  String get paymentStatusLabel => 'Payment Status';
+
+  @override
+  String get requestDetailsAndForm => 'Request Details & Form';
+
+  @override
+  String get rejectionReason => 'Rejection Reason';
+
+  @override
+  String get staffResponse => 'Staff / Committee Response';
+
+  @override
+  String attachedFiles(Object count) {
+    return 'Attached Files ($count)';
+  }
+
+  @override
+  String get failedToOpenAttachment => 'Could not open the attachment';
+
+  @override
+  String get errorOpeningFile => 'Error opening the file. Please try again.';
+
+  @override
+  String get payNow => 'Pay Fees Now';
+
+  @override
+  String get statusApproved => 'Approved';
+
+  @override
+  String get statusRejected => 'Rejected';
+
+  @override
+  String get statusPending => 'Under Review';
+
+  @override
+  String get statusRatified => 'Financially Ratified';
+
+  @override
+  String get statusUnderReview => 'Under Review';
+
+  @override
+  String get statusPaid => 'Paid';
+
+  @override
+  String get paymentPaid => 'Paid';
+
+  @override
+  String get paymentPendingVerification => 'Pending Verification';
+
+  @override
+  String get paymentRejected => 'Payment Rejected';
+
+  @override
+  String get paymentUnpaid => 'Unpaid';
+
+  @override
+  String get submitNewRequest => 'Submit New Request';
+
+  @override
+  String get myPreviousRequests => 'My Previous Requests';
+
+  @override
+  String get studentServicesPortal => 'Student Services Portal';
+
+  @override
+  String get submitNewRequestTitle => 'Submit New Request';
+
+  @override
+  String get officialFormsSystem => 'Official Student Forms Management System';
+
+  @override
+  String get errorLoadingRequests =>
+      'Error loading requests. Please try again.';
+
+  @override
+  String get failedToLoadRequests => 'Failed to load requests';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get noPreviousRequests => 'No previous requests';
+
+  @override
+  String get noRequestsSubmitted => 'You have not submitted any requests yet.';
+
+  @override
+  String get serviceRequest => 'Service Request';
+
+  @override
+  String get submissionDate => 'Submission Date';
+
+  @override
+  String get lastUpdate => 'Last Update';
+
+  @override
+  String get errorSubmission => 'Submission failed. Please try again.';
+
+  @override
+  String get errorLoadingAcademicData =>
+      'Failed to load academic data. Please try again.';
+
+  @override
+  String get totalGradeCol => 'Final Grade';
+
+  @override
+  String get announcementsTitle => 'Announcements';
+
+  @override
+  String get noAnnouncements => 'No announcements at this time';
+
+  @override
+  String get couldNotLoadImage => 'Could not load image';
+
+  @override
+  String get retryBtn => 'Retry';
+
+  @override
+  String get requestDetailsTitle => 'Request Details';
+
+  @override
+  String get submissionDateLabel => 'Submission Date:';
+
+  @override
+  String get lastUpdateLabel => 'Last Update:';
+
+  @override
+  String get requestDescriptionTitle => 'Request Details & Form';
+
+  @override
+  String attachedFilesCount(int count) {
+    return 'Attached Files ($count)';
+  }
+
+  @override
+  String couldNotOpenAttachment(String path) {
+    return 'Could not open attachment: $path';
+  }
+
+  @override
+  String errorOpeningFileMsg(String error) {
+    return 'Error opening file: $error';
+  }
+
+  @override
+  String get payFeesNow => 'Pay Fees Now';
+
+  @override
+  String get requestTypeLabel => 'Request Type';
+
+  @override
+  String get requestStatusLabel => 'Request Status';
+
+  @override
+  String get rejectionReasonLabel => 'Rejection Reason';
+
+  @override
+  String get staffResponseLabel => 'Staff / Committee Response';
 }

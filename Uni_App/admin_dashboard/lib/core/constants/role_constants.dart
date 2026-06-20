@@ -6,10 +6,10 @@ class RoleConstants {
 
   /// Routes accessible by each role.
   static const Map<String, List<String>> roleRoutes = {
-    admin: ['/dashboard', '/requests', '/payments', '/grades', '/logs', '/notifications', '/users', '/appeals', '/programs', '/courses', '/semesters', '/pricing', '/study-schedules', '/study-plans', '/announcements', '/surveys'],
+    admin: ['/dashboard', '/requests', '/payments', '/grades', '/grades/import', '/logs', '/notifications', '/users', '/appeals', '/programs', '/courses', '/semesters', '/pricing'],
     studentAffairs: ['/dashboard', '/requests', '/notifications', '/study-schedules', '/study-plans', '/surveys', '/announcements'],
-    accountant: ['/dashboard', '/payments', '/notifications', '/study-schedules', '/study-plans'],
-    gradeControl: ['/dashboard', '/grades', '/notifications', '/appeals', '/study-schedules', '/study-plans'],
+    accountant: ['/dashboard', '/payments', '/notifications'],
+    gradeControl: ['/dashboard', '/grades', '/grades/import', '/notifications', '/appeals'],
   };
 
   /// Check if a role can access a given route path.

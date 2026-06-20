@@ -76,29 +76,7 @@ class GradeManagementService
         
         $updatedGrade = $this->gradeRepository->findById($gradeId);
 
-        // Log the activity
-        $this->activityLogRepository->create([
-            'causer_id' => auth()->id(),
-            'action' => 'updated_grade',
-            'model_type' => Grade::class,
-            'subject_id' => $gradeId,
-            'old_values' => [
-                'first' => $grade->first,
-                'second' => $grade->second,
-                'midterm' => $grade->midterm,
-                'final' => $grade->final,
-                'total' => $grade->total,
-                'gpa' => $grade->gpa,
-            ],
-            'new_values' => [
-                'first' => $updatedGrade->first,
-                'second' => $updatedGrade->second,
-                'midterm' => $updatedGrade->midterm,
-                'final' => $updatedGrade->final,
-                'total' => $updatedGrade->total,
-                'gpa' => $updatedGrade->gpa,
-            ],
-        ]);
+
 
         Mail::to($updatedGrade->student->user->email)->send(new GradeUpdated($updatedGrade));
 

@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:admin_dashboard/l10n/app_localizations.dart';
+import '../../../core/constants/role_constants.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/providers/back_action_provider.dart';
 import '../data/grade_model.dart';
 import '../providers/grades_provider.dart';
 import '../../../core/models/filter_definition.dart';
 import '../../../core/widgets/filter_bar.dart';
+import '../../programs/providers/programs_provider.dart';
+import '../../courses/providers/courses_provider.dart';
 
 class GradesPage extends ConsumerStatefulWidget {
   const GradesPage({super.key});
@@ -31,37 +35,85 @@ class _GradesPageState extends ConsumerState<GradesPage> {
   }
 
   @override
-
-  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final gradesAsync = ref.watch(allGradesProvider);
+    // Use staff-accessible providers so grade_control can access them
+    final programsAsync = ref.watch(staffProgramsProvider);
+    final coursesAsync = ref.watch(staffCoursesProvider);
+
+    final programs = programsAsync.value ?? [];
+    final allCourses = coursesAsync.value ?? [];
+
+    final currentFilters = ref.watch(gradeFiltersProvider);
+    final selectedProgramIdRaw = currentFilters['program_id'];
+    // Normalize to int for proper comparison with CourseModel.programId
+    final selectedProgramId = selectedProgramIdRaw is int
+        ? selectedProgramIdRaw
+        : (selectedProgramIdRaw != null && selectedProgramIdRaw != '__all__'
+            ? int.tryParse(selectedProgramIdRaw.toString())
+            : null);
+
+    final courses = (selectedProgramId != null)
+        ? allCourses.where((c) => c.programId == selectedProgramId).toList()
+        : allCourses;
 
     // Listen for filter changes to update global back action
     ref.listen(gradeFiltersProvider, (_, __) => _updateBackAction(ref));
 
-    final isAdmin = ref.watch(authProvider).primaryRole == 'admin';
+    final role = ref.watch(authProvider).primaryRole;
+    final isAdmin = role == 'admin';
+    final canImport = RoleConstants.canAccess(role, '/grades/import');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (canImport) ...[
+          Align(
+            alignment: Alignment.centerRight,
+            child: ElevatedButton.icon(
+              onPressed: () => context.go('/grades/import'),
+              icon: const Icon(Icons.upload_file_rounded),
+              label: Text(
+                Localizations.localeOf(context).languageCode == 'ar'
+                    ? 'استيراد الدرجات من إكسل'
+                    : 'Import Grades from Excel',
+              ),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         // Filter Bar
         FilterBar(
           filters: [
+            FilterDefinition(
+              id: 'program_id',
+              label: l10n.specializationLabel,
+              type: FilterType.dropdown,
+              icon: Icons.school_outlined,
+              options: programs.map((p) => FilterValue(label: p.name, value: p.id)).toList(),
+            ),
+            FilterDefinition(
+              id: 'course_id',
+              label: l10n.courseColumn,
+              type: FilterType.dropdown,
+              icon: Icons.book_rounded,
+              options: courses.map((c) => FilterValue(label: c.courseName, value: c.id)).toList(),
+            ),
             FilterDefinition(
               id: 'semester_id',
               label: l10n.semester,
               type: FilterType.dropdown,
               icon: Icons.calendar_today_rounded,
               options: semesterOptions.map((s) => FilterValue(label: s.label, value: s.id)).toList(),
-            ),
-            FilterDefinition(
-              id: 'course_id', 
-              label: l10n.courseIdPlaceholder,
-              type: FilterType.text,
-              icon: Icons.code_rounded,
             ),
             FilterDefinition(
               id: 'status',
@@ -83,10 +135,14 @@ class _GradesPageState extends ConsumerState<GradesPage> {
           currentValues: ref.watch(gradeFiltersProvider),
           onFilterChanged: (id, value) {
             final current = ref.read(gradeFiltersProvider);
-            ref.read(gradeFiltersProvider.notifier).state = {
+            final newFilters = {
               ...current,
               id: value,
             };
+            if (id == 'program_id') {
+              newFilters['course_id'] = '__all__';
+            }
+            ref.read(gradeFiltersProvider.notifier).state = newFilters;
           },
           onClearAll: () {
             ref.read(gradeFiltersProvider.notifier).state = {};
@@ -111,7 +167,11 @@ class _GradesPageState extends ConsumerState<GradesPage> {
     bool isAdmin,
   ) {
     final filters = ref.watch(gradeFiltersProvider);
-    final hasActiveFilter = filters.values.any((value) => value != null && value.toString().isNotEmpty);
+    final hasActiveFilter = filters.values.any((value) =>
+        value != null &&
+        value.toString().isNotEmpty &&
+        value != '__all__' &&
+        value != '___all___');
     
     if (!hasActiveFilter) {
       return Center(
@@ -139,21 +199,33 @@ class _GradesPageState extends ConsumerState<GradesPage> {
 
     return gradesAsync.when(
       loading: () => Center(child: CircularProgressIndicator(color: cs.primary)),
-      error: (error, _) => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, color: cs.error, size: 48),
-            const SizedBox(height: 16),
-            Text('${l10n.failedToLoadGrades}: $error'),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () => ref.invalidate(allGradesProvider),
-              child: Text(l10n.retry),
+      error: (error, _) {
+        final isAr = Localizations.localeOf(context).languageCode == 'ar';
+        final errStr = error.toString().toLowerCase();
+        if (errStr.contains('right roles') || errStr.contains('right permissions') || errStr.contains('403') || errStr.contains('unauthorized')) {
+          return Center(
+            child: Text(
+              isAr ? 'ليس لديك صلاحية الوصول إلى هذه الصفحة' : 'You do not have permission to access this page',
+              style: tt.titleMedium?.copyWith(color: cs.error, fontWeight: FontWeight.bold),
             ),
-          ],
-        ),
-      ),
+          );
+        }
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, color: cs.error, size: 48),
+              const SizedBox(height: 16),
+              Text('${l10n.failedToLoadGrades}: $error'),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () => ref.invalidate(allGradesProvider),
+                child: Text(l10n.retry),
+              ),
+            ],
+          ),
+        );
+      },
       data: (grades) {
         if (grades.isEmpty) {
           return Center(

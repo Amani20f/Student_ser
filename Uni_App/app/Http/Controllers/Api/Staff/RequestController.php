@@ -32,16 +32,21 @@ class RequestController extends Controller
             $userRoles = $user->getRoleNames()->toArray();
             
             $query->where(function ($q) use ($userRoles) {
-                // 1. Requests where target_role matches user's roles
-                $q->whereHas('requestType', function ($q2) use ($userRoles) {
-                    $q2->whereIn('target_role', $userRoles);
-                });
-                
-                // 2. Suspension requests for accountants (only pending ones)
+                if (in_array('student_affairs', $userRoles)) {
+                    $q->whereHas('requestType', function ($q2) {
+                        $q2->where('target_role', 'student_affairs');
+                    })->where(function ($q3) {
+                        $q3->whereDoesntHave('requestType', function ($q4) {
+                            $q4->whereIn('slug', ['suspension_of_enrollment', 'tagyl-dras', 're_enrollment']);
+                        })->orWhere('status', '!=', \App\Enums\RequestStatusEnum::PENDING);
+                    });
+                }
+
                 if (in_array('accountant', $userRoles)) {
-                    $q->orWhere(function ($q3) {
+                    $method = in_array('student_affairs', $userRoles) ? 'orWhere' : 'where';
+                    $q->$method(function ($q3) {
                         $q3->whereHas('requestType', function ($q4) {
-                            $q4->where('slug', 'suspension_of_enrollment');
+                            $q4->whereIn('slug', ['suspension_of_enrollment', 'tagyl-dras', 're_enrollment']);
                         })->where('status', \App\Enums\RequestStatusEnum::PENDING);
                     });
                 }
@@ -75,9 +80,17 @@ class RequestController extends Controller
         try {
             $reqModel = \App\Models\Request::with('requestType')->findOrFail($id);
             $user = auth()->user();
+
+            // Block Student Affairs from approving if payment status != approved (verified)
+            if ($request->status === 'approved' && $user->hasRole('student_affairs')) {
+                $linkedPayment = $reqModel->payment()->first();
+                if ($linkedPayment && $linkedPayment->status->value !== 'verified') {
+                    throw new \Exception('لا يمكن قبول الطلب قبل اعتماد عملية الدفع من المحاسب.');
+                }
+            }
             
             // Suspension interception
-            if ($reqModel->requestType && $reqModel->requestType->slug === 'suspension_of_enrollment') {
+            if ($reqModel->requestType && ($reqModel->requestType->slug === 'suspension_of_enrollment' || $reqModel->requestType->slug === 'tagyl-dras')) {
                 $suspensionService = app(\App\Services\Request\SuspensionRequestService::class);
                 
                 if ($user->hasRole(['accountant', 'admin']) && $request->status === 'approved') {

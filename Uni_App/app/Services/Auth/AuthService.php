@@ -3,6 +3,7 @@
 namespace App\Services\Auth;
 
 use App\Models\User;
+use App\Models\ActivityLog;
 use Exception;
 use Illuminate\Support\Facades\Hash;
 
@@ -23,6 +24,15 @@ class AuthService
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        ActivityLog::create([
+            'causer_id' => $user->id,
+            'action' => 'login',
+            'model_type' => User::class,
+            'subject_id' => $user->id,
+            'old_values' => null,
+            'new_values' => ['email' => $user->email, 'ip' => request()->ip()],
+        ]);
+
         return [
             'user' => $user,
             'token' => $token,
@@ -36,6 +46,15 @@ class AuthService
     public function logout(User $user): void
     {
         $user->tokens()->delete();
+
+        ActivityLog::create([
+            'causer_id' => $user->id,
+            'action' => 'logout',
+            'model_type' => User::class,
+            'subject_id' => $user->id,
+            'old_values' => null,
+            'new_values' => ['email' => $user->email],
+        ]);
     }
 
     /**

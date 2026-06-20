@@ -79,6 +79,17 @@ class AnnouncementController extends Controller
 
     public function update(Request $request, Announcement $announcement)
     {
+        if (!$announcement->exists) {
+            $id = $request->route('announcement');
+            $announcement = Announcement::findOrFail($id);
+        }
+
+        \Log::info('Update Announcement called:', [
+            'id' => $announcement->id,
+            'existing_image_path' => $announcement->image_path,
+            'has_file' => $request->hasFile('image')
+        ]);
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
@@ -92,11 +103,12 @@ class AnnouncementController extends Controller
             'send_notification' => 'boolean'
         ]);
 
+        $imagePath = $announcement->image_path;
         if ($request->hasFile('image')) {
             if ($announcement->image_path) {
                 Storage::disk('public')->delete($announcement->image_path);
             }
-            $announcement->image_path = $request->file('image')->store('announcements', 'public');
+            $imagePath = $request->file('image')->store('announcements', 'public');
         }
 
         DB::beginTransaction();
@@ -104,6 +116,7 @@ class AnnouncementController extends Controller
             $announcement->update([
                 'title' => $validated['title'],
                 'content' => $validated['content'],
+                'image_path' => $imagePath,
                 'target_audience' => $validated['target_audience'],
                 'target_college_id' => $validated['target_college_id'] ?? null,
                 'target_program_id' => $validated['target_program_id'] ?? null,
@@ -126,6 +139,11 @@ class AnnouncementController extends Controller
 
     public function destroy(Announcement $announcement)
     {
+        if (!$announcement->exists) {
+            $id = request()->route('announcement');
+            $announcement = Announcement::findOrFail($id);
+        }
+
         if ($announcement->image_path) {
             Storage::disk('public')->delete($announcement->image_path);
         }
@@ -135,6 +153,11 @@ class AnnouncementController extends Controller
 
     public function toggle(Announcement $announcement)
     {
+        if (!$announcement->exists) {
+            $id = request()->route('announcement');
+            $announcement = Announcement::findOrFail($id);
+        }
+
         $announcement->update(['is_active' => !$announcement->is_active]);
         return response()->json($announcement);
     }

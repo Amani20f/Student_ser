@@ -45,10 +45,10 @@ class PaymentVerificationService
 
                 // workflow Integration: Move associated entities to their respective roles
                 
-                // 1. Grade Appeals -> Move to UNDER_REVIEW (Grade Control)
+                // 1. Grade Appeals -> Move to VERIFIED (Grade Control)
                 if ($payment->appeal_id && $payment->appeal) {
                     $payment->appeal->update([
-                        'status' => AppealStatusEnum::UNDER_REVIEW,
+                        'status' => AppealStatusEnum::VERIFIED,
                         'accountant_id' => auth()->id(),
                         'paid_at' => now(),
                     ]);
@@ -62,11 +62,21 @@ class PaymentVerificationService
                     );
                 }
 
-                // 2. Service Requests -> Move to PENDING (Student Affairs)
+                // 2. Service Requests -> Move to RATIFIED (Student Affairs)
                 if ($payment->request_id && $payment->request) {
-                    $payment->request->update([
-                        'status' => RequestStatusEnum::PENDING,
-                    ]);
+                    $req = $payment->request;
+                    if ($req->requestType && ($req->requestType->slug === 'suspension_of_enrollment' || $req->requestType->slug === 'tagyl-dras')) {
+                        app(\App\Services\Request\SuspensionRequestService::class)->ratifySuspension(
+                            $req,
+                            auth()->user() ?: \App\Models\User::role('accountant')->first() ?: $payment->student->user,
+                            true,
+                            'تم التحقق من الدفع.'
+                        );
+                    } else {
+                        $req->update([
+                            'status' => RequestStatusEnum::RATIFIED,
+                        ]);
+                    }
                 }
 
                 // Notification

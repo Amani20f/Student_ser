@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::table('student_applications', function (Blueprint $table) {
             if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') { \Illuminate\Support\Facades\DB::statement('ALTER TABLE student_applications DROP CONSTRAINT IF EXISTS student_applications_application_status_check'); }
-            if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') { \Illuminate\Support\Facades\DB::statement("ALTER TABLE student_applications ADD CONSTRAINT student_applications_application_status_check CHECK (application_status::text = ANY (ARRAY['pending'::character varying, 'submitted'::character varying, 'completed'::character varying, 'rejected'::character varying]::text[]))"); }
+            if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') { \Illuminate\Support\Facades\DB::statement("ALTER TABLE student_applications ADD CONSTRAINT student_applications_application_status_check CHECK (application_status::text = ANY (ARRAY['pending'::character varying, 'submitted'::character varying, 'completed'::character varying, 'rejected'::character varying, 'payment_verified'::character varying]::text[]))"); }
         });
     }
 

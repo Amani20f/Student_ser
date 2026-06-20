@@ -8,6 +8,7 @@ import 'package:university_app/features/student_registration/cubit/registration_
 import 'package:university_app/l10n/app_localizations.dart';
 import 'package:university_app/features/student_registration/widgets/step_container.dart';
 import 'package:intl/intl.dart' hide TextDirection;
+import 'package:university_app/core/utils/normalization.dart';
 
 class ContactStep extends StatefulWidget {
   final GlobalKey<FormState> formKey;
@@ -188,12 +189,22 @@ class _ContactStepState extends State<ContactStep> {
                         prefixIcon: Icons.phone_android_rounded,
                         controller: _mobileController,
                         keyboardType: TextInputType.phone,
-                        onChanged: (value) => cubit.updateData(
-                          state.data.copyWith(mobileNumber: value),
-                        ),
+                        onChanged: (value) {
+                          final normalized = normalizePhone(value);
+                          if (normalized != value) {
+                            _mobileController.value = TextEditingValue(
+                              text: normalized,
+                              selection: TextSelection.collapsed(offset: normalized.length),
+                            );
+                          }
+                          cubit.updateData(
+                            state.data.copyWith(mobileNumber: normalized),
+                          );
+                        },
                         validator: (value) {
                           if (value == null || value.isEmpty) return l10n.requiredField;
-                          if (!RegExp(r'^[0-9]{8,15}$').hasMatch(value)) return l10n.invalidMobileNumber;
+                          final normalized = normalizePhone(value);
+                          if (!isValidPhoneNumber(normalized)) return l10n.invalidMobileNumber;
                           return null;
                         },
                       ),
@@ -230,12 +241,22 @@ class _ContactStepState extends State<ContactStep> {
                         prefixIcon: Icons.message_rounded,
                         controller: _whatsappController,
                         keyboardType: TextInputType.phone,
-                        onChanged: (value) => cubit.updateData(
-                          state.data.copyWith(whatsappNumber: value),
-                        ),
+                        onChanged: (value) {
+                          final normalized = normalizePhone(value);
+                          if (normalized != value) {
+                            _whatsappController.value = TextEditingValue(
+                              text: normalized,
+                              selection: TextSelection.collapsed(offset: normalized.length),
+                            );
+                          }
+                          cubit.updateData(
+                            state.data.copyWith(whatsappNumber: normalized),
+                          );
+                        },
                         validator: (value) {
                           if (value == null || value.isEmpty) return l10n.requiredField;
-                          if (!RegExp(r'^[0-9]{8,15}$').hasMatch(value)) return l10n.invalidMobileNumber;
+                          final normalized = normalizePhone(value);
+                          if (!isValidPhoneNumber(normalized)) return l10n.invalidMobileNumber;
                           return null;
                         },
                       ),

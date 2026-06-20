@@ -14,10 +14,10 @@ class GradeImportRepository {
 
   GradeImportRepository(this._apiClient);
 
-  /// Download template URL helper
-  String get templateDownloadUrl {
-    // Because we just need a link to open in the browser or download
-    return '${ApiConstants.baseUrl}${ApiConstants.staffGradesImportTemplate}';
+  /// Download template and return bytes
+  Future<List<int>> downloadTemplateBytes() async {
+    final response = await _apiClient.getRaw(ApiConstants.staffGradesImportTemplate);
+    return response.bodyBytes;
   }
 
   /// Upload the file to get preview data and headers
@@ -45,6 +45,8 @@ class GradeImportRepository {
     String tempPath,
     Map<String, String> mapping,
     int semesterId,
+    int programId,
+    int courseId,
   ) async {
     final response = await _apiClient.post(
       ApiConstants.staffGradesImportValidate,
@@ -52,6 +54,8 @@ class GradeImportRepository {
         'temp_path': tempPath,
         'mapping': mapping,
         'semester_id': semesterId,
+        'program_id': programId,
+        'course_id': courseId,
       },
     );
 
@@ -63,6 +67,8 @@ class GradeImportRepository {
     String tempPath,
     Map<String, String> mapping,
     int semesterId,
+    int programId,
+    int courseId,
   ) async {
     final response = await _apiClient.post(
       ApiConstants.staffGradesImportStore,
@@ -70,6 +76,8 @@ class GradeImportRepository {
         'temp_path': tempPath,
         'mapping': mapping,
         'semester_id': semesterId,
+        'program_id': programId,
+        'course_id': courseId,
       },
     );
 

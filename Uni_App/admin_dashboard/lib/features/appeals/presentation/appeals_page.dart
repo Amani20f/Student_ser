@@ -6,6 +6,7 @@ import 'package:admin_dashboard/l10n/app_localizations.dart';
 import '../../../core/utils/status_helper.dart';
 import '../providers/appeals_provider.dart';
 import '../data/appeal_model.dart';
+import '../../programs/providers/programs_provider.dart';
 
 class AppealsPage extends ConsumerWidget {
   const AppealsPage({super.key});
@@ -36,21 +37,33 @@ class AppealsPage extends ConsumerWidget {
           Expanded(
             child: appealsAsync.when(
               loading: () => Center(child: CircularProgressIndicator(color: cs.primary)),
-              error: (error, _) => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline_rounded, color: cs.error, size: 64),
-                    const SizedBox(height: 16),
-                    Text('Failed to load appeals: $error'),
-                    const SizedBox(height: 12),
-                    ElevatedButton(
-                      onPressed: () => ref.invalidate(underReviewAppealsProvider),
-                      child: const Text('Retry'),
+              error: (error, _) {
+                final isAr = Localizations.localeOf(context).languageCode == 'ar';
+                final errStr = error.toString().toLowerCase();
+                if (errStr.contains('right roles') || errStr.contains('right permissions') || errStr.contains('403') || errStr.contains('unauthorized')) {
+                  return Center(
+                    child: Text(
+                      isAr ? 'ليس لديك صلاحية الوصول إلى هذه الصفحة' : 'You do not have permission to access this page',
+                      style: tt.titleMedium?.copyWith(color: cs.error, fontWeight: FontWeight.bold),
                     ),
-                  ],
-                ),
-              ),
+                  );
+                }
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline_rounded, color: cs.error, size: 64),
+                      const SizedBox(height: 16),
+                      Text('Failed to load appeals: $error'),
+                      const SizedBox(height: 12),
+                      ElevatedButton(
+                        onPressed: () => ref.invalidate(underReviewAppealsProvider),
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                );
+              },
               data: (appeals) {
                 if (appeals.isEmpty) {
                   return Center(
@@ -92,47 +105,129 @@ class AppealsPage extends ConsumerWidget {
 
   Widget _buildFilterBar(BuildContext context, WidgetRef ref, ColorScheme cs, TextTheme tt, AppLocalizations l10n) {
     final currentFilter = ref.watch(appealStatusFilterProvider);
-    final isSelected = currentFilter != null && currentFilter != '';
+    final isStatusSelected = currentFilter != null && currentFilter != '' && currentFilter != '__all__' && currentFilter != '___all___';
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-      decoration: BoxDecoration(
-        color: isSelected ? cs.primary.withAlpha(20) : cs.surfaceContainerHighest.withAlpha(100),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isSelected ? cs.primary.withAlpha(50) : cs.outlineVariant.withAlpha(40)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.filter_list_rounded, color: isSelected ? cs.primary : cs.onSurfaceVariant, size: 20),
-          const SizedBox(width: 8),
-          DropdownButtonHideUnderline(
-            child: DropdownButton<String?>(
-              value: isSelected ? currentFilter : null,
-              hint: Text(l10n.statusColumn, style: tt.bodyMedium?.copyWith(color: cs.onSurface.withAlpha(180))),
-              dropdownColor: cs.surface,
-              style: tt.bodyMedium?.copyWith(color: isSelected ? cs.primary : cs.onSurface),
-              items: [
-                DropdownMenuItem(value: '___all___', child: Text(Localizations.localeOf(context).languageCode == 'ar' ? 'الكل' : 'All')),
-                DropdownMenuItem(value: 'pending_payment', child: Text(StatusHelper.localize(context, 'pending_payment'))),
-                DropdownMenuItem(value: 'paid', child: Text(StatusHelper.localize(context, 'paid'))),
-                DropdownMenuItem(value: 'under_review', child: Text(StatusHelper.localize(context, 'under_review'))),
-                DropdownMenuItem(value: 'approved', child: Text(StatusHelper.localize(context, 'approved'))),
-                DropdownMenuItem(value: 'rejected', child: Text(StatusHelper.localize(context, 'rejected'))),
-              ],
-              onChanged: (v) => ref.read(appealStatusFilterProvider.notifier).state = v,
-            ),
+    final currentProgramFilter = ref.watch(appealProgramFilterProvider);
+    final isProgramSelected = currentProgramFilter != null && currentProgramFilter != '' && currentProgramFilter != '__all__' && currentProgramFilter != '___all___';
+
+    final programsAsync = ref.watch(publicProgramsProvider);
+    final programs = programsAsync.value ?? [];
+
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+
+    return Wrap(
+      spacing: 16,
+      runSpacing: 12,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        // Status filter
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: isStatusSelected ? cs.primary.withAlpha(20) : cs.surfaceContainerHighest.withAlpha(100),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: isStatusSelected ? cs.primary.withAlpha(50) : cs.outlineVariant.withAlpha(40)),
           ),
-          if (isSelected) ...[
-            const SizedBox(width: 8),
-            IconButton(
-              icon: const Icon(Icons.clear_rounded, size: 18),
-              onPressed: () => ref.read(appealStatusFilterProvider.notifier).state = null,
-              tooltip: l10n.clearFilters,
-            ),
-          ],
-        ],
-      ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.filter_list_rounded, color: isStatusSelected ? cs.primary : cs.onSurfaceVariant, size: 20),
+              const SizedBox(width: 8),
+              DropdownButtonHideUnderline(
+                child: Builder(
+                  builder: (context) {
+                    final allowedStatuses = [
+                      '__all__',
+                      '___all___',
+                      null,
+                      'verified',
+                      'approved',
+                      'rejected',
+                    ];
+                    final rawValue = currentFilter;
+                    final safeStatusValue = allowedStatuses.contains(rawValue) ? (rawValue == '___all___' ? '__all__' : rawValue) : 'verified';
+
+                    return DropdownButton<dynamic>(
+                      value: safeStatusValue,
+                      hint: Text(l10n.statusColumn, style: tt.bodyMedium?.copyWith(color: cs.onSurface.withAlpha(180))),
+                      dropdownColor: cs.surface,
+                      style: tt.bodyMedium?.copyWith(color: isStatusSelected ? cs.primary : cs.onSurface),
+                      items: [
+                        DropdownMenuItem(value: '__all__', child: Text(isAr ? 'الكل' : 'All')),
+                        DropdownMenuItem(value: 'verified', child: Text(StatusHelper.localize(context, 'verified'))),
+                        DropdownMenuItem(value: 'approved', child: Text(StatusHelper.localize(context, 'approved'))),
+                        DropdownMenuItem(value: 'rejected', child: Text(StatusHelper.localize(context, 'rejected'))),
+                      ],
+                      onChanged: (v) => ref.read(appealStatusFilterProvider.notifier).state = v,
+                    );
+                  }
+                ),
+              ),
+              if (isStatusSelected) ...[
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.clear_rounded, size: 18),
+                  onPressed: () => ref.read(appealStatusFilterProvider.notifier).state = '__all__',
+                  tooltip: l10n.clearFilters,
+                ),
+              ],
+            ],
+          ),
+        ),
+
+        // Program/Specialization filter
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: isProgramSelected ? cs.primary.withAlpha(20) : cs.surfaceContainerHighest.withAlpha(100),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: isProgramSelected ? cs.primary.withAlpha(50) : cs.outlineVariant.withAlpha(40)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.school_outlined, color: isProgramSelected ? cs.primary : cs.onSurfaceVariant, size: 20),
+              const SizedBox(width: 8),
+              DropdownButtonHideUnderline(
+                child: Builder(
+                  builder: (context) {
+                    final allowedProgramIds = [
+                      '__all__',
+                      '___all___',
+                      null,
+                      ...programs.map((p) => p.id),
+                    ];
+                    final rawValue = currentProgramFilter;
+                    final safeProgramValue = allowedProgramIds.contains(rawValue) ? (rawValue == '___all___' ? '__all__' : rawValue) : '__all__';
+
+                    return DropdownButton<dynamic>(
+                      value: safeProgramValue,
+                      hint: Text(l10n.specializationLabel, style: tt.bodyMedium?.copyWith(color: cs.onSurface.withAlpha(180))),
+                      dropdownColor: cs.surface,
+                      style: tt.bodyMedium?.copyWith(color: isProgramSelected ? cs.primary : cs.onSurface),
+                      items: [
+                        DropdownMenuItem(value: '__all__', child: Text(isAr ? 'كل التخصصات' : 'All Specializations')),
+                        ...programs
+                            .where((p) => p.id.toString() != '__all__' && p.id.toString() != '___all___')
+                            .map((p) => DropdownMenuItem(value: p.id, child: Text(p.name))),
+                      ],
+                      onChanged: (v) => ref.read(appealProgramFilterProvider.notifier).state = v,
+                    );
+                  }
+                ),
+              ),
+              if (isProgramSelected) ...[
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.clear_rounded, size: 18),
+                  onPressed: () => ref.read(appealProgramFilterProvider.notifier).state = '__all__',
+                  tooltip: l10n.clearFilters,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

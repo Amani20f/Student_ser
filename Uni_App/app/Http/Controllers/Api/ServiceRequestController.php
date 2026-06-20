@@ -37,6 +37,16 @@ class ServiceRequestController extends Controller
 
         $requestType = RequestType::find($requestTypeId);
 
+        $student = auth()->user()?->student ?? \App\Models\Student::find($request->input('student_id'));
+        if ($student && $student->status === \App\Enums\StudentStatusEnum::SUSPENDED) {
+            if (!$requestType || $requestType->slug !== 're_enrollment') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'عذراً، لا يمكنك تقديم هذا الطلب لأن حسابك موقوف أكاديمياً.'
+                ], 403);
+            }
+        }
+
         if ($requestType && !$requestType->is_active) {
             return response()->json([
                 'success' => false,
@@ -50,13 +60,19 @@ class ServiceRequestController extends Controller
                 $formRequest = new \App\Http\Requests\Request\StoreAbsenceExcuseRequest();
             } elseif ($requestType->slug === 're_enrollment') {
                 $formRequest = new \App\Http\Requests\Request\StoreReEnrollmentRequest();
-            } elseif ($requestType->slug === 'suspension_of_enrollment') {
+            } elseif ($requestType->slug === 'suspension_of_enrollment' || $requestType->slug === 'tagyl-dras') {
                 $formRequest = new \App\Http\Requests\Request\StoreSuspensionRequest();
             }
 
             if ($formRequest) {
+                // Support both flat fields and nested form_data (e.g., from Flutter JSON requests)
+                $validationData = $request->all();
+                if ($request->has('form_data') && is_array($request->input('form_data'))) {
+                    $validationData = array_merge($validationData, $request->input('form_data'));
+                }
+
                 $validator = \Illuminate\Support\Facades\Validator::make(
-                    $request->all(),
+                    $validationData,
                     $formRequest->rules(),
                     $formRequest->messages()
                 );
@@ -107,7 +123,7 @@ class ServiceRequestController extends Controller
                 ?? ($formData['reason'] ?? ($formData['absence_reason'] ?? ($requestType->name ?? 'طلب خدمة')));
 
             // ── Create the base Request record ────────────────────────
-            if ($requestType && $requestType->slug === 'suspension_of_enrollment') {
+            if ($requestType && ($requestType->slug === 'suspension_of_enrollment' || $requestType->slug === 'tagyl-dras')) {
                 $suspensionService = app(\App\Services\Request\SuspensionRequestService::class);
                 $serviceRequest = $suspensionService->createSuspensionRequest(
                     array_merge([
@@ -327,29 +343,144 @@ class ServiceRequestController extends Controller
     public function studentRequests(): JsonResponse
     {
         $student  = auth()->user()->student;
-        $requests = Request::with(['requestType'])
+
+        // 1. Fetch Service Requests with their linked payment
+        $requests = Request::with(['requestType', 'payment'])
             ->where('student_id', $student->id)
-            ->latest()
             ->get();
+
+        // 2. Fetch Grade Appeals with their linked payments
+        $appeals = \App\Models\Appeal::with(['semester', 'payments'])
+            ->where('student_id', $student->id)
+            ->get();
+
+        // 3. Map Service Requests
+        $mappedRequests = $requests->map(function ($req) {
+            $payment = $req->payment;
+            $paymentStatus = 'unpaid';
+            if ($payment) {
+                $statusVal = $payment->status instanceof \App\Enums\PaymentStatusEnum 
+                    ? $payment->status->value 
+                    : (string) $payment->status;
+                    
+                $paymentStatus = match($statusVal) {
+                    'verified' => 'paid',
+                    'pending' => 'pending_verification',
+                    'rejected' => 'rejected',
+                    default => 'unpaid',
+                };
+            }
+
+            $statusRaw = $req->status instanceof RequestStatusEnum
+                ? $req->status->value
+                : (string) $req->status;
+
+            // Resolve attachments safely
+            $attachments = [];
+            if ($req->attachment) {
+                if (is_array($req->attachment)) {
+                    $attachments = $req->attachment;
+                } elseif (is_string($req->attachment)) {
+                    $decoded = json_decode($req->attachment, true);
+                    $attachments = is_array($decoded) ? $decoded : [$req->attachment];
+                }
+            }
+
+            return [
+                'id'               => $req->id,
+                'is_appeal'        => false,
+                'ref_number'       => 'REF-' . $req->id,
+                'request_type'     => [
+                    'id'   => $req->requestType->id,
+                    'name' => $req->requestType->name,
+                    'slug' => $req->requestType->slug,
+                    'fee'  => $req->requestType->price,
+                ],
+                'status'           => $statusRaw,
+                'payment_status'   => $paymentStatus,
+                'staff_response'   => $req->admin_notes,
+                'rejection_reason' => ($statusRaw === 'rejected') ? $req->admin_notes : null,
+                'description'      => $req->description,
+                'attachments'      => array_map(function ($path) {
+                    if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+                        return $path;
+                    }
+                    return asset('storage/' . $path);
+                }, array_values($attachments)),
+                'submitted_at'     => $req->created_at->toDateTimeString(),
+                'updated_at'       => $req->updated_at->toDateTimeString(),
+            ];
+        });
+
+        // 4. Map Grade Appeals
+        $mappedAppeals = $appeals->map(function ($appeal) {
+            $latestPayment = $appeal->payments()->latest()->first();
+            $paymentStatus = 'unpaid';
+            
+            $appealStatusVal = $appeal->status instanceof \App\Enums\AppealStatusEnum
+                ? $appeal->status->value
+                : (string) $appeal->status;
+
+            if (in_array($appealStatusVal, ['paid', 'under_review', 'verified', 'approved'])) {
+                $paymentStatus = 'paid';
+            } elseif ($latestPayment) {
+                $statusVal = $latestPayment->status instanceof \App\Enums\PaymentStatusEnum 
+                    ? $latestPayment->status->value 
+                    : (string) $latestPayment->status;
+                    
+                $paymentStatus = match($statusVal) {
+                    'verified' => 'paid',
+                    'pending' => 'pending_verification',
+                    'rejected' => 'rejected',
+                    default => 'unpaid',
+                };
+            }
+
+            // Resolve attachments safely
+            $attachments = [];
+            if ($appeal->attachment) {
+                if (is_array($appeal->attachment)) {
+                    $attachments = $appeal->attachment;
+                } elseif (is_string($appeal->attachment)) {
+                    $decoded = json_decode($appeal->attachment, true);
+                    $attachments = is_array($decoded) ? $decoded : [$appeal->attachment];
+                }
+            }
+
+            return [
+                'id'               => $appeal->id,
+                'is_appeal'        => true,
+                'ref_number'       => 'REF-' . $appeal->id,
+                'request_type'     => [
+                    'id'   => 0,
+                    'name' => 'تظلم درجات',
+                    'slug' => 'grade_appeal',
+                    'fee'  => '10.00',
+                ],
+                'status'           => $appealStatusVal,
+                'payment_status'   => $paymentStatus,
+                'staff_response'   => $appeal->committee_report,
+                'rejection_reason' => ($appealStatusVal === 'rejected') ? $appeal->committee_report : null,
+                'description'      => $appeal->student_note,
+                'attachments'      => array_map(function ($path) {
+                    if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+                        return $path;
+                    }
+                    return asset('storage/' . $path);
+                }, array_values($attachments)),
+                'submitted_at'     => $appeal->created_at->toDateTimeString(),
+                'updated_at'       => $appeal->updated_at->toDateTimeString(),
+            ];
+        });
+
+        // 5. Combine and sort newest first
+        $unifiedRequests = $mappedRequests->concat($mappedAppeals)
+            ->sortByDesc('submitted_at')
+            ->values();
 
         return response()->json([
             'success' => true,
-            'data'    => $requests->map(function ($req) {
-                return [
-                    'id'           => $req->id,
-                    'request_type' => [
-                        'id'   => $req->requestType->id,
-                        'name' => $req->requestType->name,
-                        'slug' => $req->requestType->slug,
-                    ],
-                    'status'       => $req->status instanceof RequestStatusEnum
-                        ? $req->status->value
-                        : (string) $req->status,
-                    'admin_notes'  => $req->admin_notes,
-                    'is_notified'  => $req->is_notified,
-                    'submitted_at' => $req->created_at->toDateTimeString(),
-                ];
-            }),
+            'data'    => $unifiedRequests,
         ], 200);
     }
 }

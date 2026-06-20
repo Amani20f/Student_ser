@@ -17,7 +17,7 @@ class RegistrationState extends Equatable {
   final String? applicationNumber;
 
   const RegistrationState({
-    this.currentStep = 3,
+    this.currentStep = 0,
     this.data = const RegistrationData(),
     this.status = RegistrationStatus.initial,
     this.errorMessage,
