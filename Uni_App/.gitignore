@@ -24,3 +24,8 @@ build
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+.env
+*.env
+.git_backup/
+*(1)*
