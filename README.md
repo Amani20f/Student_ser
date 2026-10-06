@@ -90,7 +90,7 @@ I worked across the full stack of this project:
 
 ## Team
 - Amani Rabeea — [@Amani20f](https://github.com/Amani20f)
-- [@noorbam](https://github.com/noorbam)
+- Noor Abdullah Bamatraf - [@noorbam](https://github.com/noorbam)
 - Nora Omar
 - Hanan Omar
 - Raghad Akram
