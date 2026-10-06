@@ -1,4 +1,4 @@
-# 🎓 University Service Ecosystem
+# University Service Ecosystem
 
 A full university services platform that lets students handle their academic and administrative needs from one app, and gives university staff a dashboard to manage them.
 
@@ -6,7 +6,7 @@ A full university services platform that lets students handle their academic and
 
 ---
 
-## ✨ Features
+## Features
 
 **Student Portal (Flutter mobile app)**
 - Secure login and student profile
@@ -31,7 +31,7 @@ A full university services platform that lets students handle their academic and
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -45,7 +45,7 @@ A full university services platform that lets students handle their academic and
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Uni_App/
@@ -57,7 +57,7 @@ Uni_App/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Backend (Laravel API)
 ```bash
@@ -81,14 +81,14 @@ Full API docs: [`api_documentation.md`](Uni_App/api_documentation.md)
 
 ---
 
-## 👩‍💻 My Role
+## My Role
 
 I worked across the full stack of this project:
 - **Backend:** built REST API endpoints with Laravel 12, including authentication (Sanctum) and role-based permissions
 - **Frontend:** developed Flutter screens for the student portal and admin dashboard and connected them to the API
 - **Database:** designed the PostgreSQL schema, migrations, and seeders (colleges, programs, courses, grades, requests, payments)
 
-## 👥 Team
+## Team
 - Amani Rabeea — [@Amani20f](https://github.com/Amani20f)
 - Noor Abdullah — [@noorbam](https://github.com/noorbam)
 - Nora Omar
