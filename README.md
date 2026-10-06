@@ -1,10 +1,3 @@
-## 👩‍💻 My Role
-
-I worked across the full stack of this project:
-- **Backend:** built REST API endpoints with Laravel 12, including authentication (Sanctum) and role-based permissions
-- **Frontend:** developed Flutter screens for the student portal and admin dashboard and connected them to the API
-- **Database:** designed the PostgreSQL schema, migrations, and seeders (colleges, programs, courses, grades, requests, payments)
-
 # 🎓 University Service Ecosystem
 
 A full university services platform that lets students handle their academic and administrative needs from one app, and gives university staff a dashboard to manage them.
