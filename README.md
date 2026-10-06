@@ -9,7 +9,7 @@ I worked across the full stack of this project:
 
 A full university services platform that lets students handle their academic and administrative needs from one app, and gives university staff a dashboard to manage them.
 
-> Graduation / team project · Flutter + Laravel + PostgreSQL
+> Graduation project · team of 5 · Flutter + Laravel + PostgreSQL
 
 ---
 
@@ -96,5 +96,8 @@ I worked across the full stack of this project:
 - **Database:** designed the PostgreSQL schema, migrations, and seeders (colleges, programs, courses, grades, requests, payments)
 
 ## 👥 Team
-- Amani Rabea Ban Makashen — [@Amani20f](https://github.com/Amani20f)
-- [@noorbam](https://github.com/noorbam)
+- Amani Rabeea — [@Amani20f](https://github.com/Amani20f)
+- Noor Abdullah — [@noorbam](https://github.com/noorbam)
+- Nora Omar
+- Hanan Omar
+- Raghad Akram
