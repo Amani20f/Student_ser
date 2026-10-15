@@ -4,6 +4,12 @@ A full-stack university services platform built as a graduation project. Student
 
 > **Graduation project · Team of 5 · Flutter + BLoC + Laravel 12 + PostgreSQL**
 
+<p align="center">
+  <img src="Uni_App/docs/screenshots/login_screen.png" alt="Student Login Screen" width="260" />
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="Uni_App/docs/screenshots/home.png" alt="Student Portal Authentication" width="260" />
+</p>
+
 ---
 
 ## ✨ Features by Role
@@ -91,6 +97,7 @@ Student_ser/
     │   ├── API_TESTING_GUIDE.md
     │   ├── schema_documentation.md
     │   ├── walkthrough.md
+    │   ├── screenshots/            # App preview screenshots
     │   └── postman/                # Postman collection files
     └── grades_upload_sample.csv    # Sample file for Excel grade import
 ```
@@ -182,6 +189,7 @@ flutter run
 | [`docs/API_TESTING_GUIDE.md`](Uni_App/docs/API_TESTING_GUIDE.md) | Step-by-step Postman testing guide |
 | [`docs/schema_documentation.md`](Uni_App/docs/schema_documentation.md) | Database schema overview |
 | [`docs/walkthrough.md`](Uni_App/docs/walkthrough.md) | Feature walkthrough |
+| [`docs/screenshots/`](Uni_App/docs/screenshots/) | Mobile student app preview screenshots |
 | [`docs/postman/`](Uni_App/docs/postman/) | Postman collection files |
 | [`grades_upload_sample.csv`](Uni_App/grades_upload_sample.csv) | Sample CSV for Excel grade import |
 
