@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Security-sensitive files — never commit these
+firebase_options.dart
+google-services.json
+GoogleService-Info.plist
+flutter_export_environment.sh

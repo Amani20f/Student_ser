@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'مدير النظام',
                 'username' => 'admin',
-                'password' => Hash::make('password'),
+                'password' => Hash::make(env('ADMIN_SEED_PASSWORD', 'change-me')),
                 'role' => 'admin',
                 'email_verified_at' => now(),
             ]
@@ -38,7 +38,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'سارة الشؤون',
                 'username' => 'sara_affairs',
-                'password' => Hash::make('password'),
+                'password' => Hash::make(env('ADMIN_SEED_PASSWORD', 'change-me')),
                 'role' => 'student_affairs',
                 'email_verified_at' => now(),
             ]
@@ -51,7 +51,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'أحمد المحاسب',
                 'username' => 'alex_accountant',
-                'password' => Hash::make('password'),
+                'password' => Hash::make(env('ADMIN_SEED_PASSWORD', 'change-me')),
                 'role' => 'accountant',
                 'email_verified_at' => now(),
             ]
@@ -64,7 +64,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'خالد الكنترول',
                 'username' => 'gary_grades',
-                'password' => Hash::make('password'),
+                'password' => Hash::make(env('ADMIN_SEED_PASSWORD', 'change-me')),
                 'role' => 'grade_control',
                 'email_verified_at' => now(),
             ]

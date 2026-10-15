@@ -1,2 +1,13 @@
 
+# Build artifacts
 *.bundle
+*.log
+
+# Environment files — NEVER commit these
+.env
+*.env
+
+# Firebase
+firebase_options.dart
+google-services.json
+GoogleService-Info.plist

@@ -29,3 +29,9 @@ Thumbs.db
 *.env
 .git_backup/
 *(1)*
+
+# Security-sensitive files
+firebase_options.dart
+google-services.json
+GoogleService-Info.plist
+*.bundle
