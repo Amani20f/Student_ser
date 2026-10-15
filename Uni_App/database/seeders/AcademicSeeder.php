@@ -61,7 +61,7 @@ class AcademicSeeder extends Seeder
                 [
                     'name' => $faker->name,
                     'username' => 'student_' . $i . '_' . Str::random(3),
-                    'password' => Hash::make('password'),
+                    'password' => Hash::make(env('ADMIN_SEED_PASSWORD', 'change-me')),
                     'role' => 'student',
                     'email_verified_at' => now(),
                 ]
